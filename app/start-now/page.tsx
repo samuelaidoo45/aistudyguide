@@ -1050,6 +1050,154 @@ body {
   padding: 0;
   background-color: inherit; /* Inherits from container */
 }
+  /* =====================================
+   0. Root Element Fix
+===================================== */
+html {
+  margin: 0;
+  padding: 0;
+  background-color: #111827; /* Dark mode background */
+}
+
+/* =====================================
+   1. Layout Containers (Updated)
+===================================== */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: inherit;
+}
+
+.container.dark {
+  background-color: #111827;
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+.container.light {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+/* =====================================
+   2. Card Colors Fix (Including Notes Section)
+===================================== */
+.container.dark .card {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+}
+
+
+.container.dark .section-card {
+  background-color: #1a2332 !important;
+  border: 1px solid #2d3748 !important;
+}
+
+/* Notes content specific styling */
+.container.dark .final-content-card {
+  background-color: #1a2332;
+  border: 1px solid #2d3748;
+  color: #e5e7eb;
+}
+
+.container.dark .final-content-html {
+  color: #e5e7eb;
+}
+
+/* Style HTML content inside notes */
+.container.dark .final-content-html h1,
+.container.dark .final-content-html h2,
+.container.dark .final-content-html h3 {
+  color: #e5e7eb;
+}
+
+.container.dark .final-content-html a {
+  color: #818cf8;
+}
+
+.container.dark .final-content-html code {
+  background-color: #111827;
+  color: #f3f4f6;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.container.dark .final-content-html pre {
+  background-color: #111827 !important;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #374151;
+}
+
+.container.dark .final-content-html strong {
+  color: #f3f4f6;
+}
+
+// Light
+.container.light {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+.container.light .card {
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.container.light .section-card {
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.container.light .final-content-card {
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.container.light .final-content-html {
+  color: #111827;
+}
+
+
+/* =====================================
+   3. Full-width Background Fix
+===================================== */
+@media (min-width: 1600px) {
+  .container.dark {
+    background-color: #111827;
+  }
+
+  .container.light {
+    background-color: #f9fafb;
+  }
+
+  .wrapper {
+    max-width: 1200px;
+  }
+}
+
+/* Add to your existing styles */
+.final-content-card {
+  margin: 1rem auto;
+  max-width: calc(100% - 2rem);
+}
+
+.container.light .final-content-card {
+  background-color: var(--white);
+  border: 1px solid var(--indigo-100);
+}
+
+.container.dark .final-content-card {
+  background-color: #1a2332;
+  border: 1px solid #2d3748;
+}
+
+.container {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  overflow: hidden auto;
+}
       `}</style>
     </>
   );
