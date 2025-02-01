@@ -28,7 +28,7 @@ export async function POST(request: Request) {
           " and subtitle " +
           sectionTitle +
           ". " +
-          "The notes JSON attribute should be a string of comprehensive text with all the explanation, examples, etc. formatted with HTML and it should be responsive for each screen size. " +
+          "The notes JSON attribute should be a string of comprehensive text with all the explanation, examples, etc. formatted with HTML and it should be responsive for each screen size and the font size consistent and readable. " +
           "THE OUTPUT SHOULD ALWAYS BE JSON. For example: " +
           exampleNotesJson
       },

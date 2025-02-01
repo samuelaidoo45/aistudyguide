@@ -19,6 +19,7 @@ const Home: React.FC = () => {
   const [view, setView] = useState<ViewState>("input");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [reloadCallback, setReloadCallback] = useState<(() => void) | null>(null);
   const [mainOutline, setMainOutline] = useState<Outline | null>(null);
   const [subOutline, setSubOutline] = useState<Outline | null>(null);
   const [finalContent, setFinalContent] = useState<string | null>(null);
@@ -74,22 +75,26 @@ const Home: React.FC = () => {
   }
 
   // Handlers for user actions
-  async function handleBreakdown() {
-    if (!topic.trim()) return;
+  async function handleBreakdown(newTopic?: string) {
+    const currentTopic = newTopic ?? topic;
+    if (!currentTopic.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      if (outlineCache.current[topic]) {
-        setMainOutline(outlineCache.current[topic]);
+      if (outlineCache.current[currentTopic]) {
+        setMainOutline(outlineCache.current[currentTopic]);
         setView("mainOutline");
       } else {
-        const outline = await fetchOutline(topic);
-        outlineCache.current[topic] = outline;
+        const outline = await fetchOutline(currentTopic);
+        outlineCache.current[currentTopic] = outline;
         setMainOutline(outline);
         setView("mainOutline");
       }
+      setTopic(currentTopic);
     } catch (err) {
       setError((err as Error).message);
+      // Save this callback to re-run handleBreakdown with the current topic
+      setReloadCallback(() => () => handleBreakdown(currentTopic));
     } finally {
       setLoading(false);
     }
@@ -112,6 +117,7 @@ const Home: React.FC = () => {
       }
     } catch (err) {
       setError((err as Error).message);
+      setReloadCallback(() => () => handleSelectSubtopic(subtopic));
     } finally {
       setLoading(false);
     }
@@ -133,6 +139,7 @@ const Home: React.FC = () => {
       }
     } catch (err) {
       setError((err as Error).message);
+      setReloadCallback(() => () => handleSelectFinalContent(subsubTitle));
     } finally {
       setLoading(false);
     }
@@ -158,6 +165,7 @@ const Home: React.FC = () => {
       );
     } catch (err) {
       setError((err as Error).message);
+      setReloadCallback(() => () => handleAskQuestion(question));
     } finally {
       setLoading(false);
     }
@@ -238,7 +246,7 @@ const Home: React.FC = () => {
                   placeholder="Enter a topic to understand..."
                   className="input-text"
                 />
-                <button onClick={handleBreakdown} className="btn btn-primary">
+                <button onClick={() => handleBreakdown()} className="btn btn-primary">
                   <i data-lucide="lightbulb"></i> Break It Down
                 </button>
               </div>
@@ -351,13 +359,18 @@ const Home: React.FC = () => {
             </div>
           )}
 
-          {error && (
+{error && (
             <div className="error-state">
               <p className="error-message">{error}</p>
               <div className="error-buttons">
                 <button
                   className="error-button reload"
-                  onClick={() => window.location.reload()}
+                  onClick={() => {
+                    if (reloadCallback) {
+                      reloadCallback();
+                      setError(null);
+                    }
+                  }}
                 >
                   Reload
                 </button>
@@ -1198,6 +1211,93 @@ body {
   height: 100%;
   overflow: hidden auto;
 }
+
+
+
+/* Light mode: set text color to black */
+.container.light .final-content-card p,
+.container.light .final-content-html {
+  color: #000000 !important;
+}
+
+/* Dark mode: set text color to white */
+.container.dark .final-content-card p,
+.container.dark .final-content-html {
+  color: #ffffff !important;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .final-content-card {
+    padding: 0.5rem !important;
+  }
+  .final-content-card p,
+  .final-content-html {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+  }
+}
+
+/* =====================================
+   Reduce Headings Size in Generated Notes
+===================================== */
+.final-content-html h1,
+.final-content-html h2,
+.final-content-html h3 {
+  font-size: 1rem !important;       /* Adjust this value as needed */
+  line-height: 1.2 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* For extra-small devices, further reduce heading size if desired */
+@media (max-width: 768px) {
+  .final-content-html h1,
+  .final-content-html h2,
+  .final-content-html h3 {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* =====================================
+   Responsive Headings in Generated Notes
+===================================== */
+.final-content-html h1,
+.final-content-html h2,
+.final-content-html h3 {
+  /* Ensure headings are a little smaller */
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+/* =====================================
+   Responsive Paragraph Text in Generated Notes
+   (Increased slightly for better readability)
+===================================== */
+.final-content-html p {
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+  text-align: justify;  /* Justify the text for neat alignment */
+}
+
+/* =====================================
+   Mobile Adjustments (Optional Fallback)
+===================================== */
+@media (max-width: 768px) {
+  .final-content-html h1,
+  .final-content-html h2,
+  .final-content-html h3 {
+    font-size: 1.5rem;
+  }
+  .final-content-html p {
+    font-size: 1.5rem;
+  }
+}
+
+
+
+
       `}</style>
     </>
   );
