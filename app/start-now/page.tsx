@@ -254,7 +254,7 @@ const Home: React.FC = () => {
               >
                 ← Back
               </button>
-              <h2>Understanding {mainOutline.topic}</h2>
+              <h2>{mainOutline.topic}</h2>
               <div className="outline-sections">
                 {mainOutline.sections.map((section, i) => (
                   <div key={i} className="section-card">
@@ -284,7 +284,7 @@ const Home: React.FC = () => {
               <button className="back-button" onClick={handleBackToMainOutline}>
                 ← Back
               </button>
-              <h2>Understanding {selectedSubtopic}</h2>
+              <h2>{selectedSubtopic}</h2>
               <div className="outline-sections">
                 {subOutline.sections.map((section, i) => (
                   <div key={i} className="section-card">
@@ -316,7 +316,7 @@ const Home: React.FC = () => {
               <button className="back-button" onClick={handleBackToSubOutline}>
                 ← Back
               </button>
-              <h2>Understanding {selectedSubtopic}</h2>
+              <h2>{selectedSubtopic}</h2>
               <div className="final-content-card">
                 <div
                   className="final-content-html"
