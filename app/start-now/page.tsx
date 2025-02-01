@@ -2,6 +2,8 @@
 
 import { useState, useRef } from "react";
 import Head from "next/head";
+import Script from 'next/script';
+
 
 interface Outline {
   topic: string;
@@ -205,6 +207,30 @@ const Home: React.FC = () => {
           rel="stylesheet"
         />
       </Head>
+
+      <Script id="firebase-init" type="module">
+        {`
+          // Import the functions you need from the SDKs you need
+          import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+          import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+
+          // Your web app's Firebase configuration
+          const firebaseConfig = {
+            apiKey: "AIzaSyCvbIzN5y8jtF11IStMvb4tSAzflagR5Jg",
+            authDomain: "studyguide-9ebf2.firebaseapp.com",
+            projectId: "studyguide-9ebf2",
+            storageBucket: "studyguide-9ebf2.firebasestorage.app",
+            messagingSenderId: "264351112015",
+            appId: "1:264351112015:web:2d95cd0899eb4ce08e033a",
+            measurementId: "G-W4NYWX6KHG"
+          };
+
+          // Initialize Firebase
+          const app = initializeApp(firebaseConfig);
+          const analytics = getAnalytics(app);
+        `}
+      </Script>
+
       <div className={`container ${darkMode ? "dark" : "light"}`}>
         <header className="header">
           <h1>StudyGuide</h1>

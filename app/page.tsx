@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Script from 'next/script';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -17,10 +18,35 @@ export default function Home() {
           content="Harness the power of AI to break down any subject into digestible, structured knowledge. Master new concepts faster than ever before."
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </Head>
+
+      {/* Firebase Initialization Script using Next.js Script component */}
+      <Script id="firebase-init" type="module">
+        {`
+          // Import the functions you need from the SDKs you need
+          import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+          import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+
+          // Your web app's Firebase configuration
+          const firebaseConfig = {
+            apiKey: "AIzaSyCvbIzN5y8jtF11IStMvb4tSAzflagR5Jg",
+            authDomain: "studyguide-9ebf2.firebaseapp.com",
+            projectId: "studyguide-9ebf2",
+            storageBucket: "studyguide-9ebf2.firebasestorage.app",
+            messagingSenderId: "264351112015",
+            appId: "1:264351112015:web:2d95cd0899eb4ce08e033a",
+            measurementId: "G-W4NYWX6KHG"
+          };
+
+          // Initialize Firebase
+          const app = initializeApp(firebaseConfig);
+          const analytics = getAnalytics(app);
+        `}
+      </Script>
+
       <Navbar />
       <main>
         <Hero />
