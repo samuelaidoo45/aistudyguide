@@ -1,6 +1,8 @@
 // app/api/generateNotes/route.ts
 import { NextResponse } from "next/server";
 
+export const maxDuration = 300; // 5 minutes
+
 export async function POST(request: Request) {
   try {
     const input = await request.json();
