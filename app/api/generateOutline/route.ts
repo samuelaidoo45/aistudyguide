@@ -145,7 +145,7 @@ export async function POST(request: Request) {
     let openaiResponse;
     try {
       openaiResponse = JSON.parse(openaiRawContent);
-    } catch (_error) {
+    } catch {
       return NextResponse.json(
         {
           error: "Invalid JSON content in OpenAI response",

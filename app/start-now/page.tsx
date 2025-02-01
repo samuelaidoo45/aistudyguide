@@ -357,21 +357,15 @@ const Home: React.FC = () => {
               <div className="error-buttons">
                 <button
                   className="error-button reload"
-                  onClick={() => {
-                    setError(null);
-                    setView("input");
-                  }}
+                  onClick={() => window.location.reload()}
                 >
                   Reload
                 </button>
                 <button
-                  className="error-button back"
-                  onClick={() => {
-                    setError(null);
-                    setView("input");
-                  }}
+                  className="error-button close"
+                  onClick={() => setError(null)}
                 >
-                  Back
+                  Close
                 </button>
               </div>
             </div>
@@ -408,6 +402,8 @@ const Home: React.FC = () => {
           --gray-300: #d1d5db;
           --gray-700: #374151;
           --gray-900: #111827;
+          /* Additional variables for error text */
+          --red-600: #e3342f;
         }
 
         /* =====================================
@@ -435,7 +431,7 @@ const Home: React.FC = () => {
         .container {
           width: 100%;
           min-height: 100vh;
-          padding: 0; /* Remove extra padding that may cause white space */
+          padding: 0;
           margin: 0;
           position: relative;
           transition: background 0.3s ease, color 0.3s ease;
@@ -443,9 +439,8 @@ const Home: React.FC = () => {
         /* Dark mode overrides */
         .container.dark {
           background-color: #1f2937; /* Gray-800 */
-          color: #f7fafc; /* near white */
+          color: #f7fafc; /* Near white */
         }
-        /* Light mode uses default colors */
         .container.light {
           background-color: var(--gray-50);
           color: var(--gray-900);
@@ -511,12 +506,14 @@ const Home: React.FC = () => {
         .card:hover {
           transform: translateY(-5px);
         }
+        /* Dark mode card styles */
         .container.dark .card {
-          background-color: #1f2937; /* Dark card background */
+          background-color: #2d3748; /* A slightly lighter dark for cards */
+          box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
         .container.dark .card h2,
         .container.dark .card h3 {
-          color: #f7fafc; /* Light text on dark background */
+          color: #f7fafc;
         }
         .container.light .card {
           background-color: var(--white);
@@ -637,7 +634,7 @@ const Home: React.FC = () => {
         }
         .subsection-container {
           margin-left: 1rem;
-          /* Removed vertical line */
+          /* No border added */
         }
         .subtopic-item {
           background-color: var(--indigo-50);
@@ -852,11 +849,11 @@ const Home: React.FC = () => {
         .error-button.reload:hover {
           background: var(--indigo-700);
         }
-        .error-button.back {
+        .error-button.close {
           background: var(--gray-100);
           color: var(--gray-700);
         }
-        .error-button.back:hover {
+        .error-button.close:hover {
           background: var(--gray-200);
         }
 
@@ -927,6 +924,132 @@ const Home: React.FC = () => {
         .container.light .input-text::placeholder {
           color: var(--gray-500);
         }
+          /* =====================================
+   Dark Mode Overrides
+===================================== */
+.container.dark {
+  background-color: #111827; /* Gray-900 */
+  color: #f3f4f6; /* Gray-100 */
+}
+
+.container.dark .card {
+  background-color: #1f2937; /* Gray-800 */
+  border-color: #374151; /* Gray-700 */
+}
+
+.container.dark .input-text {
+  background-color: #1f2937; /* Gray-800 */
+  border-color: #4b5563; /* Gray-600 */
+  color: #f3f4f6; /* Gray-100 */
+}
+
+.container.dark .input-text:focus {
+  border-color: #6366f1; /* Indigo-500 */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+.container.dark .subtopic-item {
+  background-color: #1a2332;
+  color: #e5e7eb; /* Gray-200 */
+}
+
+.container.dark .subtopic-item:hover {
+  background-color: #2d3748; /* Gray-700 */
+}
+
+.container.dark .section-card {
+  border-color: #374151; /* Gray-700 */
+}
+
+.container.dark .btn-primary {
+  background-color: #6366f1; /* Indigo-500 */
+}
+
+.container.dark .btn-primary:hover {
+  background-color: #4f46e5; /* Indigo-600 */
+}
+
+.container.dark .back-button {
+  border-color: #6366f1; /* Indigo-500 */
+  color: #6366f1;
+}
+
+.container.dark .back-button:hover {
+  background-color: #6366f1;
+  color: #f3f4f6;
+}
+
+.container.dark .dive-deeper-container {
+  background-color: #1a2332;
+  border-color: #374151;
+}
+
+.container.dark .final-content-card {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.container.dark .error-state {
+  background: #1f2937;
+  color: #f3f4f6;
+  border: 1px solid #374151;
+}
+
+.container.dark .error-button.close {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+.container.dark .error-button.close:hover {
+  background: #4b5563;
+}
+  /* =====================================
+   3. Layout Containers - UPDATED
+===================================== */
+.container {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* =====================================
+   4. Dark Mode Overrides - UPDATED
+===================================== */
+.container.dark {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+.container.dark .card {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+}
+
+.container.dark .section-card {
+  background-color: #1a2332 !important;  /* Darker blue-gray for sections */
+  border: 1px solid #2d3748 !important;  /* Dark border */
+  color: #e5e7eb !important;  /* Light text */
+}
+
+.container.dark .subtopic-item {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  color: #e5e7eb;
+}
+
+.container.dark .subtopic-item:hover {
+  background-color: #2d3748;
+}
+
+/* Add this to fix body background */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: inherit; /* Inherits from container */
+}
       `}</style>
     </>
   );

@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   try {
     const input = await request.json();
 
-    // Grab details from the request; provide defaults if needed.
+    // Grab details from the Request, with defaults.
     const title = input.title ?? "Unknown Title";
     const sectionTitle = input.sectionTitle ?? "Unknown Section";
     const subtopic = input.subtopic ?? "Unknown Subtopic";
@@ -84,13 +84,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Remove triple backticks or other formatting.
     let openaiRawContent = responseData.choices[0].message.content;
     openaiRawContent = openaiRawContent.replace(/```(json)?/g, "").trim();
 
     let openaiResponse;
     try {
       openaiResponse = JSON.parse(openaiRawContent);
-    } catch (_) {
+    } catch {
       return NextResponse.json(
         {
           error: "Invalid JSON content in OpenAI response",
