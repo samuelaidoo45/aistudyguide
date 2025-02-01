@@ -14,7 +14,7 @@ interface Outline {
 type ViewState = "input" | "mainOutline" | "subOutline" | "finalContent";
 
 const Home: React.FC = () => {
-  // React state variables
+  // Light mode is default
   const [topic, setTopic] = useState<string>("");
   const [view, setView] = useState<ViewState>("input");
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,7 +23,7 @@ const Home: React.FC = () => {
   const [subOutline, setSubOutline] = useState<Outline | null>(null);
   const [finalContent, setFinalContent] = useState<string | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<string>("");
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
 
   // Cache generated outlines and notes using useRef
   const outlineCache = useRef<{ [key: string]: Outline }>({});
@@ -201,12 +201,12 @@ const Home: React.FC = () => {
         <header className="header">
           <h1>StudyGuide</h1>
           <p>Your dynamic study guide generator powered by AI</p>
-          {/* <button
+          <button
             className="theme-toggle"
             onClick={() => setDarkMode((prev) => !prev)}
           >
             {darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          </button> */}
+          </button>
         </header>
         <main className="wrapper">
           {/* Predefined Topics Section */}
@@ -433,17 +433,19 @@ const Home: React.FC = () => {
            3. Layout Containers
         ===================================== */
         .container {
+          width: 100%;
           min-height: 100vh;
-          padding: 2rem;
+          padding: 0; /* Remove extra padding that may cause white space */
+          margin: 0;
           position: relative;
           transition: background 0.3s ease, color 0.3s ease;
         }
-        /* Dark mode: background dark, text light */
+        /* Dark mode overrides */
         .container.dark {
-          background-color: var(--gray-900);
-          color: var(--gray-50);
+          background-color: #1f2937; /* Gray-800 */
+          color: #f7fafc; /* near white */
         }
-        /* Light mode: use default (light) colors */
+        /* Light mode uses default colors */
         .container.light {
           background-color: var(--gray-50);
           color: var(--gray-900);
@@ -508,6 +510,13 @@ const Home: React.FC = () => {
         }
         .card:hover {
           transform: translateY(-5px);
+        }
+        .container.dark .card {
+          background-color: #1f2937; /* Dark card background */
+        }
+        .container.dark .card h2,
+        .container.dark .card h3 {
+          color: #f7fafc; /* Light text on dark background */
         }
         .container.light .card {
           background-color: var(--white);
@@ -613,7 +622,7 @@ const Home: React.FC = () => {
           transition: box-shadow 0.3s ease;
         }
         .section-card:hover {
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
         .section-title {
           display: flex;
@@ -628,7 +637,7 @@ const Home: React.FC = () => {
         }
         .subsection-container {
           margin-left: 1rem;
-          /* Removed vertical line: no border-left or extra padding */
+          /* Removed vertical line */
         }
         .subtopic-item {
           background-color: var(--indigo-50);
@@ -643,11 +652,11 @@ const Home: React.FC = () => {
         }
         .subtopic-item:hover {
           background-color: var(--indigo-100);
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .subtopic-item.active-subtopic {
           background-color: var(--indigo-200) !important;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
         /* =====================================
@@ -685,7 +694,7 @@ const Home: React.FC = () => {
           border-radius: 0.75rem;
           padding: 1rem;
           margin-top: 1rem;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.05);
           width: 100%;
           max-width: 100%;
         }
@@ -717,7 +726,7 @@ const Home: React.FC = () => {
           transition: box-shadow 0.3s ease;
         }
         .dive-deeper-container:hover {
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
         .dive-deeper-title {
           font-size: 1.125rem;

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const input = await request.json();
-    
+
     // Make sure the action is for generating an outline
     if (input.action !== "generateOutline") {
       return NextResponse.json(
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
     let openaiResponse;
     try {
       openaiResponse = JSON.parse(openaiRawContent);
-    } catch (e) {
+    } catch (_error) {
       return NextResponse.json(
         {
           error: "Invalid JSON content in OpenAI response",
@@ -156,9 +156,15 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(openaiResponse);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: "Server error", details: error.message },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
-      { error: "Server error", details: error.message },
+      { error: "Server error", details: "Unknown error" },
       { status: 500 }
     );
   }
