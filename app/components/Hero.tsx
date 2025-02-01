@@ -1,5 +1,5 @@
-import Image from 'next/image'; // If you have images
-import styles from '../styles/Hero.module.css'; // Optional: for component-specific styles
+// import Image from 'next/image'; // If you have images
+// import styles from '../styles/Hero.module.css'; // Optional: for component-specific styles
 
 const Hero = () => {
   return (
@@ -21,7 +21,7 @@ const Hero = () => {
         </p>
 
         {/* Call to Action Button */}
-        <a href="/studyguide/home" className="btn btn-primary">
+        <a href="/start-now" className="btn btn-primary">
           Start Learning Smarter
         </a>
       </div>

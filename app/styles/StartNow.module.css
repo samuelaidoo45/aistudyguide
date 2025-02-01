@@ -1,0 +1,417 @@
+/* styles/StartNow.module.css */
+
+/* Root Variables */
+:root {
+    --indigo-50: #eef2ff;
+    --indigo-100: #e0e7ff;
+    --indigo-200: #c7d2fe;
+    --indigo-300: #a5b4fc;
+    --indigo-400: #818cf8;
+    --indigo-500: #6366f1;
+    --indigo-600: #4f46e5;
+    --indigo-700: #4338ca;
+    --indigo-800: #3730a3;
+    --indigo-900: #312e81;
+  
+    --blue-100: #dbeafe;
+    --blue-500: #3b82f6;
+  
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-700: #374151;
+    --gray-900: #111827;
+  
+    --error: #ef4444;
+  }
+  
+  /* Basic Resets & Body */
+  .card {
+    background-color: var(--white);
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+  }
+  
+  /* Header */
+  .header {
+    background-color: var(--white);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .headerTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--indigo-900);
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    background-color: var(--indigo-700);
+    color: var(--white);
+    width: 16rem;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
+    z-index: 1001;
+  }
+  
+  .sidebarHeader {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+  
+  .navLink {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: var(--white);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    transition: background 0.3s;
+  }
+  
+  .navLink i {
+    margin-right: 0.5rem;
+  }
+  
+  .navLink:hover {
+    background-color: var(--indigo-600);
+  }
+  
+  .active {
+    background-color: var(--indigo-600);
+  }
+  
+  .spacer {
+    flex: 1;
+  }
+  
+  .logout {
+    margin-top: auto;
+  }
+  
+  /* Main Content Area */
+  .mainContent {
+    flex: 1;
+    background: linear-gradient(135deg, var(--indigo-50) 0%, var(--blue-100) 100%);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Wrapper */
+  .wrapper {
+    margin: 0;
+    padding: 2rem 1.5rem;
+    width: 100%;
+    flex: 1;
+  }
+  
+  /* Form & Input Styles */
+  .inputGroup {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .inputText {
+    flex-grow: 1;
+    padding: 1rem;
+    border: 2px solid var(--indigo-300);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+  
+  .inputText:focus {
+    border-color: var(--indigo-400);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1),
+                0 2px 4px rgba(0,0,0,0.06);
+    font-size: 1rem;
+    gap: 0.4rem;
+  }
+  
+  .btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0,0,0,0.15),
+                0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .btnPrimary {
+    background-color: var(--indigo-600);
+    color: var(--white);
+  }
+  
+  .btnPrimary:hover {
+    background-color: var(--indigo-700);
+  }
+  
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Loading Indicator */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    color: var(--indigo-600);
+  }
+  
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Error State */
+  .errorState {
+    background-color: var(--white);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-top: 1rem;
+  }
+  
+  .errorMessage {
+    color: var(--error);
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .errorButtons {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .errorButton {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: none;
+  }
+  
+  .reload {
+    background-color: var(--indigo-600);
+    color: var(--white);
+  }
+  
+  .reload:hover {
+    background-color: var(--indigo-700);
+  }
+  
+  .back {
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+  }
+  
+  .back:hover {
+    background-color: var(--gray-200);
+  }
+  
+  /* Breakdown Content */
+  .breakdownContent {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .topicBreakdown {
+    width: 50%;
+  }
+  
+  .breakdownTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--indigo-900);
+    margin-bottom: 1rem;
+  }
+  
+  .sectionCard {
+    background-color: var(--indigo-50);
+    border: 1px solid var(--indigo-200);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .sectionCard:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  }
+  
+  .sectionHeader {
+    display: flex;
+    align-items: center;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--indigo-800);
+    margin-bottom: 0.5rem;
+  }
+  
+  .subsections {
+    margin-left: 1rem;
+  }
+  
+  .subtopicItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--indigo-50);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .subtopicItem:hover {
+    background-color: var(--indigo-100);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .activeSubtopic {
+    background-color: rgba(74, 144, 226, 0.1);
+    border-radius: 4px;
+  }
+  
+  /* Subtopic Explanation */
+  .subtopicExplanation {
+    width: 50%;
+    padding-left: 1rem;
+    border-left: 2px solid var(--indigo-200);
+    display: none;
+    flex-direction: column;
+  }
+  
+  .subtopicExplanation.active {
+    display: flex;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .headerTitle {
+      margin-bottom: 1rem;
+    }
+  
+    .inputGroup {
+      flex-direction: column;
+    }
+  
+    .btnPrimary {
+      width: 100%;
+    }
+  
+    .breakdownContent {
+      flex-direction: column;
+    }
+  
+    .topicBreakdown,
+    .subtopicExplanation {
+      width: 100%;
+      padding: 0;
+      border-left: none;
+      border-top: 2px solid var(--indigo-200);
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+  
+    .backButton {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: var(--indigo-600);
+      color: var(--white);
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      margin-bottom: 1rem;
+    }
+  
+    .backButton:hover {
+      background-color: var(--indigo-700);
+      transform: translateY(-2px);
+    }
+  
+    .loadingIndicator {
+      width: 90%;
+      padding: 1.5rem;
+      text-align: center;
+    }
+  
+    .loadingSpinner {
+      width: 2rem;
+      height: 2rem;
+      border-width: 3px;
+    }
+  
+    .loadingText {
+      font-size: 1rem;
+    }
+  
+    .errorState {
+      width: 90%;
+      padding: 1.5rem;
+    }
+  
+    .errorMessage {
+      font-size: 1rem;
+    }
+  
+    .errorButtons {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+  
+    .errorButton {
+      width: 100%;
+      padding: 0.75rem;
+    }
+  }
+  
