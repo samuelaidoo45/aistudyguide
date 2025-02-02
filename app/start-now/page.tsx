@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import Head from "next/head";
 import Script from "next/script";
-import { jsPDF } from "jspdf";
 
 interface Outline {
   topic: string;
