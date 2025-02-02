@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react";
 import Head from "next/head";
-import Script from 'next/script';
-
+import Script from "next/script";
+import { jsPDF } from "jspdf";
 
 interface Outline {
   topic: string;
@@ -185,14 +185,59 @@ const Home: React.FC = () => {
     setFinalContent(null);
   }
 
+  // New: Download and Audio handlers
+  function handleDownloadPDF() {
+    if (!finalContent) return;
+    // Create a temporary element to extract plain text from the HTML content
+    const tempEl = document.createElement("div");
+    tempEl.innerHTML = finalContent;
+    const text = tempEl.textContent || tempEl.innerText || "";
+    const doc = new jsPDF();
+    doc.text(text, 10, 10);
+    doc.save(`${selectedSubtopic}.pdf`);
+  }
+
+  function handleDownloadWord() {
+    if (!finalContent) return;
+    const tempEl = document.createElement("div");
+    tempEl.innerHTML = finalContent;
+    const text = tempEl.textContent || tempEl.innerText || "";
+    const blob = new Blob([text], { type: "application/msword" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${selectedSubtopic}.doc`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleReadAudio() {
+    if (!finalContent) return;
+    if (window.speechSynthesis) {
+      const tempEl = document.createElement("div");
+      tempEl.innerHTML = finalContent;
+      const text = tempEl.textContent || tempEl.innerText || "";
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Text-to-speech is not supported in this browser.");
+    }
+  }
+
   // Predefined topics for quick selection
   const predefinedTopics = [
-    "Mathematics",
-    "Physics",
+    "Cryptocurrency",
+    "English Literature",
     "API Development",
-    "Programming",
-    "Biology",
+    "Geopolitics",
+    "Algorithmic Trading",
     "UI/UX Design",
+    "Quantum Computing",
+    "Blockchain",
+    "Cybersecurity",
+    "Artificial Intelligence",
+    "Mathematics",
+    "Economics",
   ];
 
   return (
@@ -250,10 +295,7 @@ const Home: React.FC = () => {
                 <button
                   key={idx}
                   className="topic-button"
-                  onClick={() => {
-                    setTopic(pre);
-                    handleBreakdown();
-                  }}
+                  onClick={() => handleBreakdown(pre)}
                 >
                   {pre}
                 </button>
@@ -382,10 +424,22 @@ const Home: React.FC = () => {
                   </button>
                 </div>
               </div>
+              {/* New: Download and Audio Buttons */}
+              <div className="download-read-container" style={{ display: "flex", gap: "1rem", marginTop: "1rem", justifyContent: "center" }}>
+                {/* <button onClick={handleDownloadPDF} className="btn btn-primary">
+                  Download PDF
+                </button> */}
+                <button onClick={handleDownloadWord} className="btn btn-primary">
+                  Download Word
+                </button>
+                {/* <button onClick={handleReadAudio} className="btn btn-primary">
+                  Read Audio
+                </button> */}
+              </div>
             </div>
           )}
 
-{error && (
+          {error && (
             <div className="error-state">
               <p className="error-message">{error}</p>
               <div className="error-buttons">
@@ -1320,13 +1374,11 @@ body {
     font-size: 1.5rem;
   }
 }
-
-
-
-
       `}</style>
     </>
   );
 };
 
 export default Home;
+
+
