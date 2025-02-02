@@ -186,16 +186,16 @@ const Home: React.FC = () => {
   }
 
   // New: Download and Audio handlers
-  function handleDownloadPDF() {
-    if (!finalContent) return;
-    // Create a temporary element to extract plain text from the HTML content
-    const tempEl = document.createElement("div");
-    tempEl.innerHTML = finalContent;
-    const text = tempEl.textContent || tempEl.innerText || "";
-    const doc = new jsPDF();
-    doc.text(text, 10, 10);
-    doc.save(`${selectedSubtopic}.pdf`);
-  }
+  // function handleDownloadPDF() {
+  //   if (!finalContent) return;
+  //   // Create a temporary element to extract plain text from the HTML content
+  //   const tempEl = document.createElement("div");
+  //   tempEl.innerHTML = finalContent;
+  //   const text = tempEl.textContent || tempEl.innerText || "";
+  //   const doc = new jsPDF();
+  //   doc.text(text, 10, 10);
+  //   doc.save(`${selectedSubtopic}.pdf`);
+  // }
 
   function handleDownloadWord() {
     if (!finalContent) return;
@@ -211,18 +211,18 @@ const Home: React.FC = () => {
     URL.revokeObjectURL(url);
   }
 
-  function handleReadAudio() {
-    if (!finalContent) return;
-    if (window.speechSynthesis) {
-      const tempEl = document.createElement("div");
-      tempEl.innerHTML = finalContent;
-      const text = tempEl.textContent || tempEl.innerText || "";
-      const utterance = new SpeechSynthesisUtterance(text);
-      window.speechSynthesis.speak(utterance);
-    } else {
-      alert("Text-to-speech is not supported in this browser.");
-    }
-  }
+  // function handleReadAudio() {
+  //   if (!finalContent) return;
+  //   if (window.speechSynthesis) {
+  //     const tempEl = document.createElement("div");
+  //     tempEl.innerHTML = finalContent;
+  //     const text = tempEl.textContent || tempEl.innerText || "";
+  //     const utterance = new SpeechSynthesisUtterance(text);
+  //     window.speechSynthesis.speak(utterance);
+  //   } else {
+  //     alert("Text-to-speech is not supported in this browser.");
+  //   }
+  // }
 
   // Predefined topics for quick selection
   const predefinedTopics = [
