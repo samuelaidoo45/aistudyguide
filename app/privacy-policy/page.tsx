@@ -19,10 +19,10 @@ const Privacy: NextPage = () => {
           <section className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700 mb-4">
-              Welcome to StudyGuide (“we”, “our”, or “us”). This Privacy Policy describes how we collect, use, disclose, and safeguard your information when you visit{' '}
+              Welcome to StudyGuide (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;). This Privacy Policy describes how we collect, use, disclose, and safeguard your information when you visit{' '}
               <a href="https://www.aistudyguide.xyz/" className="text-primary-600 hover:underline">
                 https://www.aistudyguide.xyz/
-              </a> (the “Site”). By accessing or using our Site, you agree to the practices described in this Privacy Policy.
+              </a> (the &ldquo;Site&rdquo;). By accessing or using our Site, you agree to the practices described in this Privacy Policy.
             </p>
           </section>
 
@@ -30,7 +30,7 @@ const Privacy: NextPage = () => {
           <section className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">2. Information We Collect</h2>
             <p className="text-gray-700 mb-4">
-              We may collect both personally identifiable information (“PII”) and non-personally identifiable information from you when you visit our Site. This includes:
+              We may collect both personally identifiable information (&ldquo;PII&rdquo;) and non-personally identifiable information from you when you visit our Site. This includes:
             </p>
             <ul className="list-disc list-inside text-gray-700">
               <li>
@@ -112,7 +112,7 @@ const Privacy: NextPage = () => {
 
           {/* 9. Children's Privacy */}
           <section className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">9. Children's Privacy</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">9. Children&apos;s Privacy</h2>
             <p className="text-gray-700 mb-4">
               Our Site is not intended for children under the age of 13. We do not knowingly collect personal information from children under 13. If we become aware that a child under 13 has provided us with personal information, we will take steps to delete such information.
             </p>
