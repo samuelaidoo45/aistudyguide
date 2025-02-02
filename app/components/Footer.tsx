@@ -16,16 +16,10 @@ const Footer = () => {
             <h3>Quick Links</h3>
             <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
               <li>
-                <a href="#features">Features</a>
+                <a href="/privacy-policy">Privacy Policy</a>
               </li>
               <li>
-                <a href="#how-it-works">How It Works</a>
-              </li>
-              <li>
-                <a href="#testimonials">Testimonials</a>
-              </li>
-              <li>
-                <a href="#get-started">Get Started</a>
+                <a href="/terms-and-conditions">Terms and Conditions</a>
               </li>
             </ul>
           </div>
