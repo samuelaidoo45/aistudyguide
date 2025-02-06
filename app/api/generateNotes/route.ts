@@ -14,7 +14,8 @@ export async function POST(request: Request) {
     const exampleNotes = {
       notes: "some notes"
     };
-    const exampleNotesJson = JSON.stringify(exampleNotes, null, 2);
+    
+    // const exampleNotesJson = JSON.stringify(exampleNotes, null, 2);
 
     const messages = [
       {
