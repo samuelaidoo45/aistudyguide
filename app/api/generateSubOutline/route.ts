@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       topic: input.topic,
       sections: [
         {
-          title: "Chapter 1",
+          title: "Section 1",
           subsections: [
             {
               title: "Fundamental principles",
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
           ]
         },
         {
-          title: "Chapter 2",
+          title: "Section 2",
           subsections: [
             {
               title: "Advanced theories",
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
           ]
         },
         {
-          title: "Chapter 3",
+          title: "Section 3",
           subsections: [
             {
               title: "Practical applications",
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
           ]
         },
         {
-          title: "Chapter 4",
+          title: "Section 4",
           subsections: [
             {
               title: "Practical applications",
@@ -81,8 +81,8 @@ export async function POST(request: Request) {
         role: "system",
         content:
           "You are an AI assistant specialized in creating study guides. " +
-          "When given a topic, create a very detailed outline that encompasses all that needs to be known for the topic. " +
-          "Generate a very dynamic outline. When asked about a specific subtopic, provide detailed notes. " +
+          "When given an outline is clicked, create a very detailed sub-outline that encompasses all that needs to be known for the outline. " +
+          "Generate a very dynamic sub-outline. When asked about a specific outline, provide detailed sub-outline. " +
           "THE OUTPUT SHOULD ALWAYS BE JSON. For example: " +
           exampleOutlineJson
       },

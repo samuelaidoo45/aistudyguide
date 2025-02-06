@@ -43,7 +43,7 @@ const Home: React.FC = () => {
   }
 
   async function fetchSubOutline(subtopic: string, mainTopic: string): Promise<Outline> {
-    const res = await fetch("/api/generateOutline", {
+    const res = await fetch("/api/generateSubOutline", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -55,7 +55,10 @@ const Home: React.FC = () => {
     return res.json();
   }
 
-  async function fetchNotes(
+  // Updated: Streaming version for fetching notes.
+  // Stops spinner as soon as the first chunk arrives.
+  // Accumulates all stream data, then at the end parses the JSON and returns only the notes attribute.
+  async function fetchNotesStream(
     subsubTitle: string,
     mainTopic: string,
     parentTopic: string
@@ -64,15 +67,41 @@ const Home: React.FC = () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        subtopic: `Based on the main topic ${mainTopic} and ${parentTopic}, generate detailed notes on "${subsubTitle}"`,
+        subtopic: `Based on ${mainTopic} and ${parentTopic}, generate detailed notes on "${subsubTitle}"`,
         sectionTitle: parentTopic,
         title: `${parentTopic} (sub)`,
         action: "generateNotes",
       }),
     });
     if (!res.ok) throw new Error("Failed to fetch notes");
-    const data = await res.json();
-    return data.notes;
+
+    let accumulatedContent = "";
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error("ReadableStream not supported in this browser");
+    const decoder = new TextDecoder("utf-8");
+    let firstChunkReceived = false;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      accumulatedContent += chunk;
+      // Remove newlines from the current accumulation
+      const formatted = accumulatedContent.replace(/\n/g, " ");
+      setFinalContent(formatted);
+      if (!firstChunkReceived) {
+        setLoading(false);
+        firstChunkReceived = true;
+      }
+    }
+    // When the stream is complete, try to parse the JSON and extract only the "notes" attribute.
+    try {
+      const parsed = JSON.parse(accumulatedContent);
+      return parsed.notes.replace(/\n/g, " ");
+    } catch (error) {
+      // If parsing fails, return the accumulated text as is.
+      return accumulatedContent.replace(/\n/g, " ");
+    }
   }
 
   // Handlers for user actions
@@ -94,7 +123,6 @@ const Home: React.FC = () => {
       setTopic(currentTopic);
     } catch (err) {
       setError((err as Error).message);
-      // Save this callback to re-run handleBreakdown with the current topic
       setReloadCallback(() => () => handleBreakdown(currentTopic));
     } finally {
       setLoading(false);
@@ -133,10 +161,13 @@ const Home: React.FC = () => {
         setFinalContent(finalContentCache.current[subsubTitle]);
         setView("finalContent");
       } else {
-        const notes = await fetchNotes(subsubTitle, topic, selectedSubtopic);
+        // Clear any previous content and switch view immediately.
+        setFinalContent("");
+        setView("finalContent");
+        // Stream the notes and extract only the "notes" attribute.
+        const notes = await fetchNotesStream(subsubTitle, topic, selectedSubtopic);
         finalContentCache.current[subsubTitle] = notes;
         setFinalContent(notes);
-        setView("finalContent");
       }
     } catch (err) {
       setError((err as Error).message);
@@ -184,18 +215,6 @@ const Home: React.FC = () => {
     setFinalContent(null);
   }
 
-  // New: Download and Audio handlers
-  // function handleDownloadPDF() {
-  //   if (!finalContent) return;
-  //   // Create a temporary element to extract plain text from the HTML content
-  //   const tempEl = document.createElement("div");
-  //   tempEl.innerHTML = finalContent;
-  //   const text = tempEl.textContent || tempEl.innerText || "";
-  //   const doc = new jsPDF();
-  //   doc.text(text, 10, 10);
-  //   doc.save(`${selectedSubtopic}.pdf`);
-  // }
-
   function handleDownloadWord() {
     if (!finalContent) return;
     const tempEl = document.createElement("div");
@@ -209,19 +228,6 @@ const Home: React.FC = () => {
     link.click();
     URL.revokeObjectURL(url);
   }
-
-  // function handleReadAudio() {
-  //   if (!finalContent) return;
-  //   if (window.speechSynthesis) {
-  //     const tempEl = document.createElement("div");
-  //     tempEl.innerHTML = finalContent;
-  //     const text = tempEl.textContent || tempEl.innerText || "";
-  //     const utterance = new SpeechSynthesisUtterance(text);
-  //     window.speechSynthesis.speak(utterance);
-  //   } else {
-  //     alert("Text-to-speech is not supported in this browser.");
-  //   }
-  // }
 
   // Predefined topics for quick selection
   const predefinedTopics = [
@@ -252,11 +258,8 @@ const Home: React.FC = () => {
 
       <Script id="firebase-init" type="module">
         {`
-          // Import the functions you need from the SDKs you need
           import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
           import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-
-          // Your web app's Firebase configuration
           const firebaseConfig = {
             apiKey: "AIzaSyCvbIzN5y8jtF11IStMvb4tSAzflagR5Jg",
             authDomain: "studyguide-9ebf2.firebaseapp.com",
@@ -266,8 +269,6 @@ const Home: React.FC = () => {
             appId: "1:264351112015:web:2d95cd0899eb4ce08e033a",
             measurementId: "G-W4NYWX6KHG"
           };
-
-          // Initialize Firebase
           const app = initializeApp(firebaseConfig);
           const analytics = getAnalytics(app);
         `}
@@ -277,54 +278,42 @@ const Home: React.FC = () => {
         <header className="header">
           <h1>StudyGuide</h1>
           <p>Your dynamic study guide generator powered by AI</p>
-          <button
-            className="theme-toggle"
-            onClick={() => setDarkMode((prev) => !prev)}
-          >
+          <button className="theme-toggle" onClick={() => setDarkMode((prev) => !prev)}>
             {darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           </button>
         </header>
         <main className="wrapper">
-          {/* Predefined Topics Section */}
           {view === "input" && (
-            <div className="predefined-topics">
-              {predefinedTopics.map((pre, idx) => (
-                <button
-                  key={idx}
-                  className="topic-button"
-                  onClick={() => handleBreakdown(pre)}
-                >
-                  {pre}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {view === "input" && (
-            <div className="card">
-              <h2>Study Any Topic</h2>
-              <div className="input-group">
-                <input
-                  type="text"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Enter a topic to understand..."
-                  className="input-text"
-                />
-                <button onClick={() => handleBreakdown()} className="btn btn-primary">
-                  <i data-lucide="lightbulb"></i> Break It Down
-                </button>
+            <>
+              <div className="predefined-topics">
+                {predefinedTopics.map((pre, idx) => (
+                  <button key={idx} className="topic-button" onClick={() => handleBreakdown(pre)}>
+                    {pre}
+                  </button>
+                ))}
               </div>
-              {error && <div className="error">{error}</div>}
-            </div>
+              <div className="card">
+                <h2>Study Any Topic</h2>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="Enter a topic to understand..."
+                    className="input-text"
+                  />
+                  <button onClick={() => handleBreakdown()} className="btn btn-primary">
+                    <i data-lucide="lightbulb"></i> Break It Down
+                  </button>
+                </div>
+                {error && <div className="error">{error}</div>}
+              </div>
+            </>
           )}
 
           {view === "mainOutline" && mainOutline && (
             <div className="card card-outline">
-              <button
-                className="back-button"
-                onClick={() => setView("input")}
-              >
+              <button className="back-button" onClick={() => setView("input")}>
                 ← Back
               </button>
               <h2>{mainOutline.topic}</h2>
@@ -369,9 +358,7 @@ const Home: React.FC = () => {
                         <div
                           key={j}
                           className="subtopic-item"
-                          onClick={() =>
-                            handleSelectFinalContent(subsec.title)
-                          }
+                          onClick={() => handleSelectFinalContent(subsec.title)}
                         >
                           <span>{subsec.title}</span>
                           <i data-lucide="chevron-right"></i>
@@ -391,6 +378,7 @@ const Home: React.FC = () => {
               </button>
               <h2>{selectedSubtopic}</h2>
               <div className="final-content-card">
+                {/* Render only the "notes" content (which is now a plain HTML string) */}
                 <div
                   className="final-content-html"
                   dangerouslySetInnerHTML={{ __html: finalContent }}
@@ -407,9 +395,7 @@ const Home: React.FC = () => {
                   />
                   <button
                     onClick={() => {
-                      const input = document.getElementById(
-                        "questionInput"
-                      ) as HTMLInputElement;
+                      const input = document.getElementById("questionInput") as HTMLInputElement;
                       if (input) {
                         handleAskQuestion(input.value);
                         input.value = "";
@@ -421,17 +407,13 @@ const Home: React.FC = () => {
                   </button>
                 </div>
               </div>
-              {/* New: Download and Audio Buttons */}
-              <div className="download-read-container" style={{ display: "flex", gap: "1rem", marginTop: "1rem", justifyContent: "center" }}>
-                {/* <button onClick={handleDownloadPDF} className="btn btn-primary">
-                  Download PDF
-                </button> */}
+              <div
+                className="download-read-container"
+                style={{ display: "flex", gap: "1rem", marginTop: "1rem", justifyContent: "center" }}
+              >
                 <button onClick={handleDownloadWord} className="btn btn-primary">
                   Download Word
                 </button>
-                {/* <button onClick={handleReadAudio} className="btn btn-primary">
-                  Read Audio
-                </button> */}
               </div>
             </div>
           )}
@@ -451,10 +433,7 @@ const Home: React.FC = () => {
                 >
                   Reload
                 </button>
-                <button
-                  className="error-button close"
-                  onClick={() => setError(null)}
-                >
+                <button className="error-button close" onClick={() => setError(null)}>
                   Close
                 </button>
               </div>
@@ -467,8 +446,32 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
-
       <style jsx global>{`
+        /* =====================================
+           Final Content Streaming Styles (Dynamic)
+        ===================================== */
+        .final-content-card {
+          /* Removed fixed height & scrolling */
+          padding: 1rem;
+          background-color: var(--white);
+          border-radius: 0.75rem;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+          margin-bottom: 1rem;
+        }
+        .final-content-html {
+          white-space: pre-wrap;
+          transition: all 0.3s ease;
+          font-family: 'Poppins', sans-serif;
+          font-size: 1rem;
+          line-height: 1.5;
+          padding: 0.5rem;
+        }
+        /* =====================================
+           (Other existing styles unchanged)
+        ===================================== */
+      `}</style>
+
+<style jsx global>{`
         /* =====================================
            1. Root Variables
         ===================================== */
@@ -1377,5 +1380,4 @@ body {
 };
 
 export default Home;
-
 
