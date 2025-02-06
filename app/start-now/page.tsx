@@ -26,6 +26,8 @@ const Home: React.FC = () => {
   const [finalContent, setFinalContent] = useState<string | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<string>("");
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  // New: Track when streaming is complete.
+  const [streamingDone, setStreamingDone] = useState<boolean>(false);
 
   // Cache generated outlines and notes using useRef
   const outlineCache = useRef<{ [key: string]: Outline }>({});
@@ -55,9 +57,9 @@ const Home: React.FC = () => {
     return res.json();
   }
 
-  // Updated: Streaming version for fetching notes.
-  // Stops spinner as soon as the first chunk arrives.
-  // Accumulates all stream data, then at the end parses the JSON and returns only the notes attribute.
+  // Streaming version for fetching notes.
+  // As soon as the first chunk arrives, stop the spinner.
+  // Once complete, parse the accumulated JSON and return only the "notes" attribute.
   async function fetchNotesStream(
     subsubTitle: string,
     mainTopic: string,
@@ -86,7 +88,7 @@ const Home: React.FC = () => {
       if (done) break;
       const chunk = decoder.decode(value, { stream: true });
       accumulatedContent += chunk;
-      // Remove newlines from the current accumulation
+      // Remove newlines from the accumulated content so JSON artifacts don't show
       const formatted = accumulatedContent.replace(/\n/g, " ");
       setFinalContent(formatted);
       if (!firstChunkReceived) {
@@ -94,12 +96,12 @@ const Home: React.FC = () => {
         firstChunkReceived = true;
       }
     }
-    // When the stream is complete, try to parse the JSON and extract only the "notes" attribute.
+    // When the stream is complete, mark streaming as done.
+    setStreamingDone(true);
     try {
       const parsed = JSON.parse(accumulatedContent);
       return parsed.notes.replace(/\n/g, " ");
-    } catch (error) {
-      // If parsing fails, return the accumulated text as is.
+    } catch (_error) {
       return accumulatedContent.replace(/\n/g, " ");
     }
   }
@@ -151,20 +153,22 @@ const Home: React.FC = () => {
       setLoading(false);
     }
   }
-
   async function handleSelectFinalContent(subsubTitle: string) {
     if (!topic || !selectedSubtopic) return;
     setLoading(true);
     setError(null);
+    // Reset streaming state when starting a new stream.
+    setStreamingDone(false);
     try {
       if (finalContentCache.current[subsubTitle]) {
         setFinalContent(finalContentCache.current[subsubTitle]);
         setView("finalContent");
+        // If data is already cached, show the back button immediately.
+        setStreamingDone(true);
       } else {
-        // Clear any previous content and switch view immediately.
+        // Clear previous content and switch to final view.
         setFinalContent("");
         setView("finalContent");
-        // Stream the notes and extract only the "notes" attribute.
         const notes = await fetchNotesStream(subsubTitle, topic, selectedSubtopic);
         finalContentCache.current[subsubTitle] = notes;
         setFinalContent(notes);
@@ -176,6 +180,7 @@ const Home: React.FC = () => {
       setLoading(false);
     }
   }
+  
 
   async function handleAskQuestion(question: string) {
     if (!question.trim() || !selectedSubtopic) return;
@@ -208,11 +213,13 @@ const Home: React.FC = () => {
     setSubOutline(null);
     setFinalContent(null);
     setSelectedSubtopic("");
+    setStreamingDone(false);
   }
 
   function handleBackToSubOutline() {
     setView("subOutline");
     setFinalContent(null);
+    setStreamingDone(false);
   }
 
   function handleDownloadWord() {
@@ -373,12 +380,14 @@ const Home: React.FC = () => {
 
           {view === "finalContent" && finalContent && (
             <div className="card card-outline">
-              <button className="back-button" onClick={handleBackToSubOutline}>
-                ← Back
-              </button>
+              {/* Back button only appears when streaming is complete */}
+              {streamingDone && (
+                <button className="back-button" onClick={handleBackToSubOutline}>
+                  ← Back
+                </button>
+              )}
               <h2>{selectedSubtopic}</h2>
               <div className="final-content-card">
-                {/* Render only the "notes" content (which is now a plain HTML string) */}
                 <div
                   className="final-content-html"
                   dangerouslySetInnerHTML={{ __html: finalContent }}
@@ -451,7 +460,7 @@ const Home: React.FC = () => {
            Final Content Streaming Styles (Dynamic)
         ===================================== */
         .final-content-card {
-          /* Removed fixed height & scrolling */
+          /* No fixed height or scrolling – expands dynamically */
           padding: 1rem;
           background-color: var(--white);
           border-radius: 0.75rem;
@@ -470,8 +479,7 @@ const Home: React.FC = () => {
            (Other existing styles unchanged)
         ===================================== */
       `}</style>
-
-<style jsx global>{`
+          <style jsx global>{`
         /* =====================================
            1. Root Variables
         ===================================== */
@@ -1380,4 +1388,5 @@ body {
 };
 
 export default Home;
+
 

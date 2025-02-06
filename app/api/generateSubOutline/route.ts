@@ -81,8 +81,8 @@ export async function POST(request: Request) {
         role: "system",
         content:
           "You are an AI assistant specialized in creating study guides. " +
-          "When given an outline is clicked, create a very detailed sub-outline that encompasses all that needs to be known for the outline. " +
-          "Generate a very dynamic sub-outline. When asked about a specific outline, provide detailed sub-outline. " +
+          "When given an outline is clicked, create a very concise sub-outline that encompasses all that needs to be known for the outline. " +
+          "Generate a very dynamic sub-outline. When asked about a specific outline, provide concise sub-outline. " +
           "THE OUTPUT SHOULD ALWAYS BE JSON. For example: " +
           exampleOutlineJson
       },
