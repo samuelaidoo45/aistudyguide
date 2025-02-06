@@ -102,7 +102,7 @@ const Home: React.FC = () => {
       const parsed = JSON.parse(accumulatedContent);
       return parsed.notes.replace(/\n/g, " ");
     } catch (error) {
-      console.error( error);
+      console.error(error);
       return accumulatedContent.replace(/\n/g, " ");
     }
   }

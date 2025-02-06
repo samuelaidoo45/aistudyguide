@@ -11,10 +11,10 @@ export async function POST(request: Request) {
     const sectionTitle = input.sectionTitle ?? "Unknown Section";
     const subtopic = input.subtopic ?? "Unknown Subtopic";
 
-    const exampleNotes = {
-      notes: "some notes"
-    };
-    
+    // const exampleNotes = {
+    //   notes: "some notes"
+    // };
+
     // const exampleNotesJson = JSON.stringify(exampleNotes, null, 2);
 
     const messages = [
