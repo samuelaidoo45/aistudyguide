@@ -11,11 +11,6 @@ export async function POST(request: Request) {
     const sectionTitle = input.sectionTitle ?? "Unknown Section";
     const subtopic = input.subtopic ?? "Unknown Subtopic";
 
-    // const exampleNotes = {
-    //   notes: "some notes"
-    // };
-
-    // const exampleNotesJson = JSON.stringify(exampleNotes, null, 2);
 
     const messages = [
       {
@@ -29,7 +24,7 @@ export async function POST(request: Request) {
           " and subtitle " +
           sectionTitle +
           ". " +
-          "The notes should be a string of comprehensive text with all the explanation, examples, etc. formatted with HTML and it should be responsive for each screen size and the font size consistent and readable and also don't styling with colors or background-colors. AND REMOVE ANYTHINK LIKE ```html   " 
+          "The notes should be a string of comprehensive text with all the explanation, examples, etc. formatted with HTML and it should be responsive for each screen size and the font size consistent and readable and also DON'T EVER style with colors or background-colors. AND REMOVE ANYTHINK LIKE ```html   " 
       },
       {
         role: "user", 

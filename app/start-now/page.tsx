@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Script from "next/script";
 
@@ -22,18 +22,49 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [reloadCallback, setReloadCallback] = useState<(() => void) | null>(null);
   const [mainOutline, setMainOutline] = useState<Outline | null>(null);
-  const [subOutline, setSubOutline] = useState<Outline | null>(null);
+  // const [subOutline, setSubOutline] = useState<Outline | null>(null);
   const [finalContent, setFinalContent] = useState<string | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<string>("");
+
   const [darkMode, setDarkMode] = useState<boolean>(false);
-  // New: Track when streaming is complete.
+  // Track when streaming is complete.
   const [streamingDone, setStreamingDone] = useState<boolean>(false);
+  // Track when the sub‑outline streaming is complete.
+  const [subOutlineStreamingDone, setSubOutlineStreamingDone] = useState<boolean>(false);
+  // Store the streaming text (the partial JSON string) as it comes in.
+  // const [subOutlineStreamingText, setSubOutlineStreamingText] = useState<string>("");
+  // This state holds the streamed HTML for the sub‑outline.
+  const [subOutlineHTML, setSubOutlineHTML] = useState("");
+
+  const [selectedSubSubtopic, setSelectedSubSubtopic] = useState<string>("");
 
   // Cache generated outlines and notes using useRef
   const outlineCache = useRef<{ [key: string]: Outline }>({});
   const finalContentCache = useRef<{ [key: string]: string }>({});
+  const subOutlineCache = useRef<{ [key: string]: string }>({});
+
+  // Attach a delegated click event handler for sub-outline items
+  useEffect(() => {
+    if (view === "subOutline" && subOutlineHTML.trim().length > 0) {
+      const container = document.querySelector(".outline-sections");
+      if (!container) return;
+      const clickHandler = (e: MouseEvent) => {
+        const target = (e.target as HTMLElement).closest(".subtopic-item");
+        if (target) {
+          // Extract the subtopic title from the contained <span>
+          const span = target.querySelector("span");
+          if (span && span.textContent) {
+            handleSelectFinalContent(span.textContent);
+          }
+        }
+      };
+      container.addEventListener("click", clickHandler as EventListener);
+      return () => container.removeEventListener("click", clickHandler as EventListener);
+    }
+  }, [view, subOutlineHTML]);
 
   // API helper functions
+
   async function fetchOutline(topic: string): Promise<Outline> {
     const res = await fetch("/api/generateOutline", {
       method: "POST",
@@ -44,22 +75,67 @@ const Home: React.FC = () => {
     return res.json();
   }
 
-  async function fetchSubOutline(subtopic: string, mainTopic: string): Promise<Outline> {
-    const res = await fetch("/api/generateSubOutline", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        topic: `Based on the main topic "${mainTopic}", generate detailed outline on "${subtopic}"`,
-        action: "generateOutline",
-      }),
-    });
-    if (!res.ok) throw new Error("Failed to fetch sub‑outline");
-    return res.json();
+ 
+/**
+ * Streams HTML from your API.
+ * It updates subOutlineHTML in real time.
+ * As soon as the first non‑empty chunk arrives, it stops the loader.
+ */
+async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): Promise<string> {
+  const res = await fetch("/api/generateSubOutline", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      topic: `Generate the sub-outline HTML for "${subtopic}" based on the main topic "${mainTopic}"`,
+      action: "generateOutlineHTML", // Use this action for HTML streaming.
+    }),
+  });
+  if (!res.ok) throw new Error("Failed to fetch sub‑outline");
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("ReadableStream not supported in this browser");
+
+  const decoder = new TextDecoder("utf-8");
+  let accumulatedHTML = "";
+  let firstChunkReceived = false;
+  let lastUpdate = Date.now();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    // Decode the incoming chunk and remove any markdown artifacts
+    let chunk = decoder.decode(value, { stream: true });
+    chunk = chunk.replace(/```html/g, "").replace(/```/g, "");
+    accumulatedHTML += chunk;
+
+    // Force an update every 50ms or when a closing div is included for smoother rendering
+    const now = Date.now();
+    if (now - lastUpdate > 50 || chunk.includes("</div>")) {
+      setSubOutlineHTML(accumulatedHTML);
+      // Stop the loader if the first non-empty chunk has been received.
+      if (!firstChunkReceived && accumulatedHTML.trim().length > 0) {
+        setLoading(false);
+        firstChunkReceived = true;
+      }
+      lastUpdate = now;
+    }
+
+    // Yield to the event loop to ensure UI updates
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
-  // Streaming version for fetching notes.
-  // As soon as the first chunk arrives, stop the spinner.
-  // Once complete, parse the accumulated JSON and return only the "notes" attribute.
+  // Final cleanup: Remove newlines and extra spaces between closing and opening divs.
+  const cleanHTML = accumulatedHTML
+    .replace(/(\r\n|\n|\r)/gm, "")
+    .replace(/<\/div>\s*<div/g, "</div><div");
+  setSubOutlineHTML(cleanHTML);
+  setSubOutlineStreamingDone(true);
+
+  return cleanHTML;
+}
+
+
   async function fetchNotesStream(
     subsubTitle: string,
     mainTopic: string,
@@ -88,7 +164,6 @@ const Home: React.FC = () => {
       if (done) break;
       const chunk = decoder.decode(value, { stream: true });
       accumulatedContent += chunk;
-      // Remove newlines from the accumulated content so JSON artifacts don't show
       const formatted = accumulatedContent.replace(/\n/g, " ");
       setFinalContent(formatted);
       if (!firstChunkReceived) {
@@ -96,18 +171,13 @@ const Home: React.FC = () => {
         firstChunkReceived = true;
       }
     }
-    // When the stream is complete, mark streaming as done.
     setStreamingDone(true);
-    try {
-      const parsed = JSON.parse(accumulatedContent);
-      return parsed.notes.replace(/\n/g, " ");
-    } catch (error) {
-      console.error(error);
-      return accumulatedContent.replace(/\n/g, " ");
-    }
+
+    return accumulatedContent;
   }
 
   // Handlers for user actions
+
   async function handleBreakdown(newTopic?: string) {
     const currentTopic = newTopic ?? topic;
     if (!currentTopic.trim()) return;
@@ -132,20 +202,31 @@ const Home: React.FC = () => {
     }
   }
 
+  // Updated handler: Use HTML streaming so that the sub-outline displays in real time.
   async function handleSelectSubtopic(subtopic: string) {
     if (!topic) return;
     setLoading(true);
     setError(null);
     setSelectedSubtopic(subtopic);
+    // Reset streaming states before fetching.
+    setSubOutlineStreamingDone(false);
+    // setSubOutlineStreamingText("");
+    setSubOutlineHTML(""); // Clear previous HTML if any.
+    // Immediately update the view so that the sub‑outline container is visible.
+    setView("subOutline");
+
     try {
-      if (outlineCache.current[subtopic]) {
-        setSubOutline(outlineCache.current[subtopic]);
-        setView("subOutline");
+      // Check if we have cached HTML for this subtopic.
+      if (subOutlineCache.current[subtopic]) {
+        setSubOutlineHTML(subOutlineCache.current[subtopic]);
+        setSubOutlineStreamingDone(true);
+        setLoading(false);
       } else {
-        const subOutlineData = await fetchSubOutline(subtopic, topic);
-        outlineCache.current[subtopic] = subOutlineData;
-        setSubOutline(subOutlineData);
-        setView("subOutline");
+        const html = await fetchSubOutlineHTMLStream(subtopic, topic);
+        // Cache the HTML for later use.
+        subOutlineCache.current[subtopic] = html;
+        setSubOutlineHTML(html);
+        setSubOutlineStreamingDone(true);
       }
     } catch (err) {
       setError((err as Error).message);
@@ -154,22 +235,23 @@ const Home: React.FC = () => {
       setLoading(false);
     }
   }
+
+  
+
   async function handleSelectFinalContent(subsubTitle: string) {
     if (!topic || !selectedSubtopic) return;
     setLoading(true);
     setError(null);
-    // Reset streaming state when starting a new stream.
     setStreamingDone(false);
     try {
       if (finalContentCache.current[subsubTitle]) {
         setFinalContent(finalContentCache.current[subsubTitle]);
         setView("finalContent");
-        // If data is already cached, show the back button immediately.
         setStreamingDone(true);
       } else {
-        // Clear previous content and switch to final view.
         setFinalContent("");
         setView("finalContent");
+        setSelectedSubSubtopic(subsubTitle);
         const notes = await fetchNotesStream(subsubTitle, topic, selectedSubtopic);
         finalContentCache.current[subsubTitle] = notes;
         setFinalContent(notes);
@@ -181,7 +263,6 @@ const Home: React.FC = () => {
       setLoading(false);
     }
   }
-  
 
   async function handleAskQuestion(question: string) {
     if (!question.trim() || !selectedSubtopic) return;
@@ -211,10 +292,11 @@ const Home: React.FC = () => {
 
   function handleBackToMainOutline() {
     setView("mainOutline");
-    setSubOutline(null);
+    // setSubOutline(null);
     setFinalContent(null);
     setSelectedSubtopic("");
     setStreamingDone(false);
+    setSubOutlineStreamingDone(false);
   }
 
   function handleBackToSubOutline() {
@@ -324,7 +406,7 @@ const Home: React.FC = () => {
               <button className="back-button" onClick={() => setView("input")}>
                 ← Back
               </button>
-              <h2>{mainOutline.topic}</h2>
+              <h3>{mainOutline.topic}</h3>
               <div className="outline-sections">
                 {mainOutline.sections.map((section, i) => (
                   <div key={i} className="section-card">
@@ -349,45 +431,29 @@ const Home: React.FC = () => {
             </div>
           )}
 
-          {view === "subOutline" && subOutline && (
+          {view === "subOutline" &&  (
             <div className="card card-outline">
+               {subOutlineStreamingDone && (
               <button className="back-button" onClick={handleBackToMainOutline}>
                 ← Back
               </button>
-              <h2>{selectedSubtopic}</h2>
-              <div className="outline-sections">
-                {subOutline.sections.map((section, i) => (
-                  <div key={i} className="section-card">
-                    <h3 className="section-title">
-                      <i data-lucide="chevron-down"></i> {section.title}
-                    </h3>
-                    <div className="subsection-container">
-                      {section.subsections.map((subsec, j) => (
-                        <div
-                          key={j}
-                          className="subtopic-item"
-                          onClick={() => handleSelectFinalContent(subsec.title)}
-                        >
-                          <span>{subsec.title}</span>
-                          <i data-lucide="chevron-right"></i>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            )}
+                <h3>{topic} &gt; {selectedSubtopic}</h3>              {/* Always render the (partial) HTML so streaming is visible in real time */}
+              <div
+                className="outline-sections"
+                dangerouslySetInnerHTML={{ __html: subOutlineHTML }}
+              ></div>
             </div>
           )}
 
           {view === "finalContent" && finalContent && (
             <div className="card card-outline">
-              {/* Back button only appears when streaming is complete */}
               {streamingDone && (
                 <button className="back-button" onClick={handleBackToSubOutline}>
                   ← Back
                 </button>
               )}
-              <h2>{selectedSubtopic}</h2>
+                <h3>{topic} &gt; {selectedSubtopic} &gt; {selectedSubSubtopic}</h3>              
               <div className="final-content-card">
                 <div
                   className="final-content-html"
@@ -456,12 +522,12 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
+
       <style jsx global>{`
         /* =====================================
            Final Content Streaming Styles (Dynamic)
         ===================================== */
         .final-content-card {
-          /* No fixed height or scrolling – expands dynamically */
           padding: 1rem;
           background-color: var(--white);
           border-radius: 0.75rem;
@@ -477,10 +543,59 @@ const Home: React.FC = () => {
           padding: 0.5rem;
         }
         /* =====================================
-           (Other existing styles unchanged)
+           Streaming Indicator
         ===================================== */
+        .streaming-indicator {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-weight: bold;
+          justify-content: center;
+          padding: 1rem;
+          flex-direction: column;
+        }
+        .streaming-text {
+          max-width: 90%;
+          white-space: pre-wrap;
+          font-family: monospace;
+          font-size: 0.9rem;
+          background: #f0f0f0;
+          padding: 0.5rem;
+          border-radius: 4px;
+          overflow-x: auto;
+        }
+        .spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(0,0,0,0.2);
+          border-top-color: rgba(0,0,0,0.8);
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        /* Add to global styles */
+.subtopic-item.streaming {
+  animation: pulse 1.5s infinite;
+  position: relative;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+  100% { opacity: 0.8; }
+}
+
+.subtopic-item.streaming::after {
+  content: "🔄 Streaming...";
+  position: absolute;
+  right: 40px;
+  color: var(--indigo-500);
+  font-size: 0.8em;
+}
       `}</style>
-          <style jsx global>{`
+    <style jsx global>{`
         /* =====================================
            1. Root Variables
         ===================================== */
@@ -1384,10 +1499,12 @@ body {
   }
 }
       `}</style>
+
     </>
   );
 };
 
 export default Home;
+
 
 
