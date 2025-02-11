@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -16,6 +17,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "StudyGuide",
   description: "Reduce Your Study Time with StudyGuide",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -25,6 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+     
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
