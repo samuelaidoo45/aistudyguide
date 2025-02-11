@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from "next/image"; // Import Image component from Next.js
+
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -29,9 +31,11 @@ const Navbar = () => {
   return (
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="navbar-container">
+        {/* Logo */}
         <Link href="/" className="navbar-logo">
-          StudyGuide
+          <Image src="/images/logo.png" alt="StudyGuide Logo" width={150} height={50} />
         </Link>
+
 
         {/* Hamburger Button (Visible on Mobile) */}
         <button
