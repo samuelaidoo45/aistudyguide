@@ -4,46 +4,53 @@ import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Script from "next/script";
 
-interface Outline {
-  topic: string;
-  sections: {
-    title: string;
-    subsections: { title: string }[];
-  }[];
-}
-
 type ViewState = "input" | "mainOutline" | "subOutline" | "finalContent";
 
 const Home: React.FC = () => {
-  // Light mode is default
+  // Topic and view states.
   const [topic, setTopic] = useState<string>("");
   const [view, setView] = useState<ViewState>("input");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [reloadCallback, setReloadCallback] = useState<(() => void) | null>(null);
-  const [mainOutline, setMainOutline] = useState<Outline | null>(null);
-  // const [subOutline, setSubOutline] = useState<Outline | null>(null);
-  const [finalContent, setFinalContent] = useState<string | null>(null);
-  const [selectedSubtopic, setSelectedSubtopic] = useState<string>("");
-
-  const [darkMode, setDarkMode] = useState<boolean>(false);
-  // Track when streaming is complete.
-  const [streamingDone, setStreamingDone] = useState<boolean>(false);
-  // Track when the sub‑outline streaming is complete.
-  const [subOutlineStreamingDone, setSubOutlineStreamingDone] = useState<boolean>(false);
-  // Store the streaming text (the partial JSON string) as it comes in.
-  // const [subOutlineStreamingText, setSubOutlineStreamingText] = useState<string>("");
-  // This state holds the streamed HTML for the sub‑outline.
+  // Caches for already streamed HTML.
+  const mainOutlineCache = useRef<{ [key: string]: string }>({});
+  const subOutlineCache = useRef<{ [key: string]: string }>({});
+  const finalContentCache = useRef<{ [key: string]: string }>({});
+  
+  // State for streamed HTML.
+  const [mainOutlineHTML, setMainOutlineHTML] = useState("");
   const [subOutlineHTML, setSubOutlineHTML] = useState("");
+  const [finalContent, setFinalContent] = useState<string | null>(null);
 
+  const [selectedSubtopic, setSelectedSubtopic] = useState<string>("");
   const [selectedSubSubtopic, setSelectedSubSubtopic] = useState<string>("");
 
-  // Cache generated outlines and notes using useRef
-  const outlineCache = useRef<{ [key: string]: Outline }>({});
-  const finalContentCache = useRef<{ [key: string]: string }>({});
-  const subOutlineCache = useRef<{ [key: string]: string }>({});
+  // Streaming completion states.
+  const [streamingDone, setStreamingDone] = useState<boolean>(false);
+  const [subOutlineStreamingDone, setSubOutlineStreamingDone] = useState<boolean>(false);
 
-  // Attach a delegated click event handler for sub-outline items
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [reloadCallback, setReloadCallback] = useState<(() => void) | null>(null);
+
+  // Attach delegated click handlers for both main and sub-outline containers.
+  useEffect(() => {
+    if (view === "mainOutline" && mainOutlineHTML.trim().length > 0) {
+      const container = document.querySelector(".outline-sections");
+      if (!container) return;
+      const clickHandler = (e: MouseEvent) => {
+        const target = (e.target as HTMLElement).closest(".subtopic-item");
+        if (target) {
+          const span = target.querySelector("span");
+          if (span && span.textContent) {
+            handleSelectSubtopic(span.textContent);
+          }
+        }
+      };
+      container.addEventListener("click", clickHandler as EventListener);
+      return () => container.removeEventListener("click", clickHandler as EventListener);
+    }
+  }, [view, mainOutlineHTML]);
+
   useEffect(() => {
     if (view === "subOutline" && subOutlineHTML.trim().length > 0) {
       const container = document.querySelector(".outline-sections");
@@ -51,7 +58,6 @@ const Home: React.FC = () => {
       const clickHandler = (e: MouseEvent) => {
         const target = (e.target as HTMLElement).closest(".subtopic-item");
         if (target) {
-          // Extract the subtopic title from the contained <span>
           const span = target.querySelector("span");
           if (span && span.textContent) {
             handleSelectFinalContent(span.textContent);
@@ -63,79 +69,93 @@ const Home: React.FC = () => {
     }
   }, [view, subOutlineHTML]);
 
-  // API helper functions
-
-  async function fetchOutline(topic: string): Promise<Outline> {
+  // Helper: Stream main outline HTML
+  async function fetchMainOutlineHTMLStream(topic: string): Promise<string> {
     const res = await fetch("/api/generateOutline", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic, action: "generateOutline" }),
+      body: JSON.stringify({ topic, action: "generateOutlineHTML" }),
     });
-    if (!res.ok) throw new Error("Failed to fetch outline");
-    return res.json();
-  }
+    if (!res.ok) throw new Error("Failed to fetch main outline");
 
- 
-/**
- * Streams HTML from your API.
- * It updates subOutlineHTML in real time.
- * As soon as the first non‑empty chunk arrives, it stops the loader.
- */
-async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): Promise<string> {
-  const res = await fetch("/api/generateSubOutline", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      topic: `Generate the sub-outline HTML for "${subtopic}" based on the main topic "${mainTopic}"`,
-      action: "generateOutlineHTML", // Use this action for HTML streaming.
-    }),
-  });
-  if (!res.ok) throw new Error("Failed to fetch sub‑outline");
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error("ReadableStream not supported in this browser");
 
-  const reader = res.body?.getReader();
-  if (!reader) throw new Error("ReadableStream not supported in this browser");
+    const decoder = new TextDecoder("utf-8");
+    let accumulatedHTML = "";
+    let firstChunkReceived = false;
+    let lastUpdate = Date.now();
 
-  const decoder = new TextDecoder("utf-8");
-  let accumulatedHTML = "";
-  let firstChunkReceived = false;
-  let lastUpdate = Date.now();
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    // Decode the incoming chunk and remove any markdown artifacts
-    let chunk = decoder.decode(value, { stream: true });
-    chunk = chunk.replace(/```html/g, "").replace(/```/g, "");
-    accumulatedHTML += chunk;
-
-    // Force an update every 50ms or when a closing div is included for smoother rendering
-    const now = Date.now();
-    if (now - lastUpdate > 50 || chunk.includes("</div>")) {
-      setSubOutlineHTML(accumulatedHTML);
-      // Stop the loader if the first non-empty chunk has been received.
-      if (!firstChunkReceived && accumulatedHTML.trim().length > 0) {
-        setLoading(false);
-        firstChunkReceived = true;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      let chunk = decoder.decode(value, { stream: true });
+      chunk = chunk.replace(/```html/g, "").replace(/```/g, "");
+      accumulatedHTML += chunk;
+      const now = Date.now();
+      if (now - lastUpdate > 50 || chunk.includes("</div>")) {
+        setMainOutlineHTML(accumulatedHTML);
+        if (!firstChunkReceived && accumulatedHTML.trim().length > 0) {
+          setLoading(false);
+          firstChunkReceived = true;
+        }
+        lastUpdate = now;
       }
-      lastUpdate = now;
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
-
-    // Yield to the event loop to ensure UI updates
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    const cleanHTML = accumulatedHTML
+      .replace(/(\r\n|\n|\r)/gm, "")
+      .replace(/<\/div>\s*<div/g, "</div><div");
+    setMainOutlineHTML(cleanHTML);
+    return cleanHTML;
   }
 
-  // Final cleanup: Remove newlines and extra spaces between closing and opening divs.
-  const cleanHTML = accumulatedHTML
-    .replace(/(\r\n|\n|\r)/gm, "")
-    .replace(/<\/div>\s*<div/g, "</div><div");
-  setSubOutlineHTML(cleanHTML);
-  setSubOutlineStreamingDone(true);
+  // Helper: Stream sub-outline HTML (for a selected subtopic)
+  async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): Promise<string> {
+    const res = await fetch("/api/generateSubOutline", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic: `Generate the sub-outline HTML for "${subtopic}" based on the main topic "${mainTopic}"`,
+        action: "generateOutlineHTML",
+      }),
+    });
+    if (!res.ok) throw new Error("Failed to fetch sub‑outline");
 
-  return cleanHTML;
-}
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error("ReadableStream not supported in this browser");
 
+    const decoder = new TextDecoder("utf-8");
+    let accumulatedHTML = "";
+    let firstChunkReceived = false;
+    let lastUpdate = Date.now();
 
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      let chunk = decoder.decode(value, { stream: true });
+      chunk = chunk.replace(/```html/g, "").replace(/```/g, "");
+      accumulatedHTML += chunk;
+      const now = Date.now();
+      if (now - lastUpdate > 50 || chunk.includes("</div>")) {
+        setSubOutlineHTML(accumulatedHTML);
+        if (!firstChunkReceived && accumulatedHTML.trim().length > 0) {
+          setLoading(false);
+          firstChunkReceived = true;
+        }
+        lastUpdate = now;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+    const cleanHTML = accumulatedHTML
+      .replace(/(\r\n|\n|\r)/gm, "")
+      .replace(/<\/div>\s*<div/g, "</div><div");
+    setSubOutlineHTML(cleanHTML);
+    setSubOutlineStreamingDone(true);
+    return cleanHTML;
+  }
+
+  // Helper: Stream detailed notes for a sub‑subtopic
   async function fetchNotesStream(
     subsubTitle: string,
     mainTopic: string,
@@ -172,7 +192,6 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
       }
     }
     setStreamingDone(true);
-
     return accumulatedContent;
   }
 
@@ -183,14 +202,16 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
     if (!currentTopic.trim()) return;
     setLoading(true);
     setError(null);
+    setMainOutlineHTML("");
+    setView("mainOutline");
     try {
-      if (outlineCache.current[currentTopic]) {
-        setMainOutline(outlineCache.current[currentTopic]);
+      if (mainOutlineCache.current[currentTopic]) {
+        setMainOutlineHTML(mainOutlineCache.current[currentTopic]);
         setView("mainOutline");
       } else {
-        const outline = await fetchOutline(currentTopic);
-        outlineCache.current[currentTopic] = outline;
-        setMainOutline(outline);
+        const html = await fetchMainOutlineHTMLStream(currentTopic);
+        mainOutlineCache.current[currentTopic] = html;
+        setMainOutlineHTML(html);
         setView("mainOutline");
       }
       setTopic(currentTopic);
@@ -202,28 +223,22 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
     }
   }
 
-  // Updated handler: Use HTML streaming so that the sub-outline displays in real time.
+  // When a subtopic is selected from the main outline.
   async function handleSelectSubtopic(subtopic: string) {
     if (!topic) return;
     setLoading(true);
     setError(null);
     setSelectedSubtopic(subtopic);
-    // Reset streaming states before fetching.
     setSubOutlineStreamingDone(false);
-    // setSubOutlineStreamingText("");
-    setSubOutlineHTML(""); // Clear previous HTML if any.
-    // Immediately update the view so that the sub‑outline container is visible.
+    setSubOutlineHTML(""); // Clear previous sub‑outline if any.
     setView("subOutline");
-
     try {
-      // Check if we have cached HTML for this subtopic.
       if (subOutlineCache.current[subtopic]) {
         setSubOutlineHTML(subOutlineCache.current[subtopic]);
         setSubOutlineStreamingDone(true);
         setLoading(false);
       } else {
         const html = await fetchSubOutlineHTMLStream(subtopic, topic);
-        // Cache the HTML for later use.
         subOutlineCache.current[subtopic] = html;
         setSubOutlineHTML(html);
         setSubOutlineStreamingDone(true);
@@ -235,8 +250,6 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
       setLoading(false);
     }
   }
-
-  
 
   async function handleSelectFinalContent(subsubTitle: string) {
     if (!topic || !selectedSubtopic) return;
@@ -292,7 +305,7 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
 
   function handleBackToMainOutline() {
     setView("mainOutline");
-    // setSubOutline(null);
+    setSubOutlineHTML("");
     setFinalContent(null);
     setSelectedSubtopic("");
     setStreamingDone(false);
@@ -319,7 +332,7 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
     URL.revokeObjectURL(url);
   }
 
-  // Predefined topics for quick selection
+  // Predefined topics for quick selection.
   const predefinedTopics = [
     "Cryptocurrency",
     "English Literature",
@@ -401,48 +414,26 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
             </>
           )}
 
-          {view === "mainOutline" && mainOutline && (
+          {view === "mainOutline" && mainOutlineHTML && (
             <div className="card card-outline">
               <button className="back-button" onClick={() => setView("input")}>
                 ← Back
               </button>
-              <h3>{mainOutline.topic}</h3>
-              <div className="outline-sections">
-                {mainOutline.sections.map((section, i) => (
-                  <div key={i} className="section-card">
-                    <h3 className="section-title">
-                      <i data-lucide="chevron-down"></i> {section.title}
-                    </h3>
-                    <div className="subsection-container">
-                      {section.subsections.map((subsec, j) => (
-                        <div
-                          key={j}
-                          className="subtopic-item"
-                          onClick={() => handleSelectSubtopic(subsec.title)}
-                        >
-                          <span>{subsec.title}</span>
-                          <i data-lucide="chevron-right"></i>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <h3>{topic}</h3>
+              {/* Render streamed main outline HTML */}
+              <div className="outline-sections" dangerouslySetInnerHTML={{ __html: mainOutlineHTML }}></div>
             </div>
           )}
 
-          {view === "subOutline" &&  (
+          {view === "subOutline" && (
             <div className="card card-outline">
-               {subOutlineStreamingDone && (
-              <button className="back-button" onClick={handleBackToMainOutline}>
-                ← Back
-              </button>
-            )}
-                <h3>{topic} &gt; {selectedSubtopic}</h3>              {/* Always render the (partial) HTML so streaming is visible in real time */}
-              <div
-                className="outline-sections"
-                dangerouslySetInnerHTML={{ __html: subOutlineHTML }}
-              ></div>
+              {subOutlineStreamingDone && (
+                <button className="back-button" onClick={handleBackToMainOutline}>
+                  ← Back
+                </button>
+              )}
+              <h3>{topic} &gt; {selectedSubtopic}</h3>
+              <div className="outline-sections" dangerouslySetInnerHTML={{ __html: subOutlineHTML }}></div>
             </div>
           )}
 
@@ -453,12 +444,9 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
                   ← Back
                 </button>
               )}
-                <h3>{topic} &gt; {selectedSubtopic} &gt; {selectedSubSubtopic}</h3>              
+              <h3>{topic} &gt; {selectedSubtopic} &gt; {selectedSubSubtopic}</h3>
               <div className="final-content-card">
-                <div
-                  className="final-content-html"
-                  dangerouslySetInnerHTML={{ __html: finalContent }}
-                ></div>
+                <div className="final-content-html" dangerouslySetInnerHTML={{ __html: finalContent }}></div>
               </div>
               <div className="dive-deeper-container">
                 <h3>Dive Deeper</h3>
@@ -483,10 +471,7 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
                   </button>
                 </div>
               </div>
-              <div
-                className="download-read-container"
-                style={{ display: "flex", gap: "1rem", marginTop: "1rem", justifyContent: "center" }}
-              >
+              <div className="download-read-container" style={{ display: "flex", gap: "1rem", marginTop: "1rem", justifyContent: "center" }}>
                 <button onClick={handleDownloadWord} className="btn btn-primary">
                   Download Word
                 </button>
@@ -498,15 +483,7 @@ async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): P
             <div className="error-state">
               <p className="error-message">{error}</p>
               <div className="error-buttons">
-                <button
-                  className="error-button reload"
-                  onClick={() => {
-                    if (reloadCallback) {
-                      reloadCallback();
-                      setError(null);
-                    }
-                  }}
-                >
+                <button className="error-button reload" onClick={() => { if (reloadCallback) { reloadCallback(); setError(null); } }}>
                   Reload
                 </button>
                 <button className="error-button close" onClick={() => setError(null)}>
@@ -1500,11 +1477,10 @@ body {
 }
       `}</style>
 
+   
     </>
   );
 };
 
 export default Home;
-
-
 

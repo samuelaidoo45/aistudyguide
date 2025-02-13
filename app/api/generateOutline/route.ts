@@ -7,84 +7,77 @@ export async function POST(request: Request) {
   try {
     const input = await request.json();
 
-    // Make sure the action is for generating an outline
-    if (input.action !== "generateOutline") {
+    // Ensure the action is for generating the main outline in HTML
+    if (input.action !== "generateOutlineHTML") {
       return NextResponse.json(
-        { error: "Invalid action for generateOutline endpoint" },
+        { error: "Invalid action for generateOutlineHTML endpoint" },
         { status: 400 }
       );
     }
 
-    // Create an example outline (as in your Laravel code)
-    const outlineExample = {
-      topic: input.topic,
-      sections: [
-        {
-          title: "Chapter 1",
-          subsections: [
-            {
-              title: "Fundamental principles",
-              explanation: "The basic ideas that form the foundation of this topic."
-            },
-            {
-              title: "Key terminology",
-              explanation: "Essential terms and definitions you need to know."
-            }
-          ]
-        },
-        {
-          title: "Chapter 2",
-          subsections: [
-            {
-              title: "Advanced theories",
-              explanation: "More complex ideas building on the core concepts."
-            },
-            {
-              title: "Current research",
-              explanation: "Recent developments and ongoing studies in this field."
-            }
-          ]
-        },
-        {
-          title: "Chapter 3",
-          subsections: [
-            {
-              title: "Practical applications",
-              explanation: "How this topic is used in everyday life or industry."
-            },
-            {
-              title: "Future implications",
-              explanation: "Potential future developments and their impact."
-            }
-          ]
-        },
-        {
-          title: "Chapter 4",
-          subsections: [
-            {
-              title: "Practical applications",
-              explanation: "How this topic is used in everyday life or industry."
-            },
-            {
-              title: "Future implications",
-              explanation: "Potential future developments and their impact."
-            }
-          ]
-        }
-      ]
-    };
+    // Define an HTML example for demonstration.
+    const htmlExample = `
+<div class="outline-sections">
+  <div class="section-card">
+    <h3 class="section-title">
+      <i data-lucide="chevron-down"></i> Chapter 1
+    </h3>
+    <div class="subsection-container">
+      <div class="subtopic-item">
+        <span>Fundamental principles</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>Key terminology</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+  </div>
+  <div class="section-card">
+    <h3 class="section-title">
+      <i data-lucide="chevron-down"></i> Chapter 2
+    </h3>
+    <div class="subsection-container">
+      <div class="subtopic-item">
+        <span>Advanced theories</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>Current research</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+  </div>
+  <div class="section-card">
+    <h3 class="section-title">
+      <i data-lucide="chevron-down"></i> Chapter 3
+    </h3>
+    <div class="subsection-container">
+      <div class="subtopic-item">
+        <span>Practical applications</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>Future implications</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+  </div>
+</div>
+`;
 
-    const exampleOutlineJson = JSON.stringify(outlineExample, null, 2);
-
+    // Set up the system and user messages.
     const messages = [
       {
         role: "system",
         content:
           "You are an AI assistant specialized in creating study guides. " +
           "When given a topic, create a very detailed outline that encompasses all that needs to be known for the topic. " +
-          "Generate a very dynamic outline. When asked about a specific subtopic, provide detailed notes. " +
-          "THE OUTPUT SHOULD ALWAYS BE JSON. For example: " +
-          exampleOutlineJson
+          "Generate a very dynamic outline and it should be exactly as the example generate the best outline needed. When asked about a specific subtopic, provide detailed notes. " +
+          "Output only a complete HTML snippet that exactly follows the structure below. Do not include any extra commentary or markdown formatting.\n\n" +
+          htmlExample +
+          "\n\n" +
+          "Now, generate the HTML outline for the following topic."
       },
       {
         role: "user",
@@ -93,11 +86,12 @@ export async function POST(request: Request) {
     ];
 
     const chatData = {
-      model: "gpt-4o-mini", // or your chosen model
+      model: "gpt-4o-mini", // or your preferred model
+      stream: true,
       messages
     };
 
-    // Get the OpenAI API key from environment variables
+    // Get the OpenAI API key from environment variables.
     const openaiApiKey = process.env.OPENAI_KEY;
     if (!openaiApiKey) {
       return NextResponse.json(
@@ -107,7 +101,6 @@ export async function POST(request: Request) {
     }
 
     const chatUrl = "https://api.openai.com/v1/chat/completions";
-
     const openaiRes = await fetch(chatUrl, {
       method: "POST",
       headers: {
@@ -125,39 +118,61 @@ export async function POST(request: Request) {
       );
     }
 
-    const responseData = await openaiRes.json();
+    // Create a stream to process the OpenAI response and output HTML as it's received.
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = openaiRes.body?.getReader();
+        if (!reader) {
+          controller.close();
+          return;
+        }
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
 
-    // Check that the response contains the expected content.
-    if (
-      !responseData.choices ||
-      !responseData.choices[0] ||
-      !responseData.choices[0].message ||
-      !responseData.choices[0].message.content
-    ) {
-      return NextResponse.json(
-        { error: "Invalid response structure from OpenAI API" },
-        { status: 500 }
-      );
-    }
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
 
-    // Remove any triple backticks or formatting wrappers.
-    let openaiRawContent = responseData.choices[0].message.content;
-    openaiRawContent = openaiRawContent.replace(/```(json)?/g, "").trim();
+          for (let i = 0; i < lines.length - 1; i++) {
+            let line = lines[i].trim();
+            if (line.startsWith("data:")) {
+              line = line.replace(/^data:\s*/, "");
+              if (line === "[DONE]") continue;
+              try {
+                const parsed = JSON.parse(line);
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  controller.enqueue(new TextEncoder().encode(delta));
+                }
+              } catch (err) {
+                console.error("Error parsing chunk:", err);
+              }
+            }
+          }
+          buffer = lines[lines.length - 1];
+        }
+        if (buffer.trim() && !buffer.includes("[DONE]")) {
+          try {
+            const parsed = JSON.parse(buffer.trim());
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              controller.enqueue(new TextEncoder().encode(delta));
+            }
+          } catch (err) {
+            console.error("Error parsing final buffer:", err);
+          }
+        }
+        controller.close();
+      }
+    });
 
-    let openaiResponse;
-    try {
-      openaiResponse = JSON.parse(openaiRawContent);
-    } catch {
-      return NextResponse.json(
-        {
-          error: "Invalid JSON content in OpenAI response",
-          raw_content: openaiRawContent
-        },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json(openaiResponse);
+    return new NextResponse(stream, {
+      headers: {
+        "Content-Type": "text/event-stream"
+      }
+    });
   } catch (error: unknown) {
     if (error instanceof Error) {
       return NextResponse.json(
