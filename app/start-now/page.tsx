@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Head from "next/head";
 import Script from "next/script";
 
@@ -16,7 +16,7 @@ const Home: React.FC = () => {
   const mainOutlineCache = useRef<{ [key: string]: string }>({});
   const subOutlineCache = useRef<{ [key: string]: string }>({});
   const finalContentCache = useRef<{ [key: string]: string }>({});
-  
+
   // State for streamed HTML.
   const [mainOutlineHTML, setMainOutlineHTML] = useState("");
   const [subOutlineHTML, setSubOutlineHTML] = useState("");
@@ -32,44 +32,65 @@ const Home: React.FC = () => {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [reloadCallback, setReloadCallback] = useState<(() => void) | null>(null);
 
-  // Attach delegated click handlers for both main and sub-outline containers.
-  useEffect(() => {
-    if (view === "mainOutline" && mainOutlineHTML.trim().length > 0) {
-      const container = document.querySelector(".outline-sections");
-      if (!container) return;
-      const clickHandler = (e: MouseEvent) => {
-        const target = (e.target as HTMLElement).closest(".subtopic-item");
-        if (target) {
-          const span = target.querySelector("span");
-          if (span && span.textContent) {
-            handleSelectSubtopic(span.textContent);
-          }
-        }
-      };
-      container.addEventListener("click", clickHandler as EventListener);
-      return () => container.removeEventListener("click", clickHandler as EventListener);
+  // --- Callback Handlers ---
+  const handleSelectSubtopic = useCallback(async (subtopic: string) => {
+    if (!topic) return;
+    setLoading(true);
+    setError(null);
+    setSelectedSubtopic(subtopic);
+    setSubOutlineStreamingDone(false);
+    setSubOutlineHTML(""); // Clear previous sub‑outline if any.
+    setView("subOutline");
+    try {
+      if (subOutlineCache.current[subtopic]) {
+        setSubOutlineHTML(subOutlineCache.current[subtopic]);
+        setSubOutlineStreamingDone(true);
+        setLoading(false);
+      } else {
+        const html = await fetchSubOutlineHTMLStream(subtopic, topic);
+        subOutlineCache.current[subtopic] = html;
+        setSubOutlineHTML(html);
+        setSubOutlineStreamingDone(true);
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred";
+      setError(errorMessage);
+      setReloadCallback(() => () => handleSelectSubtopic(subtopic));
+    } finally {
+      setLoading(false);
     }
-  }, [view, mainOutlineHTML]);
+  }, [topic]);
 
-  useEffect(() => {
-    if (view === "subOutline" && subOutlineHTML.trim().length > 0) {
-      const container = document.querySelector(".outline-sections");
-      if (!container) return;
-      const clickHandler = (e: MouseEvent) => {
-        const target = (e.target as HTMLElement).closest(".subtopic-item");
-        if (target) {
-          const span = target.querySelector("span");
-          if (span && span.textContent) {
-            handleSelectFinalContent(span.textContent);
-          }
-        }
-      };
-      container.addEventListener("click", clickHandler as EventListener);
-      return () => container.removeEventListener("click", clickHandler as EventListener);
+  const handleSelectFinalContent = useCallback(async (subsubTitle: string) => {
+    if (!topic || !selectedSubtopic) return;
+    setLoading(true);
+    setError(null);
+    setStreamingDone(false);
+    try {
+      if (finalContentCache.current[subsubTitle]) {
+        setFinalContent(finalContentCache.current[subsubTitle]);
+        setView("finalContent");
+        setStreamingDone(true);
+      } else {
+        setFinalContent("");
+        setView("finalContent");
+        setSelectedSubSubtopic(subsubTitle);
+        const notes = await fetchNotesStream(subsubTitle, topic, selectedSubtopic);
+        finalContentCache.current[subsubTitle] = notes;
+        setFinalContent(notes);
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred";
+      setError(errorMessage);
+      setReloadCallback(() => () => handleSelectFinalContent(subsubTitle));
+    } finally {
+      setLoading(false);
     }
-  }, [view, subOutlineHTML]);
+  }, [topic, selectedSubtopic]);
 
-  // Helper: Stream main outline HTML
+  // --- Helper functions ---
   async function fetchMainOutlineHTMLStream(topic: string): Promise<string> {
     const res = await fetch("/api/generateOutline", {
       method: "POST",
@@ -110,7 +131,6 @@ const Home: React.FC = () => {
     return cleanHTML;
   }
 
-  // Helper: Stream sub-outline HTML (for a selected subtopic)
   async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): Promise<string> {
     const res = await fetch("/api/generateSubOutline", {
       method: "POST",
@@ -155,7 +175,6 @@ const Home: React.FC = () => {
     return cleanHTML;
   }
 
-  // Helper: Stream detailed notes for a sub‑subtopic
   async function fetchNotesStream(
     subsubTitle: string,
     mainTopic: string,
@@ -195,8 +214,44 @@ const Home: React.FC = () => {
     return accumulatedContent;
   }
 
-  // Handlers for user actions
+  // --- useEffect hooks using the callbacks ---
+  useEffect(() => {
+    if (view === "mainOutline" && mainOutlineHTML.trim().length > 0) {
+      const container = document.querySelector(".outline-sections");
+      if (!container) return;
+      const clickHandler = (e: MouseEvent) => {
+        const target = (e.target as HTMLElement).closest(".subtopic-item");
+        if (target) {
+          const span = target.querySelector("span");
+          if (span && span.textContent) {
+            handleSelectSubtopic(span.textContent);
+          }
+        }
+      };
+      container.addEventListener("click", clickHandler as EventListener);
+      return () => container.removeEventListener("click", clickHandler as EventListener);
+    }
+  }, [view, mainOutlineHTML, handleSelectSubtopic]);
 
+  useEffect(() => {
+    if (view === "subOutline" && subOutlineHTML.trim().length > 0) {
+      const container = document.querySelector(".outline-sections");
+      if (!container) return;
+      const clickHandler = (e: MouseEvent) => {
+        const target = (e.target as HTMLElement).closest(".subtopic-item");
+        if (target) {
+          const span = target.querySelector("span");
+          if (span && span.textContent) {
+            handleSelectFinalContent(span.textContent);
+          }
+        }
+      };
+      container.addEventListener("click", clickHandler as EventListener);
+      return () => container.removeEventListener("click", clickHandler as EventListener);
+    }
+  }, [view, subOutlineHTML, handleSelectFinalContent]);
+
+  // --- Other Handlers & Functions ---
   async function handleBreakdown(newTopic?: string) {
     const currentTopic = newTopic ?? topic;
     if (!currentTopic.trim()) return;
@@ -215,63 +270,11 @@ const Home: React.FC = () => {
         setView("mainOutline");
       }
       setTopic(currentTopic);
-    } catch (err) {
-      setError((err as Error).message);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred";
+      setError(errorMessage);
       setReloadCallback(() => () => handleBreakdown(currentTopic));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // When a subtopic is selected from the main outline.
-  async function handleSelectSubtopic(subtopic: string) {
-    if (!topic) return;
-    setLoading(true);
-    setError(null);
-    setSelectedSubtopic(subtopic);
-    setSubOutlineStreamingDone(false);
-    setSubOutlineHTML(""); // Clear previous sub‑outline if any.
-    setView("subOutline");
-    try {
-      if (subOutlineCache.current[subtopic]) {
-        setSubOutlineHTML(subOutlineCache.current[subtopic]);
-        setSubOutlineStreamingDone(true);
-        setLoading(false);
-      } else {
-        const html = await fetchSubOutlineHTMLStream(subtopic, topic);
-        subOutlineCache.current[subtopic] = html;
-        setSubOutlineHTML(html);
-        setSubOutlineStreamingDone(true);
-      }
-    } catch (err) {
-      setError((err as Error).message);
-      setReloadCallback(() => () => handleSelectSubtopic(subtopic));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSelectFinalContent(subsubTitle: string) {
-    if (!topic || !selectedSubtopic) return;
-    setLoading(true);
-    setError(null);
-    setStreamingDone(false);
-    try {
-      if (finalContentCache.current[subsubTitle]) {
-        setFinalContent(finalContentCache.current[subsubTitle]);
-        setView("finalContent");
-        setStreamingDone(true);
-      } else {
-        setFinalContent("");
-        setView("finalContent");
-        setSelectedSubSubtopic(subsubTitle);
-        const notes = await fetchNotesStream(subsubTitle, topic, selectedSubtopic);
-        finalContentCache.current[subsubTitle] = notes;
-        setFinalContent(notes);
-      }
-    } catch (err) {
-      setError((err as Error).message);
-      setReloadCallback(() => () => handleSelectFinalContent(subsubTitle));
     } finally {
       setLoading(false);
     }
@@ -280,7 +283,6 @@ const Home: React.FC = () => {
   async function handleAskQuestion(question: string) {
     if (!selectedSubtopic || !selectedSubSubtopic || !topic) return;
     
-    // If the question is empty, display an error and exit.
     if (!question.trim()) {
       setError("Please ask a follow-up question.");
       return;
@@ -289,16 +291,12 @@ const Home: React.FC = () => {
     setLoading(true);
     setError(null);
   
-    // Build the topic chain for context.
     const topicChain = `<h3>${topic} &gt; ${selectedSubtopic} &gt; ${selectedSubSubtopic}</h3>`;
-  
-    // Prepare the payload for the backend.
     const payload = {
       selectedSubtopic,
       selectedSubSubtopic,
       topicChain,
       followUpQuestion: question,
-      // Optionally, include other fields such as title or sectionTitle if needed.
       title: topic,
       sectionTitle: selectedSubtopic,
     };
@@ -311,7 +309,6 @@ const Home: React.FC = () => {
       });
       if (!res.ok) throw new Error("Failed to fetch answer");
   
-      // Get a reader from the response's stream.
       const reader = res.body?.getReader();
       if (!reader) throw new Error("ReadableStream not supported in this browser.");
   
@@ -319,39 +316,34 @@ const Home: React.FC = () => {
       let done = false;
       let firstChunkReceived = false;
   
-      // Append the question and a placeholder for the answer.
       setFinalContent((prev) =>
         prev
           ? prev + `<br><br><strong>Q:</strong> ${question}<br><strong>A:</strong> `
           : `<strong>Q:</strong> ${question}<br><strong>A:</strong> `
       );
   
-      // Read and decode chunks as they arrive.
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunk = decoder.decode(value, { stream: !done });
   
-        // As soon as the first non-empty chunk is received, disable the loading indicator.
         if (!firstChunkReceived && chunk.trim() !== "") {
           setLoading(false);
           firstChunkReceived = true;
         }
   
-        // Append the new chunk to the final content.
         setFinalContent((prev) => (prev ? prev + chunk : chunk));
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred";
+      setError(errorMessage);
       setReloadCallback(() => () => handleAskQuestion(question));
     } finally {
-      // Ensure loading is turned off (in case an error occurred before the first chunk).
       setLoading(false);
     }
   }
   
-  
-
   function handleBackToMainOutline() {
     setView("mainOutline");
     setSubOutlineHTML("");
@@ -381,7 +373,6 @@ const Home: React.FC = () => {
     URL.revokeObjectURL(url);
   }
 
-  // Predefined topics for quick selection.
   const predefinedTopics = [
     "Cryptocurrency",
     "English Literature",
@@ -429,7 +420,7 @@ const Home: React.FC = () => {
       <div className={`container ${darkMode ? "dark" : "light"}`}>
         <header className="header">
           <h1>StudyGuide</h1>
-          <p>Your dynamic study guide generator powered by AI</p>
+          <p>Reduce Your Study Time with StudyGuide</p>
           <button className="theme-toggle" onClick={() => setDarkMode((prev) => !prev)}>
             {darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           </button>
@@ -1577,8 +1568,6 @@ body {
   }
 }
       `}</style>
-
-   
     </>
   );
 };
