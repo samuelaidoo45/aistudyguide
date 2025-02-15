@@ -278,30 +278,79 @@ const Home: React.FC = () => {
   }
 
   async function handleAskQuestion(question: string) {
-    if (!question.trim() || !selectedSubtopic) return;
+    if (!selectedSubtopic || !selectedSubSubtopic || !topic) return;
+    
+    // If the question is empty, display an error and exit.
+    if (!question.trim()) {
+      setError("Please ask a follow-up question.");
+      return;
+    }
+  
     setLoading(true);
     setError(null);
+  
+    // Build the topic chain for context.
+    const topicChain = `<h3>${topic} &gt; ${selectedSubtopic} &gt; ${selectedSubSubtopic}</h3>`;
+  
+    // Prepare the payload for the backend.
+    const payload = {
+      selectedSubtopic,
+      selectedSubSubtopic,
+      topicChain,
+      followUpQuestion: question,
+      // Optionally, include other fields such as title or sectionTitle if needed.
+      title: topic,
+      sectionTitle: selectedSubtopic,
+    };
+  
     try {
-      const res = await fetch("/api/generateNotes", {
+      const res = await fetch("/api/diveDeeper", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subtopic: `${selectedSubtopic}: ${question}` }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Failed to fetch answer");
-      const data = await res.json();
+  
+      // Get a reader from the response's stream.
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("ReadableStream not supported in this browser.");
+  
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      let firstChunkReceived = false;
+  
+      // Append the question and a placeholder for the answer.
       setFinalContent((prev) =>
         prev
-          ? prev +
-            `<br><br><strong>Q:</strong> ${question}<br><strong>A:</strong> ${data.notes}`
-          : data.notes
+          ? prev + `<br><br><strong>Q:</strong> ${question}<br><strong>A:</strong> `
+          : `<strong>Q:</strong> ${question}<br><strong>A:</strong> `
       );
-    } catch (err) {
-      setError((err as Error).message);
+  
+      // Read and decode chunks as they arrive.
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunk = decoder.decode(value, { stream: !done });
+  
+        // As soon as the first non-empty chunk is received, disable the loading indicator.
+        if (!firstChunkReceived && chunk.trim() !== "") {
+          setLoading(false);
+          firstChunkReceived = true;
+        }
+  
+        // Append the new chunk to the final content.
+        setFinalContent((prev) => (prev ? prev + chunk : chunk));
+      }
+    } catch (err: any) {
+      setError(err.message);
       setReloadCallback(() => () => handleAskQuestion(question));
     } finally {
+      // Ensure loading is turned off (in case an error occurred before the first chunk).
       setLoading(false);
     }
   }
+  
+  
 
   function handleBackToMainOutline() {
     setView("mainOutline");
@@ -416,9 +465,11 @@ const Home: React.FC = () => {
 
           {view === "mainOutline" && mainOutlineHTML && (
             <div className="card card-outline">
+              
               <button className="back-button" onClick={() => setView("input")}>
                 ← Back
               </button>
+
               <h3>{topic}</h3>
               {/* Render streamed main outline HTML */}
               <div className="outline-sections" dangerouslySetInnerHTML={{ __html: mainOutlineHTML }}></div>
@@ -434,6 +485,11 @@ const Home: React.FC = () => {
               )}
               <h3>{topic} &gt; {selectedSubtopic}</h3>
               <div className="outline-sections" dangerouslySetInnerHTML={{ __html: subOutlineHTML }}></div>
+              {subOutlineStreamingDone && (
+                <button className="back-button" onClick={handleBackToMainOutline}>
+                  ← Back
+                </button>
+              )}
             </div>
           )}
 
@@ -448,15 +504,27 @@ const Home: React.FC = () => {
               <div className="final-content-card">
                 <div className="final-content-html" dangerouslySetInnerHTML={{ __html: finalContent }}></div>
               </div>
+              {streamingDone && (
+                <button className="back-button" onClick={handleBackToSubOutline}>
+                  ← Back
+                </button>
+              )}
               <div className="dive-deeper-container">
                 <h3>Dive Deeper</h3>
                 <div className="dive-deeper-input">
-                  <input
-                    type="text"
-                    placeholder="Ask a follow-up question..."
-                    className="input-text"
-                    id="questionInput"
-                  />
+                <input
+          type="text"
+          placeholder="Ask a follow-up question..."
+          className="input-text"
+          id="questionInput"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              const input = e.target as HTMLInputElement;
+              handleAskQuestion(input.value);
+              input.value = "";
+            }
+          }}
+        />
                   <button
                     onClick={() => {
                       const input = document.getElementById("questionInput") as HTMLInputElement;
@@ -571,6 +639,39 @@ const Home: React.FC = () => {
   color: var(--indigo-500);
   font-size: 0.8em;
 }
+      `}</style>
+       <style jsx>{`
+        .dive-deeper-container {
+          margin: 1rem 0;
+        }
+        .dive-deeper-input {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+        }
+        .input-text {
+          flex: 1;
+          padding: 0.5rem;
+          font-size: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+        .enhanced-btn {
+          background-color: #007bff;
+          border: none;
+          color: #fff;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.2s ease-in-out, transform 0.1s;
+        }
+        .enhanced-btn:hover {
+          background-color: #0056b3;
+        }
+        .enhanced-btn:active {
+          transform: scale(0.98);
+        }
       `}</style>
     <style jsx global>{`
         /* =====================================

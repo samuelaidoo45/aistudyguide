@@ -7,34 +7,52 @@ export async function POST(request: Request) {
     const input = await request.json();
 
     // Grab details from the Request, with defaults.
-    const title = input.title ?? "Unknown Title";
-    const sectionTitle = input.sectionTitle ?? "Unknown Section";
-    const subtopic = input.subtopic ?? "Unknown Subtopic";
+    const topicChain = input.topicChain ?? "";
+    const followUpQuestion = input.followUpQuestion || ""; // if provided
 
+    // Build the system prompt based on whether this is a follow-up request.
+    let systemContent = "";
+    if (followUpQuestion.trim() !== "") {
+      // Dive deeper (follow-up) prompt using the provided selectedSubtopic and selectedSubSubtopic.
+      systemContent =
+        "You are an AI assistant specialized in creating study guides. " +
+        "This is a follow-up (dive deeper) request. " +
+        "Based on the topic context provided " +
+        topicChain +
+        "', please provide additional response to address the following follow-up question: " +
+        followUpQuestion +
+        ". " +
+        "Your answer should be formatted in HTML, be responsive for all screen sizes, and use consistent, readable font sizes without any colors or background colors." +
+        "Avoid using any colors or background-colors, and remove any markdown or code block formatting and styling for body (e.g., ```html).";
 
+        ;
+    } else {
+      // Standard note generation.
+      systemContent =
+        "You are an AI assistant specialized in creating study guides. " +
+        "Ask the user to ask a question '" +
+       
+        "'. " +
+        "Ensure the content is responsive for all screen sizes with a consistent, readable font size. " +
+        "Avoid using any colors or background-colors, and remove any markdown or code block formatting and styling for body (e.g., ```html).";
+    }
+
+    // Create messages to send to the OpenAI API.
     const messages = [
       {
         role: "system",
-        content:
-          "You are an AI assistant specialized in creating study guides. " +
-          "Write a very detailed note on the subsection " +
-          subtopic +
-          " on the subject " +
-          title +
-          " and subtitle " +
-          sectionTitle +
-          ". " +
-          "The notes should be a string of comprehensive text with all the explanation, examples, etc. formatted with HTML and it should be responsive for each screen size and the font size consistent and readable and also DON'T EVER style with colors or background-colors and styling for body. AND REMOVE ANYTHINK LIKE ```html   " 
+        content: systemContent,
       },
       {
-        role: "user", 
-        content: JSON.stringify(input)
-      }
+        role: "user",
+        // We pass the entire input for context if needed.
+        content: JSON.stringify(input),
+      },
     ];
 
-    // Enable streaming
+    // Prepare the chat data with streaming enabled.
     const chatData = {
-      model: "gpt-4o-mini", // or your chosen model
+      model: "gpt-4o-mini", // replace with your chosen model if necessary
       stream: true,
       messages,
     };
@@ -52,9 +70,9 @@ export async function POST(request: Request) {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${openaiApiKey}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(chatData)
+      body: JSON.stringify(chatData),
     });
 
     if (!openaiRes.ok) {
@@ -65,7 +83,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create a stream that extracts only the "delta.content" from each JSON chunk.
+    // Create a ReadableStream to extract only the delta.content from each JSON chunk.
     const stream = new ReadableStream({
       async start(controller) {
         const reader = openaiRes.body?.getReader();
@@ -79,10 +97,10 @@ export async function POST(request: Request) {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          // Decode and accumulate
+          // Decode the chunk and accumulate.
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
-          // Process each complete line
+          // Process each complete line.
           for (let i = 0; i < lines.length - 1; i++) {
             let line = lines[i].trim();
             if (line.startsWith("data:")) {
@@ -92,7 +110,7 @@ export async function POST(request: Request) {
                 const parsed = JSON.parse(line);
                 const delta = parsed.choices?.[0]?.delta?.content;
                 if (delta) {
-                  // Enqueue only the notes text delta.
+                  // Enqueue the content delta as a UTF-8 encoded chunk.
                   controller.enqueue(new TextEncoder().encode(delta));
                 }
               } catch (err) {
@@ -100,7 +118,7 @@ export async function POST(request: Request) {
               }
             }
           }
-          // Keep the last incomplete line in buffer
+          // Keep any incomplete line for the next iteration.
           buffer = lines[lines.length - 1];
         }
         // Process any remaining buffered data.
@@ -116,12 +134,12 @@ export async function POST(request: Request) {
           }
         }
         controller.close();
-      }
+      },
     });
 
-    // Return the stream with event stream headers so that the client receives plain text.
+    // Return the streaming response with the appropriate event stream header.
     return new NextResponse(stream, {
-      headers: { "Content-Type": "text/event-stream" }
+      headers: { "Content-Type": "text/event-stream" },
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
