@@ -17,6 +17,7 @@ export default function Home() {
           name="description"
           content="Harness the power of AI to break down any subject into digestible, structured knowledge. Master new concepts faster than ever before."
         />
+        
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
