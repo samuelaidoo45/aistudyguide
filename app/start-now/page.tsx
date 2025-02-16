@@ -419,8 +419,8 @@ const Home: React.FC = () => {
 
       <div className={`container ${darkMode ? "dark" : "light"}`}>
         <header className="header">
-          <h1>StudyGuide</h1>
-          <p>Reduce Your Study Time with StudyGuide</p>
+          <h1>TopicSimplify</h1>
+          <p>Reduce Your Study Time with TopicSimplify</p>
           <button className="theme-toggle" onClick={() => setDarkMode((prev) => !prev)}>
             {darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           </button>

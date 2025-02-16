@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StudyGuide",
-  description: "Reduce Your Study Time with StudyGuide",
+  title: "TopicSimplify",
+  description: "Reduce Your Study Time with TopicSimplify",
   icons: {
     icon: [
       {

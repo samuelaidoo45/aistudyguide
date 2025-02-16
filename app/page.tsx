@@ -23,6 +23,8 @@ export default function Home() {
         />
       </Head>
 
+      <Script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3715172247216449" crossOrigin="anonymous"></Script>
+
       {/* Firebase Initialization Script using Next.js Script component */}
       <Script id="firebase-init" type="module">
         {`
