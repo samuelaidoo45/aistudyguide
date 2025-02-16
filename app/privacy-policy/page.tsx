@@ -19,9 +19,9 @@ const Privacy: NextPage = () => {
           <section className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700 mb-4">
-              Welcome to StudyGuide (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;). This Privacy Policy describes how we collect, use, disclose, and safeguard your information when you visit{' '}
+              Welcome to TopicSimplify (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;). This Privacy Policy describes how we collect, use, disclose, and safeguard your information when you visit{' '}
               <a href="https://www.aistudyguide.xyz/" className="text-primary-600 hover:underline">
-                https://www.aistudyguide.xyz/
+              https://www.topicsimplify.com/
               </a> (the &ldquo;Site&rdquo;). By accessing or using our Site, you agree to the practices described in this Privacy Policy.
             </p>
           </section>

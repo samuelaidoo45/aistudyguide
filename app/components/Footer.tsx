@@ -4,9 +4,9 @@ const Footer = () => {
         <div className="footer-content">
           {/* About StudyGuide */}
           <div>
-            <h3>About StudyGuide</h3>
+            <h3>About TopicSimplify</h3>
             <p>
-              StudyGuide is your AI-powered learning assistant. Our mission is to
+            TopicSimplify is your AI-powered learning assistant. Our mission is to
               make education accessible, interactive, and engaging for everyone—
               no matter the complexity of the topic.
             </p>

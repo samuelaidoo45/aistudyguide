@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         content:
           "You are an AI assistant specialized in creating study guides. " +
           "When given a topic, create a very detailed outline that encompasses all that needs to be known for the topic. " +
-          "Generate a very dynamic outline and it should be exactly as the example generate the best outline needed. When asked about a specific subtopic, provide detailed notes. " +
+          "Generate a very dynamic outline and it should be exactly as the example generate the best outline needed.The outline should cover all needed to known. When asked about a specific subtopic, provide detailed notes. " +
           "Output only a complete HTML snippet that exactly follows the structure below. Do not include any extra commentary or markdown formatting.\n\n" +
           htmlExample +
           "\n\n" +

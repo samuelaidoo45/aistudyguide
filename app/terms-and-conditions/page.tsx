@@ -23,12 +23,12 @@ const Terms: NextPage = () => {
               1. Introduction
             </h2>
             <p className="text-gray-700 mb-4">
-              Welcome to StudyGuide (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;). These Terms and Conditions (&ldquo;Terms&rdquo;) govern your access to and use of our website located at{' '}
+              Welcome to TopicSimplify (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;). These Terms and Conditions (&ldquo;Terms&rdquo;) govern your access to and use of our website located at{' '}
               <a
                 href="https://www.aistudyguide.xyz/"
                 className="text-primary-600 hover:underline"
               >
-                https://www.aistudyguide.xyz/
+              https://www.topicsimplify.com/
               </a>{' '}
               (the &ldquo;Site&rdquo;) and the services provided therein, including AI-powered
               study outlines, interactive learning features, smart summaries, and any related
