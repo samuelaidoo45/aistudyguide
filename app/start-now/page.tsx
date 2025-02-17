@@ -607,7 +607,65 @@ const Home: React.FC = () => {
     "Establishing a Daily Exercise Habit",
     "Tips for a Stress-Free Morning",
     "Clean Coding",
-    "Rich Dad, Poor Dad"
+    "Rich Dad, Poor Dad",
+    "Practical Coding Practices in JavaScript",
+    "Clean Code Principles and Best Practices",
+    "Effective Debugging Techniques for Developers",
+    "Mastering Data Structures and Algorithms in Practice",
+    "Building Scalable Web Applications Step-by-Step",
+    "Introduction to System Design and Architecture",
+    "Real-World DevOps and CI/CD Pipelines",
+    "Test-Driven Development: A Hands-On Approach",
+    "Applying Design Patterns in Real Projects",
+    "Git and Version Control Best Practices",
+    "Optimizing Database Design and Performance",
+    "Introduction to Microservices Architecture in Practice",
+    "Practical Cybersecurity Essentials for Developers",
+    "Mobile App Development: Best Practices and Pitfalls",
+    "Cloud Computing and Deployment Strategies Simplified",
+    "Building and Securing RESTful APIs",
+    "Conducting Effective Code Reviews in Teams",
+    "Agile Methodologies: Practical Implementation in Projects",
+    "Hands-On Machine Learning and Data Science Projects",
+    "Implementing Clean Architecture in Software Development",
+  
+    // Business & Finance
+    "Real-World Business Strategy and Market Analysis",
+    "Practical Financial Modeling for Startups",
+    "Effective Supply Chain Management Techniques",
+    "Digital Marketing Strategies for Modern Businesses",
+    "Customer Relationship Management in Action",
+    "Building a Data-Driven Business Culture",
+  
+    // Healthcare & Life Sciences
+    "Practical Approaches to Public Health Management",
+    "Healthcare Administration: Best Practices",
+    "Implementing Patient-Centered Care Models",
+    "Managing a Modern Medical Practice",
+    "Data Analytics for Healthcare Professionals",
+  
+    // Arts, Design & Media
+    "Creative Problem-Solving for Designers",
+    "Practical Photography and Visual Storytelling",
+    "Video Production Techniques for Beginners",
+    "Digital Illustration and Graphic Design Workflows",
+    "Content Creation Strategies for Social Media",
+  
+    // Education & Personal Development
+    "Effective Classroom Management and Lesson Planning",
+    "Practical Tips for Online Teaching and Learning",
+    "Developing Critical Thinking Skills in Students",
+    "Implementing Experiential Learning in Education",
+  
+    // Law & Public Policy
+    "Practical Legal Research and Case Analysis",
+    "Understanding Public Policy Through Real Cases",
+    "Negotiation and Mediation in Legal Practice",
+  
+    // Environmental & Sustainability
+    "Practical Approaches to Environmental Conservation",
+    "Sustainable Business Practices and Green Innovations",
+    "Renewable Energy Solutions: A Practical Guide"
   ];
     
 
