@@ -32,9 +32,22 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Define your Organization structured data for Google
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "TopicSimplify",
+    "url": "https://www.topicsimplify.com", // update with your actual domain
+    "logo": "https://www.topicsimplify.com/images/logo.png" // update with your logo URL
+  };
+
   return (
     <html lang="en">
       <meta name="google-adsense-account" content="ca-pub-3715172247216449"></meta>
+      <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
