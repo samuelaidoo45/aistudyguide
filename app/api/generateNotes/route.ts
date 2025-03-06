@@ -24,7 +24,7 @@ export async function POST(request: Request) {
           " and subtitle " +
           sectionTitle +
           ". " +
-          "The notes should be a string of very very comprehensive text with all the explanation, examples, etc. formatted with HTML and it should be responsive for each screen size and the font size consistent,professional, readable and same for all the texts and also DON'T EVER style the body element and the font size and spacing should make the text readable on even small devices. DON'T INCLUDE  body {font-family: Arial, sans-serif line-height: 1.6; margin: 20px;padding: 10px;} AND REMOVE ANYTHINK LIKE ```html   " 
+          "The notes should be a string of very very comprehensive text with all the explanation, examples, etc. formatted with HTML and it should be responsive for each screen size and the font size consistent,professional, readable and same for all the texts and also DON'T EVER style the body element and the font size and spacing should make the text readable on even small devices. MAKE THE FONT SIZE AND FAMILY UNIFORM AND CONSISTANT THROUGHOUT DON'T INCLUDE  body {font-family: Arial, sans-serif line-height: 1.6; margin: 20px;padding: 10px;} AND REMOVE ANYTHINK LIKE ```html   " 
       },
       {
         role: "user", 
