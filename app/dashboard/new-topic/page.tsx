@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { createClient } from '@/app/lib/supabase';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -246,7 +246,19 @@ const UrlParamHandler: React.FC<UrlParamHandlerProps> = ({
   return null; // This component doesn't render anything
 };
 
-const NewTopic: React.FC = () => {
+// Wrap the export with Suspense
+export default function NewTopicPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+      <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+      <span className="ml-2 text-text-primary">Loading...</span>
+    </div>}>
+      <NewTopic />
+    </Suspense>
+  );
+}
+
+function NewTopic() {
   // Topic and view states.
   const [topic, setTopic] = useState<string>("");
   const [view, setView] = useState<ViewState>("input");
@@ -2772,110 +2784,108 @@ const NewTopic: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-bg-primary transition-colors duration-200">
+    <>
       <DashboardLayout>
-        <div className="py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            {renderBreadcrumbs()}
-            <AnimatePresence mode="wait">
-              {view === "input" && (
-                <motion.div
-                  key="input"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5 }}
-                  className="space-y-8"
-                >
-                  {/* Topic Input Section */}
-                  <div className="bg-bg-secondary rounded-xl shadow-sm border border-border-primary overflow-hidden transition-colors duration-200">
-                    <div className="p-6">
-                      <h2 className="text-2xl font-bold text-text-primary mb-4 transition-colors duration-200">
-                        What would you like to learn about?
-                      </h2>
-                      <p className="text-text-secondary mb-6 transition-colors duration-200">
-                        Enter a topic and we'll create a comprehensive study guide with outlines, notes, and quizzes.
-                      </p>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label htmlFor="topic" className="block text-sm font-medium text-text-secondary mb-1 transition-colors duration-200">
-                            Topic
-                          </label>
-                          <input
-                            type="text"
-                            id="topic"
-                            value={topic}
-                            onChange={(e) => setTopic(e.target.value)}
-                            placeholder="e.g. Machine Learning, World War II, Quantum Physics"
-                            className="w-full px-4 py-3 rounded-lg border border-border-primary bg-bg-secondary text-text-primary focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                          />
-                        </div>
-                        
-                        <div className="pt-4">
-                          <button
-                            onClick={() => handleBreakdown()}
-                            disabled={!topic.trim() || loading}
-                            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
-                              !topic.trim() || loading
-                                ? 'bg-indigo-300 dark:bg-indigo-800/50 cursor-not-allowed'
-                                : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600'
-                            }`}
-                          >
-                            {loading ? (
-                              <span className="flex items-center justify-center">
-                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                                Generating...
-                              </span>
-                            ) : (
-                              'Generate Study Guide'
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {renderBreadcrumbs()}
+          <AnimatePresence mode="wait">
+            {view === "input" && (
+              <motion.div
+                key="input"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-8"
+              >
+                {/* Topic Input Section */}
+                <div className="bg-bg-secondary rounded-xl shadow-sm border border-border-primary overflow-hidden transition-colors duration-200">
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold text-text-primary mb-4 transition-colors duration-200">
+                      What would you like to learn about?
+                    </h2>
+                    <p className="text-text-secondary mb-6 transition-colors duration-200">
+                      Enter a topic and we'll create a comprehensive study guide with outlines, notes, and quizzes.
+                    </p>
                     
-                    {/* Popular Topics Section */}
-                    <div className="border-t border-border-primary bg-bg-tertiary p-6 transition-colors duration-200">
-                      <h3 className="text-lg font-medium text-text-primary mb-4 transition-colors duration-200">
-                        Popular Topics
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {popularTopics.map((category) => (
-                          <div key={category.category} className="bg-bg-secondary rounded-lg border border-border-primary overflow-hidden hover:shadow-md transition-all">
-                            <div className="p-4">
-                              <div className="flex items-center mb-3">
-                                <span className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
-                                  {React.createElement(category.icon)}
-                                </span>
-                                <h4 className="font-medium text-text-primary transition-colors duration-200">{category.category}</h4>
-                              </div>
-                              <ul className="space-y-2">
-                                {category.topics.map((topicItem) => (
-                                  <li key={topicItem}>
-                                    <button
-                                      onClick={() => handleSelectTopic(topicItem)}
-                                      className="text-sm text-text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors flex items-center"
-                                    >
-                                      <ChevronRight className="w-3 h-3 mr-1" />
-                                      {topicItem}
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        ))}
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="topic" className="block text-sm font-medium text-text-secondary mb-1 transition-colors duration-200">
+                          Topic
+                        </label>
+                        <input
+                          type="text"
+                          id="topic"
+                          value={topic}
+                          onChange={(e) => setTopic(e.target.value)}
+                          placeholder="e.g. Machine Learning, World War II, Quantum Physics"
+                          className="w-full px-4 py-3 rounded-lg border border-border-primary bg-bg-secondary text-text-primary focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        />
+                      </div>
+                      
+                      <div className="pt-4">
+                        <button
+                          onClick={() => handleBreakdown()}
+                          disabled={!topic.trim() || loading}
+                          className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
+                            !topic.trim() || loading
+                              ? 'bg-indigo-300 dark:bg-indigo-800/50 cursor-not-allowed'
+                              : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600'
+                          }`}
+                        >
+                          {loading ? (
+                            <span className="flex items-center justify-center">
+                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              Generating...
+                            </span>
+                          ) : (
+                            'Generate Study Guide'
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
-                </motion.div>
-              )}
-              {view === "mainOutline" && renderMainOutline()}
-              {view === "subOutline" && renderSubOutline()}
-              {view === "finalContent" && renderFinalContent()}
-            </AnimatePresence>
-          </div>
+                  
+                  {/* Popular Topics Section */}
+                  <div className="border-t border-border-primary bg-bg-tertiary p-6 transition-colors duration-200">
+                    <h3 className="text-lg font-medium text-text-primary mb-4 transition-colors duration-200">
+                      Popular Topics
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {popularTopics.map((category) => (
+                        <div key={category.category} className="bg-bg-secondary rounded-lg border border-border-primary overflow-hidden hover:shadow-md transition-all">
+                          <div className="p-4">
+                            <div className="flex items-center mb-3">
+                              <span className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
+                                {React.createElement(category.icon)}
+                              </span>
+                              <h4 className="font-medium text-text-primary transition-colors duration-200">{category.category}</h4>
+                            </div>
+                            <ul className="space-y-2">
+                              {category.topics.map((topicItem) => (
+                                <li key={topicItem}>
+                                  <button
+                                    onClick={() => handleSelectTopic(topicItem)}
+                                    className="text-sm text-text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors flex items-center"
+                                  >
+                                    <ChevronRight className="w-3 h-3 mr-1" />
+                                    {topicItem}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            {view === "mainOutline" && renderMainOutline()}
+            {view === "subOutline" && renderSubOutline()}
+            {view === "finalContent" && renderFinalContent()}
+          </AnimatePresence>
         </div>
       </DashboardLayout>
       
@@ -2890,8 +2900,6 @@ const NewTopic: React.FC = () => {
           handleSelectSubSubtopic={handleSelectSubSubtopic}
         />
       )}
-    </div>
+    </>
   );
-};
-
-export default NewTopic;
+}
