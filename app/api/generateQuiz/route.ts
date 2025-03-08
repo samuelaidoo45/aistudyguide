@@ -110,7 +110,7 @@ export async function POST(request: Request) {
                 const delta = parsed.choices?.[0]?.delta?.content;
                 if (delta) {
                   // Remove any ```html and ``` markers from the content
-                  let cleanDelta = delta;
+                  const cleanDelta = delta;
                   fullResponse += delta;
                   
                   // Enqueue the content delta as a UTF-8 encoded chunk
