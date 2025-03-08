@@ -107,14 +107,14 @@ export default function StudyHistory() {
   // Calculate metrics from the data instead of using state
   const calculateMetrics = () => {
     // Calculate total study time
-    const totalStudyTime = studySessions.reduce((total, session) => total + session.duration, 0);
+    const totalStudyTime = studySessions.reduce((total: number, session: any) => total + session.duration, 0);
     
     // Get the last study date
     const lastStudyDate = studySessions.length > 0 ? studySessions[0].created_at : null;
     
     // Calculate average progress
     const averageProgress = topics.length > 0 
-      ? Math.round(topics.reduce((total, topic) => total + topic.progress, 0) / topics.length) 
+      ? Math.round(topics.reduce((total: number, topic: any) => total + topic.progress, 0) / topics.length) 
       : 0;
       
     return { totalStudyTime, lastStudyDate, averageProgress };

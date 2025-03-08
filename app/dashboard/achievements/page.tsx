@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/app/lib/supabase'
 import { motion } from 'framer-motion'
 import DashboardLayout from '@/app/components/DashboardLayout'
-import { Award, Star, Clock, BookOpen, Zap, Target, Trophy, CheckCircle } from 'lucide-react'
+import { Award, Star, Clock, BookOpen, Zap, Target, Trophy, CheckCircle, Calendar } from 'lucide-react'
 import toast, { Toaster } from 'react-hot-toast'
 
 interface Achievement {
@@ -88,7 +88,7 @@ export default function Achievements() {
       }
       
       // Calculate total study time (in hours)
-      const totalStudyTime = sessionsData?.reduce((total, session) => total + (session.duration || 0), 0) / 60 || 0
+      const totalStudyTime = sessionsData?.reduce((total: number, session: any) => total + (session.duration || 0), 0) / 60 || 0
       
       // Calculate consecutive days (simplified version)
       const consecutiveDays = calculateConsecutiveDays(sessionsData || [])
@@ -213,16 +213,18 @@ export default function Achievements() {
   }
 
   const getIconForAchievement = (iconName: string) => {
-    const iconMap: Record<string, any> = {
-      'BookOpen': BookOpen,
-      'Target': Target,
-      'Clock': Clock,
-      'Zap': Zap,
-      'Trophy': Trophy,
-      'Star': Star
+    const icons: Record<string, any> = {
+      'BookOpen': <BookOpen className="h-6 w-6" />,
+      'Clock': <Clock className="h-6 w-6" />,
+      'Calendar': <Calendar className="h-6 w-6" />,
+      'Trophy': <Trophy className="h-6 w-6" />,
+      'Star': <Star className="h-6 w-6" />,
+      'Target': <Target className="h-6 w-6" />,
+      'Award': <Award className="h-6 w-6" />,
+      'Zap': <Zap className="h-6 w-6" />
     }
     
-    return iconMap[iconName] || Award
+    return icons[iconName] || <Award className="h-6 w-6" />
   }
 
   const createDefaultAchievements = () => {
@@ -295,7 +297,10 @@ export default function Achievements() {
       },
     ]
     
-    setAchievements(defaultAchievements)
+    setAchievements(defaultAchievements.map(item => ({
+      ...item,
+      icon: getIconForAchievement(item.icon)
+    })))
   }
 
   const updateAchievementsWithStats = (stats: typeof studyStats) => {
@@ -367,7 +372,7 @@ export default function Achievements() {
     return new Date(dateString).toLocaleDateString(undefined, options)
   }
 
-  const totalPoints = achievements.reduce((total, achievement) => {
+  const totalPoints = achievements.reduce((total: number, achievement: any) => {
     return total + (achievement.earned ? achievement.points : 0)
   }, 0)
 

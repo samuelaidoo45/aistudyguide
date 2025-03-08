@@ -1392,7 +1392,7 @@ const NewTopic: React.FC = () => {
         .select('duration')
         .eq('user_id', userId);
         
-      const totalStudyTime = studySessions?.reduce((total, session) => 
+      const totalStudyTime = studySessions?.reduce((total: number, session: any) => 
         total + (session.duration || 0), 0) || 0;
       
       if (existingAchievements) {

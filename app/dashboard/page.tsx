@@ -97,7 +97,7 @@ export default function Dashboard() {
       const achievements = achievementsResult.data || []
       
       // Calculate total study time
-      const totalStudyTime = topics.reduce((acc, topic) => acc + (topic.total_study_time || 0), 0) || 0
+      const totalStudyTime = topics.reduce((acc: number, topic: any) => acc + (topic.total_study_time || 0), 0) || 0
       
       // Log the results for debugging
       console.log('Dashboard data loaded:', {
