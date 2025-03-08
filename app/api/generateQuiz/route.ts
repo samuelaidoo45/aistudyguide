@@ -6,45 +6,37 @@ export async function POST(request: Request) {
   try {
     const input = await request.json();
 
-    // Grab details from the Request, with defaults.
-    const topicChain = input.topicChain ?? "";
-    const followUpQuestion = input.followUpQuestion || ""; // if provided
+    // Grab details from the Request
+    const title = input.title ?? "";
+    const sectionTitle = input.sectionTitle ?? "";
+    const subtopic = input.subtopic ?? "";
 
-    // Build the system prompt based on whether this is a follow-up request.
-    let systemContent = "";
-    if (followUpQuestion.trim() !== "") {
-      // Dive deeper (follow-up) prompt using the provided selectedSubtopic and selectedSubSubtopic.
-      systemContent =
-        "You are an AI assistant specialized in creating study guides. " +
-        "This is a follow-up (dive deeper) request. " +
-        "Based on the topic context provided " +
-        topicChain +
-        "', please provide additional response to address the following follow-up question: " +
-        followUpQuestion +
-        ". " +
-        "Your answer should be formatted in clean HTML that will be directly inserted into an existing page. " +
-        "IMPORTANT: Do NOT add any styles, margins, paddings, or any other CSS to the body or container elements. " +
-        "Do NOT include any <style> tags or inline styles. " +
-        "Do NOT use any colors or background colors. " +
-        "Do NOT include any markdown or code block formatting (e.g., ```html). " +
-        "Do NOT wrap your response in <html>, <body>, or any container div tags. " +
-        "Start directly with your content elements like <h3>, <p>, <ul>, etc. " +
-        "Keep your HTML clean and semantic, focusing only on the content structure.";
-    } else {
-      // Standard note generation.
-      systemContent =
-        "You are an AI assistant specialized in creating study guides. " +
-        "Ask the user to ask a question '" +
-       
-        "'. " +
-        "Ensure the content is responsive for all screen sizes with a consistent, readable font size. " +
-        "IMPORTANT: Do NOT add any styles, margins, paddings, or any other CSS to the body or container elements. " +
-        "Do NOT include any <style> tags or inline styles. " +
-        "Do NOT use any colors or background colors. " +
-        "Do NOT include any markdown or code block formatting (e.g., ```html).";
-    }
+    // Build the system prompt
+    const systemContent =
+      "You are an AI assistant specialized in creating educational quizzes. " +
+      "Based on the following topic hierarchy: " +
+      "Main Topic: '" + title + "', " +
+      "Section: '" + sectionTitle + "', " +
+      "Subtopic: '" + subtopic + "', " +
+      "create a quiz with 5 questions to test the user's understanding. " +
+      "For each question, provide 4 multiple-choice options with only one correct answer. " +
+      "Format the quiz in HTML with the following structure: " +
+      "1. Each question should be in a div with class 'quiz-question' " +
+      "2. Each option should be in a div with class 'quiz-option' and have a data attribute 'data-correct' set to 'true' for the correct answer and 'false' for incorrect answers " +
+      "3. Include a button with class 'quiz-check-btn' after each question that says 'Check Answer' " +
+      "4. Include a div with class 'quiz-feedback' after the button in each question " +
+      "5. At the end, include a div with class 'quiz-score' to show the final score " +
+      "IMPORTANT REQUIREMENTS: " +
+      "- Do NOT wrap your response in ```html``` or any code block formatting " +
+      "- Do NOT include any <style> tags or inline styles " +
+      "- Do NOT add any margins, paddings, or any other CSS to the body or container elements " +
+      "- Do NOT use any colors or background colors " +
+      "- Do NOT wrap your response in <html>, <body>, or any container div tags " +
+      "- Start directly with your quiz questions " +
+      "- Make sure each option is clickable and the 'data-correct' attribute is properly set " +
+      "- Keep your HTML clean and semantic, focusing only on the content structure";
 
-    // Create messages to send to the OpenAI API.
+    // Create messages to send to the OpenAI API
     const messages = [
       {
         role: "system",
@@ -52,12 +44,11 @@ export async function POST(request: Request) {
       },
       {
         role: "user",
-        // We pass the entire input for context if needed.
         content: JSON.stringify(input),
       },
     ];
 
-    // Prepare the chat data with streaming enabled.
+    // Prepare the chat data with streaming enabled
     const chatData = {
       model: "gpt-4o-mini", // replace with your chosen model if necessary
       stream: true,
@@ -90,7 +81,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create a ReadableStream to extract only the delta.content from each JSON chunk.
+    // Create a ReadableStream to extract only the delta.content from each JSON chunk
     const stream = new ReadableStream({
       async start(controller) {
         const reader = openaiRes.body?.getReader();
@@ -100,14 +91,15 @@ export async function POST(request: Request) {
         }
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
+        let fullResponse = "";
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          // Decode the chunk and accumulate.
+          // Decode the chunk and accumulate
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
-          // Process each complete line.
+          // Process each complete line
           for (let i = 0; i < lines.length - 1; i++) {
             let line = lines[i].trim();
             if (line.startsWith("data:")) {
@@ -117,29 +109,46 @@ export async function POST(request: Request) {
                 const parsed = JSON.parse(line);
                 const delta = parsed.choices?.[0]?.delta?.content;
                 if (delta) {
-                  // Enqueue the content delta as a UTF-8 encoded chunk.
-                  controller.enqueue(new TextEncoder().encode(delta));
+                  // Remove any ```html and ``` markers from the content
+                  let cleanDelta = delta;
+                  fullResponse += delta;
+                  
+                  // Enqueue the content delta as a UTF-8 encoded chunk
+                  controller.enqueue(new TextEncoder().encode(cleanDelta));
                 }
               } catch (err) {
                 console.error("Error parsing chunk:", err);
               }
             }
           }
-          // Keep any incomplete line for the next iteration.
+          // Keep any incomplete line for the next iteration
           buffer = lines[lines.length - 1];
         }
-        // Process any remaining buffered data.
+        
+        // Process any remaining buffered data
         if (buffer.trim() && !buffer.includes("[DONE]")) {
           try {
             const parsed = JSON.parse(buffer.trim());
             const delta = parsed.choices?.[0]?.delta?.content;
             if (delta) {
+              fullResponse += delta;
               controller.enqueue(new TextEncoder().encode(delta));
             }
           } catch (err) {
             console.error("Error parsing final buffer:", err);
           }
         }
+        
+        // Clean up the full response if needed
+        if (fullResponse.startsWith("```html")) {
+          const cleanedResponse = fullResponse.replace(/^```html\n/, "").replace(/```$/, "");
+          // Reset the stream and send the cleaned response
+          controller.close();
+          return new NextResponse(cleanedResponse, {
+            headers: { "Content-Type": "text/html" },
+          });
+        }
+        
         controller.close();
       },
     });
@@ -160,4 +169,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+} 

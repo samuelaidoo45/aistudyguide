@@ -6,7 +6,7 @@ const CTA = () => {
           Jump in and see how StudyGuide can revolutionize your study sessions—
           no matter the topic or complexity.
         </p>
-        <a href="/start-now" className="btn btn-primary">
+        <a href="/dashboard/new-topic" className="btn btn-primary text-white" style={{ color: 'white' }}>
           Start Now for Free
         </a>
       </section>
