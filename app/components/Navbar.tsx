@@ -128,7 +128,7 @@ const Navbar = () => {
 
         {/* Hamburger Button (Visible on Mobile) - Enhanced for better visibility */}
         <button
-          className="md:hidden bg-white p-2 rounded-md border-2 border-gray-300 shadow-md"
+          className="mobile-only bg-white p-2 rounded-md border-2 border-gray-300 shadow-md"
           aria-label="Toggle navigation menu"
           onClick={toggleMenu}
           style={{
@@ -241,7 +241,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu (Completely separate from desktop menu) */}
-        <div style={mobileMenuStyle}>
+        <div className="mobile-only" style={mobileMenuStyle}>
           <Link 
             href="#features" 
             style={{

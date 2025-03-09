@@ -190,7 +190,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Main content */}
       <div className="md:pl-64 flex flex-col flex-1">
-        <div className="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-bg-primary">
+        <div className="sticky top-0 z-10 mobile-only pl-1 pt-1 sm:pl-3 sm:pt-3 bg-bg-primary">
           <button
             type="button"
             className="h-12 w-12 inline-flex items-center justify-center rounded-md bg-white border-2 border-gray-300 shadow-md text-gray-700 hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-500 transition-all duration-200"

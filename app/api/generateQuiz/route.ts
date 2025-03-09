@@ -2,6 +2,29 @@ import { NextResponse } from "next/server";
 
 export const maxDuration = 300; // 5 minutes
 
+// Format the quiz content with proper HTML structure for our new styling
+function formatQuizContent(content: string): string {
+  // Add question numbers to the h3 elements
+  let numberedContent = content.replace(/<h3>(.*?)<\/h3>/g, (match, p1, offset, string) => {
+    // Count how many h3 tags appear before this one to determine the question number
+    const questionNumber = string.substring(0, offset).match(/<h3>/g)?.length || 0;
+    return `<h3>Question ${questionNumber + 1}: ${p1}</h3>`;
+  });
+  
+  // Add a submit button at the end
+  return `
+    ${numberedContent}
+    <button class="submit-quiz" onclick="document.dispatchEvent(new CustomEvent('submit-quiz'))">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      Submit Quiz
+    </button>
+    <div class="quiz-result" style="display: none;">
+      <div class="quiz-score">Score: 0/0 (0%)</div>
+      <p class="quiz-feedback"></p>
+    </div>
+  `;
+}
+
 export async function POST(request: Request) {
   try {
     const input = await request.json();
@@ -11,36 +34,35 @@ export async function POST(request: Request) {
     const sectionTitle = input.sectionTitle ?? "";
     const subtopic = input.subtopic ?? "";
 
-    // Build the system prompt
-    const systemContent =
-      "You are an AI assistant specialized in creating educational quizzes. " +
-      "Based on the following topic hierarchy: " +
-      "Main Topic: '" + title + "', " +
-      "Section: '" + sectionTitle + "', " +
-      "Subtopic: '" + subtopic + "', " +
-      "create a quiz with 5 questions to test the user's understanding. " +
-      "For each question, provide 4 multiple-choice options with only one correct answer. " +
-      "Format the quiz in HTML with the following structure: " +
-      "1. Each question should be in a div with class 'quiz-question' " +
-      "2. Each option should be in a div with class 'quiz-option' and have a data attribute 'data-correct' set to 'true' for the correct answer and 'false' for incorrect answers " +
-      "3. Include a button with class 'quiz-check-btn' after each question that says 'Check Answer' " +
-      "4. Include a div with class 'quiz-feedback' after the button in each question " +
-      "5. At the end, include a div with class 'quiz-score' to show the final score " +
-      "IMPORTANT REQUIREMENTS: " +
-      "- Do NOT wrap your response in ```html``` or any code block formatting " +
-      "- Do NOT include any <style> tags or inline styles " +
-      "- Do NOT add any margins, paddings, or any other CSS to the body or container elements " +
-      "- Do NOT use any colors or background colors " +
-      "- Do NOT wrap your response in <html>, <body>, or any container div tags " +
-      "- Start directly with your quiz questions " +
-      "- Make sure each option is clickable and the 'data-correct' attribute is properly set " +
-      "- Keep your HTML clean and semantic, focusing only on the content structure";
+    // Update the system prompt to generate properly structured HTML for our new styling
+    const systemPrompt = `You are an educational quiz generator. Create a quiz based on the provided topic.
+
+Generate 5 multiple-choice questions with 4 options each. Format your response as HTML with the following structure:
+
+<div class="question">
+  <h3>Question text goes here</h3>
+  <div class="options">
+    <div class="option" data-correct="true/false">Option A</div>
+    <div class="option" data-correct="true/false">Option B</div>
+    <div class="option" data-correct="true/false">Option C</div>
+    <div class="option" data-correct="true/false">Option D</div>
+  </div>
+</div>
+
+Make sure to:
+1. Mark only ONE option as data-correct="true" per question
+2. Make questions challenging but fair
+3. Cover different aspects of the topic
+4. Use clear, concise language
+5. Ensure all questions are factually accurate
+
+Do not include any explanations or additional text outside the HTML structure.`;
 
     // Create messages to send to the OpenAI API
     const messages = [
       {
         role: "system",
-        content: systemContent,
+        content: systemPrompt,
       },
       {
         role: "user",
@@ -149,6 +171,9 @@ export async function POST(request: Request) {
           });
         }
         
+        // Format the final content before returning
+        const formattedContent = formatQuizContent(fullResponse);
+        controller.enqueue(new TextEncoder().encode(formattedContent));
         controller.close();
       },
     });

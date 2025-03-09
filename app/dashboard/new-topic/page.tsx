@@ -1931,6 +1931,9 @@ function NewTopic() {
     try {
       toast.loading('Generating quiz...', { id: 'generating-quiz' });
       
+      // Clear existing quiz content before starting new generation
+      setQuizContent('<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating quiz questions...</p></div>');
+      
       const quiz = await fetchQuizStream(
         topic,
         selectedSubtopic,
@@ -1939,6 +1942,11 @@ function NewTopic() {
       
       setQuizContent(quiz);
       toast.success('Quiz generated!', { id: 'generating-quiz' });
+      
+      // Initialize quiz interactivity after content is loaded
+      setTimeout(() => {
+        initializeQuizInteractivity();
+      }, 500);
     } catch (error) {
       console.error('Error generating quiz:', error);
       toast.error('Failed to generate quiz', { id: 'generating-quiz' });
@@ -1948,6 +1956,120 @@ function NewTopic() {
       setIsQuizzing(false);
     }
   }
+  
+  // Initialize quiz interactivity
+  function initializeQuizInteractivity() {
+    const quizContainer = document.querySelector('.quiz-container');
+    if (!quizContainer) return;
+    
+    // Add click event listeners to options
+    const options = quizContainer.querySelectorAll('.option');
+    options.forEach(option => {
+      option.addEventListener('click', function(this: HTMLElement) {
+        const questionEl = this.closest('.question') as HTMLElement;
+        if (!questionEl) return;
+        
+        const optionsInQuestion = questionEl.querySelectorAll('.option');
+        
+        // Remove selected class from all options in this question
+        optionsInQuestion.forEach((opt: Element) => opt.classList.remove('selected'));
+        
+        // Add selected class to clicked option
+        this.classList.add('selected');
+      });
+    });
+
+    // Add event listener for quiz submission
+    document.addEventListener('submit-quiz', () => {
+      updateQuizScore();
+    });
+  }
+
+  const updateQuizScore = async () => {
+    // Get all questions and selected options
+    const quizContainer = document.querySelector('.quiz-container');
+    if (!quizContainer) return;
+    
+    const questions = quizContainer.querySelectorAll('.question');
+    let correctAnswers = 0;
+    const totalQuestions = questions.length;
+    
+    // Check each question
+    questions.forEach(question => {
+      const selectedOption = question.querySelector('.option.selected');
+      const correctOption = question.querySelector('.option[data-correct="true"]');
+      
+      // Mark correct and incorrect answers
+      if (selectedOption) {
+        if (selectedOption.getAttribute('data-correct') === 'true') {
+          selectedOption.classList.add('correct');
+          correctAnswers++;
+        } else {
+          selectedOption.classList.add('incorrect');
+        }
+      }
+      
+      // Show the correct answer if not selected
+      if (correctOption && correctOption !== selectedOption) {
+        correctOption.classList.add('correct');
+      }
+    });
+    
+    // Calculate score
+    const score = Math.round((correctAnswers / totalQuestions) * 100);
+    
+    // Show the result
+    const resultDiv = quizContainer.querySelector('.quiz-result') as HTMLElement;
+    const scoreDiv = quizContainer.querySelector('.quiz-score');
+    const feedbackDiv = quizContainer.querySelector('.quiz-feedback');
+    
+    if (resultDiv && scoreDiv && feedbackDiv) {
+      // Update score text
+      scoreDiv.textContent = `${correctAnswers}/${totalQuestions} (${score}%)`;
+      
+      // Add appropriate class based on score
+      resultDiv.classList.remove('good', 'average', 'poor');
+      let feedbackText = '';
+      
+      if (score >= 80) {
+        resultDiv.classList.add('good');
+        feedbackText = 'Excellent work! You have a strong understanding of this topic.';
+      } else if (score >= 50) {
+        resultDiv.classList.add('average');
+        feedbackText = 'Good effort! Consider reviewing the material to strengthen your knowledge.';
+      } else {
+        resultDiv.classList.add('poor');
+        feedbackText = 'You might need more study time with this topic. Try reviewing the notes again.';
+      }
+      
+      feedbackDiv.textContent = feedbackText;
+      resultDiv.style.display = 'block';
+      
+      // Disable the submit button
+      const submitButton = quizContainer.querySelector('.submit-quiz') as HTMLButtonElement;
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.style.opacity = '0.5';
+        submitButton.style.cursor = 'not-allowed';
+      }
+    }
+    
+    // Save quiz score to database if user is logged in and topic is saved
+    const topicData = await getTopicByTitle(topic);
+    if (user && topicData && typeof topicData.id === 'string' && typeof topicData.progress === 'number') {
+      try {
+        // Update topic progress based on quiz score
+        const progressIncrease = Math.round(score / 20); // 0-5 points based on score
+        await updateTopicProgress(
+          topicData.id, 
+          Math.min(topicData.progress + progressIncrease, 100), 
+          5
+        );
+      } catch (error) {
+        console.error('Error saving quiz score:', error);
+      }
+    }
+  };
 
   // Generate dive deeper content
   async function handleDiveDeeper() {
@@ -1959,6 +2081,9 @@ function NewTopic() {
     
     try {
       toast.loading('Generating deeper insights...', { id: 'generating-dive-deeper' });
+      
+      // Clear existing dive deeper content before starting new generation
+      setDiveDeeper('<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating deeper insights...</p></div>');
       
       const diveDeeper = await fetchDiveDeeperStream(
         followUpQuestion,
@@ -2062,37 +2187,6 @@ function NewTopic() {
     }
   }, [quizContent, isQuizzing, notesView]);
 
-  // Update quiz score when user answers questions
-  const updateQuizScore = async () => {
-    // Get all quiz options
-    const quizOptions = document.querySelectorAll('.quiz-option');
-    
-    // Count correct answers
-    const correctAnswers = document.querySelectorAll('.quiz-option.correct').length;
-    const totalQuestions = document.querySelectorAll('.quiz-question').length || 5; // Default to 5 if can't determine
-    
-    // Update the score display
-    const scoreDiv = document.querySelector('.quiz-score');
-    if (scoreDiv) {
-      const score = Math.round((correctAnswers / totalQuestions) * 100);
-      scoreDiv.textContent = `Score: ${correctAnswers}/${totalQuestions} (${score}%)`;
-      
-      // Save quiz score to database if user is logged in and topic is saved
-      const topicData = await getTopicByTitle(topic);
-      if (user && topicData?.id) {
-        try {
-          // Update topic progress based on quiz score
-          const progressIncrease = Math.round(score / 20); // 0-5 points based on score
-          if (topicData.progress !== undefined) {
-            await updateTopicProgress(topicData.id, Math.min(topicData.progress + progressIncrease, 100), 5);
-          }
-        } catch (error) {
-          console.error('Error saving quiz score:', error);
-        }
-      }
-    }
-  };
-
   // Text-to-speech functionality
   const listenToNotes = () => {
     if (!finalContent) return;
@@ -2164,12 +2258,46 @@ function NewTopic() {
               {selectedSubtopic}
             </p>
           </div>
-          {loading && (
-            <div className="flex items-center text-indigo-600">
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              <span>Generating notes...</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            {loading && (
+              <div className="flex items-center text-indigo-600">
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <span>Generating notes...</span>
+              </div>
+            )}
+            {!loading && finalContent && notesView === "notes" && (
+              <>
+                <button
+                  onClick={exportToWord}
+                  className="flex items-center px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
+                  title="Download as Word document"
+                >
+                  <FileText className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Word</span>
+                </button>
+                <button
+                  onClick={exportToPDF}
+                  className="flex items-center px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
+                  title="Download as PDF"
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">PDF</span>
+                </button>
+                <button
+                  onClick={listenToNotes}
+                  className={`flex items-center px-3 py-1.5 text-sm ${
+                    isSpeaking 
+                      ? "bg-purple-100 text-purple-700" 
+                      : "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                  } rounded-md transition-colors`}
+                  title={isSpeaking ? "Stop reading" : "Listen to notes"}
+                >
+                  <Volume2 className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">{isSpeaking ? "Stop" : "Listen"}</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
       
@@ -2236,6 +2364,13 @@ function NewTopic() {
           <div className="mt-8 pt-6 border-t">
             <div className="flex flex-wrap gap-2">
               <button
+                onClick={() => setNotesView("notes")}
+                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back to Notes
+              </button>
+              <button
                 onClick={() => {
                   setView('input');
                   setTopic('');
@@ -2282,9 +2417,81 @@ function NewTopic() {
             Score: 0/5
           </div>
           
+          {/* Quiz Content */}
+          <div 
+            className="quiz-container prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: quizContent || '<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating quiz questions...</p></div>' }}
+          />
+          
           {/* Bottom Navigation for Quiz View */}
           <div className="mt-8 pt-6 border-t">
             <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setNotesView("notes")}
+                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back to Notes
+              </button>
+              <button
+                onClick={() => {
+                  setView('input');
+                  setTopic('');
+                  setMainOutlineHTML('');
+                }}
+                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back to New Topic
+              </button>
+              <button
+                onClick={handleBackToMainOutline}
+                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back to Main Outline
+              </button>
+              <button
+                onClick={handleBackToSubOutline}
+                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back to Sub-outline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {notesView === "diveDeeper" && (
+        <div className="dive-deeper-view">
+          <div className="flex justify-between items-center mb-6">
+            <h4 className="text-xl font-bold text-gray-900">Deeper Insights: {followUpQuestion}</h4>
+            <button
+              onClick={() => setNotesView("notes")}
+              className="text-indigo-600 hover:text-indigo-700 flex items-center"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back to notes
+            </button>
+          </div>
+          
+          {/* Dive Deeper Content */}
+          <div 
+            className="dive-deeper-content prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: diveDeeper || '<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating deeper insights...</p></div>' }}
+          />
+          
+          {/* Bottom Navigation for Dive Deeper View */}
+          <div className="mt-8 pt-6 border-t">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setNotesView("notes")}
+                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back to Notes
+              </button>
               <button
                 onClick={() => {
                   setView('input');
