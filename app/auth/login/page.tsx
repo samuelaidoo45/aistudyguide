@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/app/lib/supabase'
@@ -10,22 +10,29 @@ import { motion } from 'framer-motion'
 import toast, { Toaster } from 'react-hot-toast'
 import Image from 'next/image'
 
-export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [initialCheckDone, setInitialCheckDone] = useState(false)
-  const router = useRouter()
+// Component to handle search params
+function SearchParamsHandler() {
   const searchParams = useSearchParams()
-  const supabase = createClient()
-
-  // Check for error parameters
+  
   useEffect(() => {
     const error = searchParams.get('error')
     if (error) {
       toast.error(`Authentication error: ${error}`)
     }
   }, [searchParams])
+  
+  return null
+}
+
+export default function Login() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [initialCheckDone, setInitialCheckDone] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  // Check for error parameters is now handled in the SearchParamsHandler component
 
   // Check if user is already logged in
   useEffect(() => {
@@ -143,6 +150,10 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <Toaster position="top-center" />
+      
+      <Suspense fallback={null}>
+        <SearchParamsHandler />
+      </Suspense>
       
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/">
