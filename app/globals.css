@@ -60,23 +60,6 @@
   --border-secondary: var(--gray-300);
 }
 
-/* Dark Mode Variables */
-.dark {
-  /* Background Colors */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-tertiary: #2a2a2a;
-  
-  /* Text Colors */
-  --text-primary: #f3f4f6;
-  --text-secondary: #d1d5db;
-  --text-tertiary: #9ca3af;
-  
-  /* Border Colors */
-  --border-primary: #374151;
-  --border-secondary: #4b5563;
-}
-
 /*
   2. Global Resets & Base Styles
   ---------------------------------------------------------- */
@@ -508,60 +491,13 @@ a {
   13. Responsive Design
   ---------------------------------------------------------- */
 @media (max-width: 768px) {
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 80%;
-    max-width: 400px;
-    height: 100vh;
-    background: white;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding: 7rem 2rem 2rem;
-    transition: right 0.3s ease;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-  }
-
-  .nav-links > div {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .nav-links a {
-    margin: 0.5rem 0;
-    font-size: 1.1rem;
-  }
-
-  .nav-links .ml-auto {
-    margin-left: 0;
-    margin-top: 1.5rem;
-    width: 100%;
-  }
-
-  .nav-links .ml-auto .flex {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .nav-links .ml-auto a {
-    margin: 0.5rem 0;
-    width: 100%;
-    text-align: center;
-  }
-
-  .nav-links.active {
-    right: 0;
-  }
   .hero-content {
     padding: var(--space-lg) var(--space-sm);
   }
+
   .feature-grid,
-  .testimonial-grid,
-  .step-container {
+  .step-container,
+  .testimonial-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -633,53 +569,6 @@ color: var(--primary-700);
 width: 100%;
 }
 
-/* Hamburger Button (mobile only) */
-.nav-toggle {
-background: none;
-border: none;
-cursor: pointer;
-display: none; /* hidden on desktop */
-position: relative;
-width: 24px;
-height: 24px;
-}
-
-/* The 3-line hamburger icon */
-.hamburger, .hamburger::before, .hamburger::after {
-content: "";
-display: block;
-background-color: var(--gray-700);
-width: 100%;
-height: 2px;
-border-radius: 2px;
-transition: transform 0.3s ease, opacity 0.3s ease;
-}
-.hamburger {
-position: relative;
-}
-.hamburger::before {
-position: absolute;
-top: -8px;
-left: 0;
-}
-.hamburger::after {
-position: absolute;
-bottom: -8px;
-left: 0;
-}
-
-/* When nav is open, transform the lines into an 'X' */
-.nav-toggle.active .hamburger {
-transform: rotate(45deg);
-}
-.nav-toggle.active .hamburger::before {
-transform: translateY(8px) rotate(90deg);
-}
-.nav-toggle.active .hamburger::after {
-transform: translateY(-8px) rotate(90deg);
-opacity: 0;
-}
-
 /* 
 Responsive Adjustments
 ---------------------------------------------------------- */
@@ -689,16 +578,18 @@ Responsive Adjustments
 position: absolute;
 top: 70px; /* just below the navbar */
 right: var(--space-md);
-background: #fff;
+left: var(--space-md);
+background-color: #FFFFFF; /* Solid white background */
 padding: var(--space-md);
 border-radius: 8px;
-box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 flex-direction: column;
 gap: var(--space-sm);
-transform: translateY(-200%);
+transform: translateY(-20px);
 opacity: 0;
 pointer-events: none;
 transition: transform 0.3s ease, opacity 0.3s ease;
+z-index: 10;
 }
 
 /* Show them when "active" class is added (via JavaScript) */
@@ -932,12 +823,6 @@ transform: translateY(20px);
   color: var(--primary-600);
 }
 
-.dark .outline-content h2.outline-item:hover,
-.dark .suboutline-content h3:hover,
-.dark .suboutline-content .section-card:hover {
-  color: var(--primary-400);
-}
-
 .outline-content ul,
 .suboutline-content ul {
   list-style-type: disc;
@@ -967,6 +852,43 @@ transform: translateY(20px);
   margin-bottom: 0.75rem;
 }
 
+/* Fix heading sizes globally */
+.notes-content h1 {
+  font-size: 1.75rem !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+  font-weight: 700 !important;
+}
+
+.notes-content h2 {
+  font-size: 1.5rem !important;
+  margin-top: 1.75rem !important;
+  margin-bottom: 0.75rem !important;
+  font-weight: 600 !important;
+}
+
+.notes-content h3 {
+  font-size: 1.25rem !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
+.notes-content h4 {
+  font-size: 1.125rem !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
+.notes-content h5, 
+.notes-content h6 {
+  font-size: 1rem !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
 .notes-content p {
   margin-bottom: 1rem;
   line-height: 1.7;
@@ -990,10 +912,6 @@ transform: translateY(20px);
   margin: 1.5rem 0;
   color: var(--text-secondary);
   font-style: italic;
-}
-
-.dark .notes-content blockquote {
-  border-left-color: var(--primary-600);
 }
 
 .notes-content pre {
@@ -1031,16 +949,199 @@ transform: translateY(20px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.dark .section-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+.outline-item, 
+.subtopic-item,
+.suboutline-item {
+  display: block;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.outline-item:hover, 
+.subtopic-item:hover,
+.suboutline-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  border-color: var(--primary-400);
+}
+
+.outline-item.active, 
+.subtopic-item.active,
+.suboutline-item.active {
+  background-color: var(--primary-50);
+  border-color: var(--primary-500);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+  position: relative;
+  transform: translateY(-2px) scale(1.01);
+  transition: all 0.3s ease;
+  z-index: 5;
+}
+
+.outline-item.active::before, 
+.subtopic-item.active::before,
+.suboutline-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background-color: var(--primary-600);
+  transition: all 0.3s ease;
+}
+
+/* Add a highlight animation for newly active items */
+@keyframes highlight-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+}
+
+.outline-item.active-highlight, 
+.subtopic-item.active-highlight,
+.suboutline-item.active-highlight {
+  animation: highlight-pulse 1s ease-out 1;
+}
+
+/* Improve section card styling */
+.section-card {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.section-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-300);
 }
 
 .section-card h3 {
   font-size: 1.1rem;
   font-weight: 600;
   margin-top: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   color: var(--text-primary);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+/* Improve outline content list styling */
+.outline-content ul,
+.suboutline-content ul {
+  list-style-type: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.outline-content li,
+.suboutline-content li {
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  position: relative;
+}
+
+.outline-content li:hover,
+.suboutline-content li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  border-color: var(--primary-400);
+}
+
+.outline-content li.active,
+.suboutline-content li.active {
+  background-color: var(--primary-50);
+  border-color: var(--primary-500);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+/* Card styling for outline items */
+.card-style {
+  display: block;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-style:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-400);
+}
+
+.enhanced-section-card {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.enhanced-section-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-300);
+}
+
+.enhanced-section-card .section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+/* Navigation item styling */
+.nav-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  color: #4b5563; /* Medium gray text for contrast */
+  font-weight: 500;
+  background-color: transparent;
+}
+
+.nav-item:hover {
+  background-color: #f3f4f6; /* Light gray background */
+  color: #4f46e5; /* Indigo text on hover */
+}
+
+@media (max-width: 768px) {
+  .nav-item {
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+    background-color: transparent;
+  }
 }
 
 

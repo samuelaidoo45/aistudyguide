@@ -863,7 +863,119 @@ function NewTopic() {
     }
   }
 
+  // Fetch dive deeper content via streaming API
+  async function fetchDiveDeeperStream(
+    question: string,
+    mainTopic: string,
+    parentTopic: string,
+    subsubtopic: string
+  ): Promise<string> {
+    try {
+      setIsDivingDeeper(true);
+      
+      const response = await fetch('/api/diveDeeper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          topicChain: `Main Topic: '${mainTopic}', Section: '${parentTopic}', Subtopic: '${subsubtopic}'`,
+          followUpQuestion: question
+        })
+      });
 
+      if (!response.ok) throw new Error('Failed to fetch deeper insights');
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+
+      let result = '';
+      const decoder = new TextDecoder();
+      
+      // Get the dive deeper container if we're already showing the dive deeper view
+      const diveContainer = document.querySelector('.dive-deeper-content');
+      
+      if (diveContainer) {
+        diveContainer.innerHTML = '<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating deeper insights...</p></div>';
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        result += chunk;
+        
+        // Update the state with each chunk
+        setDiveDeeper(result);
+        
+        // Update the content as chunks arrive if we're showing the dive deeper view
+        if (diveContainer) {
+          diveContainer.innerHTML = result;
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error fetching deeper insights:', error);
+      setIsDivingDeeper(false);
+      return '<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"><p>Failed to generate deeper insights. Please try again.</p></div>';
+    }
+  }
+
+  // Fetch quiz content via streaming API
+  async function fetchQuizStream(
+    mainTopic: string,
+    parentTopic: string,
+    subsubtopic: string
+  ): Promise<string> {
+    try {
+      setIsQuizzing(true);
+      
+      const response = await fetch('/api/generateQuiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title: mainTopic,
+          sectionTitle: parentTopic,
+          subtopic: subsubtopic
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch quiz');
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+
+      let result = '';
+      const decoder = new TextDecoder();
+      
+      // Get the quiz container if we're already showing the quiz view
+      const quizContainer = document.querySelector('.quiz-container');
+      
+      if (quizContainer) {
+        quizContainer.innerHTML = '<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating quiz questions...</p></div>';
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        result += chunk;
+        
+        // Update the state with each chunk
+        setQuizContent(result);
+        
+        // Update the content as chunks arrive if we're showing the quiz
+        if (quizContainer) {
+          quizContainer.innerHTML = result;
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      setIsQuizzing(false);
+      return '<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"><p>Failed to generate quiz. Please try again.</p></div>';
+    }
+  }
 
   // Add event listeners for subtopic and subsubtopic links
   useEffect(() => {
@@ -1036,6 +1148,8 @@ function NewTopic() {
 
   async function saveNote(noteData: NoteData) {
     try {
+      console.log('Saving note:', noteData);
+      
       // Check if the notes table exists
       const { error: checkError } = await supabase
         .from('notes')
@@ -1044,7 +1158,7 @@ function NewTopic() {
       
       if (checkError) {
         console.error('Error checking notes table:', checkError);
-        throw new Error(`Table may not exist: ${checkError?.message || 'Unknown error'}`);
+        throw new Error(`Table may not exist: ${checkError.message}`);
       }
       
       const { data, error } = await supabase
@@ -1058,7 +1172,7 @@ function NewTopic() {
       }
       
       console.log('Note saved:', data);
-      return data?.[0] || null;
+      return data[0];
     } catch (error: any) {
       console.error('Error saving note:', error);
       toast.error(`Failed to save note: ${error.message || 'Unknown error'}`);
@@ -1068,6 +1182,8 @@ function NewTopic() {
 
   async function saveDiveDeeper(diveDeeperData: DiveDeeperData) {
     try {
+      console.log('Saving dive deeper content:', diveDeeperData);
+      
       // Check if the dive_deeper table exists
       const { error: checkError } = await supabase
         .from('dive_deeper')
@@ -1076,7 +1192,7 @@ function NewTopic() {
       
       if (checkError) {
         console.error('Error checking dive_deeper table:', checkError);
-        throw new Error(`Table may not exist: ${checkError?.message || 'Unknown error'}`);
+        throw new Error(`Table may not exist: ${checkError.message}`);
       }
       
       const { data, error } = await supabase
@@ -1090,7 +1206,7 @@ function NewTopic() {
       }
       
       console.log('Dive deeper content saved:', data);
-      return data?.[0] || null;
+      return data[0];
     } catch (error: any) {
       console.error('Error saving dive deeper content:', error);
       toast.error(`Failed to save dive deeper content: ${error.message || 'Unknown error'}`);
@@ -1100,6 +1216,8 @@ function NewTopic() {
 
   async function saveQuiz(quizData: QuizData) {
     try {
+      console.log('Saving quiz:', quizData);
+      
       // Check if the quizzes table exists
       const { error: checkError } = await supabase
         .from('quizzes')
@@ -1108,7 +1226,7 @@ function NewTopic() {
       
       if (checkError) {
         console.error('Error checking quizzes table:', checkError);
-        throw new Error(`Table may not exist: ${checkError?.message || 'Unknown error'}`);
+        throw new Error(`Table may not exist: ${checkError.message}`);
       }
       
       const { data, error } = await supabase
@@ -1122,7 +1240,7 @@ function NewTopic() {
       }
       
       console.log('Quiz saved:', data);
-      return data?.[0] || null;
+      return data[0];
     } catch (error: any) {
       console.error('Error saving quiz:', error);
       toast.error(`Failed to save quiz: ${error.message || 'Unknown error'}`);
@@ -2062,20 +2180,22 @@ function NewTopic() {
     }
   }, [quizContent, isQuizzing, notesView]);
 
-  // Update quiz score when user answers questions
+  // Function to update the quiz score
   const updateQuizScore = async () => {
-    // Get all quiz options
-    const quizOptions = document.querySelectorAll('.quiz-option');
+    const questions = document.querySelectorAll('.quiz-question');
+    let correctAnswers = 0;
     
-    // Count correct answers
-    const correctAnswers = document.querySelectorAll('.quiz-option.correct').length;
-    const totalQuestions = document.querySelectorAll('.quiz-question').length || 5; // Default to 5 if can't determine
+    questions.forEach(question => {
+      const feedback = question.querySelector('.quiz-feedback');
+      if (feedback && feedback.classList.contains('quiz-feedback-correct')) {
+        correctAnswers++;
+      }
+    });
     
-    // Update the score display
     const scoreDiv = document.querySelector('.quiz-score');
     if (scoreDiv) {
-      const score = Math.round((correctAnswers / totalQuestions) * 100);
-      scoreDiv.textContent = `Score: ${correctAnswers}/${totalQuestions} (${score}%)`;
+      const score = Math.round((correctAnswers / questions.length) * 100);
+      scoreDiv.textContent = `Score: ${correctAnswers}/${questions.length} (${score}%)`;
       
       // Save quiz score to database if user is logged in and topic is saved
       const topicData = await getTopicByTitle(topic);
@@ -2128,33 +2248,13 @@ function NewTopic() {
       className="bg-white rounded-lg shadow-lg p-6"
     >
       <div className="mb-4">
-        <div className="flex flex-wrap gap-2 mb-3">
-          <button
-            onClick={() => {
-              setView('input');
-              setTopic('');
-              setMainOutlineHTML('');
-            }}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to New Topic
-          </button>
-          <button
-            onClick={handleBackToMainOutline}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to Main Outline
-          </button>
-          <button
-            onClick={handleBackToSubOutline}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to Sub-outline
-          </button>
-        </div>
+        <button
+          onClick={handleBackToSubOutline}
+          className="text-indigo-600 hover:text-indigo-700 flex items-center mb-2"
+        >
+          <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
+          Back to sub-outline
+        </button>
         <div className="flex justify-between items-center">
           <div>
             <h4 className="text-xl font-bold text-gray-900">
@@ -2231,37 +2331,6 @@ function NewTopic() {
               </button>
             </div>
           </div>
-          
-          {/* Bottom Navigation */}
-          <div className="mt-8 pt-6 border-t">
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => {
-                  setView('input');
-                  setTopic('');
-                  setMainOutlineHTML('');
-                }}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to New Topic
-              </button>
-              <button
-                onClick={handleBackToMainOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Main Outline
-              </button>
-              <button
-                onClick={handleBackToSubOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Sub-outline
-              </button>
-            </div>
-          </div>
         </>
       )}
 
@@ -2282,38 +2351,285 @@ function NewTopic() {
             Score: 0/5
           </div>
           
-          {/* Bottom Navigation for Quiz View */}
-          <div className="mt-8 pt-6 border-t">
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => {
-                  setView('input');
-                  setTopic('');
-                  setMainOutlineHTML('');
-                }}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to New Topic
-              </button>
-              <button
-                onClick={handleBackToMainOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Main Outline
-              </button>
-              <button
-                onClick={handleBackToSubOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Sub-outline
-              </button>
+          {isQuizzing ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mb-4" />
+              <p className="text-gray-600">Generating quiz questions...</p>
             </div>
+          ) : (
+            <div 
+              className="quiz-container"
+              dangerouslySetInnerHTML={{ __html: quizContent }}
+            />
+          )}
+          
+          <div className="mt-8 flex justify-between">
+            <button
+              onClick={() => setNotesView("notes")}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back to notes
+            </button>
+            
+            <button
+              onClick={handleGenerateQuiz}
+              disabled={isQuizzing}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed"
+            >
+              Regenerate Quiz
+            </button>
           </div>
         </div>
       )}
+
+      {notesView === "diveDeeper" && (
+        <div className="dive-deeper-view">
+          <div className="flex justify-between items-center mb-6">
+            <h4 className="text-xl font-bold text-gray-900">Dive Deeper: {selectedSubSubtopic}</h4>
+            <button
+              onClick={() => setNotesView("notes")}
+              className="text-indigo-600 hover:text-indigo-700 flex items-center"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back to notes
+            </button>
+          </div>
+          
+          <div className="question bg-indigo-50 p-4 rounded-lg mb-6">
+            <p className="font-medium text-indigo-800">{followUpQuestion}</p>
+          </div>
+          
+          {isDivingDeeper ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mb-4" />
+              <p className="text-gray-600">Generating deeper insights...</p>
+            </div>
+          ) : (
+            <div 
+              className="prose max-w-none notes-content dive-deeper-content"
+              dangerouslySetInnerHTML={{ __html: diveDeeper }}
+            />
+          )}
+          
+          <div className="mt-8 pt-6 border-t">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">Ask Another Question</h4>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={followUpQuestion}
+                onChange={(e) => setFollowUpQuestion(e.target.value)}
+                placeholder="Ask another follow-up question..."
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <button
+                onClick={handleDiveDeeper}
+                disabled={isDivingDeeper || !followUpQuestion.trim()}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center"
+              >
+                {isDivingDeeper ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="w-4 h-4 mr-1" />
+                    Ask
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          <div className="mt-8 flex justify-start">
+            <button
+              onClick={() => setNotesView("notes")}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back to notes
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Action buttons for notes - moved to bottom */}
+      {notesView === "notes" && (
+        <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-gray-200">
+          <button
+            onClick={handleBackToSubOutline}
+            className="flex items-center px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md text-sm font-medium transition-colors"
+            title="Back to sub-outline"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Back to sub-outline
+          </button>
+          
+          <button
+            onClick={exportToWord}
+            className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+            title="Export to Word"
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            Word
+          </button>
+          
+          <button
+            onClick={exportToPDF}
+            className="flex items-center px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-md text-sm font-medium transition-colors"
+            title="Export to PDF"
+          >
+            <Download className="w-4 h-4 mr-1" />
+            PDF
+          </button>
+          
+          <button
+            onClick={listenToNotes}
+            className={`flex items-center px-3 py-2 ${isSpeaking ? 'bg-purple-100 text-purple-800' : 'bg-purple-50 hover:bg-purple-100 text-purple-700'} rounded-md text-sm font-medium transition-colors`}
+            title={isSpeaking ? "Stop listening" : "Listen to notes"}
+          >
+            <Volume2 className="w-4 h-4 mr-1" />
+            {isSpeaking ? "Stop" : "Listen"}
+          </button>
+          
+          <button
+            onClick={handleGenerateQuiz}
+            disabled={isQuizzing}
+            className="flex items-center px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-md text-sm font-medium transition-colors"
+            title="Generate quiz"
+          >
+            <BookOpen className="w-4 h-4 mr-1" />
+            {isQuizzing ? "Generating..." : "Quiz"}
+          </button>
+          
+          <button
+            onClick={handleDiveDeeper}
+            disabled={isDivingDeeper || !followUpQuestion.trim()}
+            className="flex items-center px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-md text-sm font-medium transition-colors"
+            title="Dive deeper into this topic"
+          >
+            <Brain className="w-4 h-4 mr-1" />
+            {isDivingDeeper ? "Generating..." : "Dive Deeper"}
+          </button>
+        </div>
+      )}
+
+      <style jsx global>{`
+        .notes-content {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+          font-size: 1.05rem;
+          line-height: 1.8;
+          color: #374151;
+          padding: 2rem;
+          background-color: white;
+          border-radius: 0.75rem;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          max-width: 100%;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+          hyphens: auto;
+        }
+        
+        /* Quiz styling */
+        .quiz-question {
+          background-color: white;
+          border-radius: 0.5rem;
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .quiz-question h3 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin-bottom: 1rem;
+        }
+        
+        .quiz-option {
+          display: block;
+          padding: 0.75rem 1rem;
+          margin: 0.5rem 0;
+          border: 1px solid #d1d5db;
+          border-radius: 0.375rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .quiz-option:hover {
+          background-color: #f3f4f6;
+          transform: translateX(4px);
+        }
+        
+        .quiz-option-selected {
+          background-color: #e0e7ff;
+          border-color: #6366f1;
+        }
+        
+        .quiz-feedback {
+          margin-top: 1rem;
+          padding: 0.75rem;
+          border-radius: 0.375rem;
+          display: none;
+        }
+        
+        .quiz-feedback-correct {
+          background-color: #d1fae5;
+          color: #065f46;
+        }
+        
+        .quiz-feedback-incorrect {
+          background-color: #fee2e2;
+          color: #b91c1c;
+        }
+        
+        .quiz-check-btn {
+          background-color: #4f46e5;
+          color: white;
+          border: none;
+          border-radius: 0.375rem;
+          padding: 0.5rem 1rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          margin-top: 1rem;
+        }
+        
+        .quiz-check-btn:hover {
+          background-color: #4338ca;
+        }
+        
+        .quiz-score {
+          background-color: #f3f4f6;
+          padding: 0.75rem 1rem;
+          border-radius: 0.375rem;
+          font-weight: 500;
+          margin-bottom: 1.5rem;
+          text-align: center;
+        }
+        
+        /* Additional styling for code blocks */
+        .notes-content .code-block {
+          background-color: #1f2937;
+          color: #f9fafb;
+          padding: 1rem;
+          border-radius: 0.5rem;
+          overflow-x: auto;
+          margin: 1.5rem 0;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        
+        /* Remove any markdown code block markers that might be visible */
+        .notes-content pre:before,
+        .notes-content pre:after,
+        .notes-content code:before,
+        .notes-content code:after {
+          content: none !important;
+        }
+      `}</style>
     </motion.div>
   );
 
@@ -2376,38 +2692,34 @@ function NewTopic() {
     }
     
     return (
-      <nav className="mb-4 overflow-x-auto py-2 -mx-2 px-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700" aria-label="Breadcrumb">
-        <ol className="flex flex-nowrap items-center space-x-1">
+      <nav className="flex mb-4" aria-label="Breadcrumb">
+        <ol className="flex items-center space-x-2">
           {breadcrumbs.map((breadcrumb, index) => (
-            <li key={breadcrumb.name} className="flex items-center whitespace-nowrap">
+            <li key={breadcrumb.name} className="flex items-center">
               {index > 0 && (
-                <ChevronRight className="flex-shrink-0 h-4 w-4 text-gray-400 mx-1" aria-hidden="true" />
+                <ChevronRight className="flex-shrink-0 h-4 w-4 text-gray-400 mx-1" />
               )}
               {breadcrumb.onClick ? (
                 <button
                   onClick={breadcrumb.onClick}
-                  className={`text-sm font-medium px-2.5 py-1.5 rounded-md transition-colors flex items-center ${
+                  className={`text-sm font-medium ${
                     breadcrumb.current
-                      ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                  } ${index === breadcrumbs.length - 1 ? 'max-w-[150px] sm:max-w-xs truncate' : ''}`}
-                  title={breadcrumb.name}
+                      ? 'text-indigo-600'
+                      : 'text-gray-500 hover:text-indigo-600'
+                  }`}
                 >
-                  {index === 0 && <Home className="inline-block w-3.5 h-3.5 mr-1.5" aria-hidden="true" />}
-                  <span className="truncate">{breadcrumb.name}</span>
+                  {breadcrumb.name}
                 </button>
               ) : (
                 <a
                   href={breadcrumb.href}
-                  className={`text-sm font-medium px-2.5 py-1.5 rounded-md transition-colors flex items-center ${
+                  className={`text-sm font-medium ${
                     breadcrumb.current
-                      ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                  } ${index === breadcrumbs.length - 1 ? 'max-w-[150px] sm:max-w-xs truncate' : ''}`}
-                  title={breadcrumb.name}
+                      ? 'text-indigo-600'
+                      : 'text-gray-500 hover:text-indigo-600'
+                  }`}
                 >
-                  {index === 0 && <Home className="inline-block w-3.5 h-3.5 mr-1.5" aria-hidden="true" />}
-                  <span className="truncate">{breadcrumb.name}</span>
+                  {breadcrumb.name}
                 </a>
               )}
             </li>
@@ -2425,30 +2737,17 @@ function NewTopic() {
       exit={{ opacity: 0, y: -20 }}
       className="bg-bg-secondary rounded-xl shadow-md p-6 border border-border-primary transition-colors duration-200"
     >
-      <div className="mb-6">
-        <button
-          onClick={() => {
-            setView('input');
-            setTopic('');
-            setMainOutlineHTML('');
-          }}
-          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center mb-3 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Back to New Topic
-        </button>
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
-            <BookOpen className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" />
-            {topic}
-          </h2>
-          {loading && (
-            <div className="flex items-center text-indigo-600 dark:text-indigo-400">
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              <span>Generating outline...</span>
-            </div>
-          )}
-        </div>
+      <div className="mb-6 flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
+          <BookOpen className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" />
+          {topic}
+        </h2>
+        {loading && (
+          <div className="flex items-center text-indigo-600 dark:text-indigo-400">
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            <span>Generating outline...</span>
+          </div>
+        )}
       </div>
       
       {!loading && streamingDone && (
@@ -2465,22 +2764,6 @@ function NewTopic() {
         dangerouslySetInnerHTML={{ __html: mainOutlineHTML }}
         onClick={handleMainOutlineClick}
       />
-      
-      {!loading && streamingDone && (
-        <div className="mt-6 pt-4 border-t border-border-primary">
-          <button
-            onClick={() => {
-              setView('input');
-              setTopic('');
-              setMainOutlineHTML('');
-            }}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to New Topic
-          </button>
-        </div>
-      )}
       
       <style jsx global>{`
         .outline-content h2 {
@@ -2533,38 +2816,25 @@ function NewTopic() {
       exit={{ opacity: 0, y: -20 }}
       className="bg-bg-secondary rounded-xl shadow-md p-6 border border-border-primary transition-colors duration-200"
     >
-      <div className="mb-6">
-        <div className="flex flex-wrap gap-2 mb-3">
-          <button
-            onClick={() => {
-              setView('input');
-              setTopic('');
-              setMainOutlineHTML('');
-            }}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to New Topic
-          </button>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
           <button
             onClick={handleBackToMainOutline}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center mb-3 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to Main Outline
+            Back to main outline
           </button>
-        </div>
-        <div className="flex justify-between items-center">
           <h3 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
             {selectedSubtopic}
           </h3>
-          {loading && (
-            <div className="flex items-center text-indigo-600 dark:text-indigo-400">
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              <span>Generating...</span>
-            </div>
-          )}
         </div>
+        {loading && (
+          <div className="flex items-center text-indigo-600 dark:text-indigo-400">
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            <span>Generating...</span>
+          </div>
+        )}
       </div>
       
       {!loading && subOutlineStreamingDone && (
@@ -2581,29 +2851,6 @@ function NewTopic() {
         dangerouslySetInnerHTML={{ __html: subOutlineHTML }}
         onClick={handleSubOutlineClick}
       />
-      
-      {!loading && subOutlineStreamingDone && (
-        <div className="mt-6 pt-4 border-t border-border-primary flex flex-wrap gap-2">
-          <button
-            onClick={() => {
-              setView('input');
-              setTopic('');
-              setMainOutlineHTML('');
-            }}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to New Topic
-          </button>
-          <button
-            onClick={handleBackToMainOutline}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to Main Outline
-          </button>
-        </div>
-      )}
       
       <style jsx global>{`
         .suboutline-content h3 {

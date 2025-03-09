@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { createClient } from '@/app/lib/supabase'
 import { motion } from 'framer-motion'
 import toast, { Toaster } from 'react-hot-toast'
-import Image from 'next/image'
+import Logo from '@/app/components/Logo'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -44,13 +44,7 @@ export default function ForgotPassword() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/">
           <div className="flex justify-center">
-            <Image 
-              src="/images/logo.png" 
-              alt="StudyGuide Logo" 
-              width={180} 
-              height={60} 
-              className="cursor-pointer"
-            />
+            <Logo />
           </div>
         </Link>
         <motion.h2 

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import DashboardLayout from '@/app/components/DashboardLayout'
 import { Award, Star, Clock, BookOpen, Zap, Target, Trophy, CheckCircle, Calendar } from 'lucide-react'
 import toast, { Toaster } from 'react-hot-toast'
+import React from 'react'
 
 interface Achievement {
   id: number
@@ -94,11 +95,11 @@ export default function Achievements() {
       const consecutiveDays = calculateConsecutiveDays(sessionsData || [])
       
       // Count completed topics (100% progress)
-      const completedTopics = topicsData?.filter(topic => topic.progress === 100).length || 0
+      const completedTopics = topicsData?.filter((topic: { progress: number }) => topic.progress === 100).length || 0
       
       // Find longest topic study time
       const topicTimes = new Map<string, number>()
-      sessionsData?.forEach(session => {
+      sessionsData?.forEach((session: { topic_id: string, duration?: number }) => {
         const topicId = session.topic_id
         const currentTime = topicTimes.get(topicId) || 0
         topicTimes.set(topicId, currentTime + (session.duration || 0))
@@ -186,7 +187,17 @@ export default function Achievements() {
       
       if (data && data.length > 0) {
         // Map database achievements to our format
-        const mappedAchievements = data.map(item => ({
+        const mappedAchievements = data.map((item: { 
+          id: string | number, 
+          title: string, 
+          description: string, 
+          icon_name: string, 
+          earned: boolean, 
+          earned_date: string, 
+          progress: number, 
+          total: number, 
+          points: number 
+        }) => ({
           id: item.id,
           title: item.title,
           description: item.description,
@@ -214,17 +225,17 @@ export default function Achievements() {
 
   const getIconForAchievement = (iconName: string) => {
     const icons: Record<string, any> = {
-      'BookOpen': <BookOpen className="h-6 w-6" />,
-      'Clock': <Clock className="h-6 w-6" />,
-      'Calendar': <Calendar className="h-6 w-6" />,
-      'Trophy': <Trophy className="h-6 w-6" />,
-      'Star': <Star className="h-6 w-6" />,
-      'Target': <Target className="h-6 w-6" />,
-      'Award': <Award className="h-6 w-6" />,
-      'Zap': <Zap className="h-6 w-6" />
+      'BookOpen': BookOpen,
+      'Clock': Clock,
+      'Calendar': Calendar,
+      'Trophy': Trophy,
+      'Star': Star,
+      'Target': Target,
+      'Award': Award,
+      'Zap': Zap
     }
     
-    return icons[iconName] || <Award className="h-6 w-6" />
+    return icons[iconName] || Award
   }
 
   const createDefaultAchievements = () => {
@@ -419,7 +430,7 @@ export default function Achievements() {
               <div className="px-4 py-5 sm:p-6">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <Award className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5">
@@ -431,7 +442,7 @@ export default function Achievements() {
                   </div>
                   
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <Star className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5">
@@ -443,7 +454,7 @@ export default function Achievements() {
                   </div>
                   
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <Trophy className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5">
@@ -464,21 +475,23 @@ export default function Achievements() {
               {achievements.map((achievement, index) => (
                 <motion.div 
                   key={achievement.id}
-                  className={`bg-bg-secondary overflow-hidden shadow rounded-lg border transition-colors duration-200 ${achievement.earned ? 'border-indigo-200 dark:border-indigo-800/50' : 'border-border-primary'}`}
+                  className={`bg-bg-secondary overflow-hidden shadow rounded-lg border transition-colors duration-200 ${achievement.earned ? 'border-indigo-200' : 'border-border-primary'}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
                 >
                   <div className="px-4 py-5 sm:p-6">
                     <div className="flex items-center">
-                      <div className={`flex-shrink-0 rounded-md p-3 transition-colors duration-200 ${achievement.earned ? 'bg-indigo-500 dark:bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                        <achievement.icon className={`h-6 w-6 ${achievement.earned ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`} />
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${achievement.earned ? 'bg-indigo-500' : 'bg-gray-200'}`}>
+                        {React.createElement(achievement.icon, {
+                          className: `h-6 w-6 ${achievement.earned ? 'text-white' : 'text-gray-500'}`
+                        })}
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <h3 className="text-lg font-medium text-text-primary transition-colors duration-200">{achievement.title}</h3>
                         <div className="mt-1 flex items-center">
                           {achievement.earned && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 transition-colors duration-200">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 transition-colors duration-200">
                               Earned
                             </span>
                           )}
@@ -496,9 +509,9 @@ export default function Achievements() {
                         <span>Progress</span>
                         <span>{achievement.progress} / {achievement.total}</span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 transition-colors duration-200">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 transition-colors duration-200">
                         <div 
-                          className={`h-2.5 rounded-full transition-colors duration-200 ${achievement.earned ? 'bg-green-500 dark:bg-green-600' : 'bg-indigo-500 dark:bg-indigo-600'}`} 
+                          className={`h-2.5 rounded-full transition-colors duration-200 ${achievement.earned ? 'bg-green-500' : 'bg-indigo-500'}`} 
                           style={{ width: `${(achievement.progress / achievement.total) * 100}%` }}
                         ></div>
                       </div>
@@ -506,13 +519,13 @@ export default function Achievements() {
                     
                     <div className="mt-4 text-sm text-text-tertiary transition-colors duration-200">
                       {achievement.earned ? (
-                        <div className="flex items-center text-green-600 dark:text-green-400 transition-colors duration-200">
+                        <div className="flex items-center text-green-600 transition-colors duration-200">
                           <CheckCircle className="h-4 w-4 mr-1" />
                           <span>Earned on {formatDate(achievement.earnedDate)}</span>
                         </div>
                       ) : (
                         <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1 text-gray-400 dark:text-gray-500 transition-colors duration-200" />
+                          <Clock className="h-4 w-4 mr-1 text-gray-400 transition-colors duration-200" />
                           <span>Not yet earned</span>
                         </div>
                       )}
@@ -537,9 +550,9 @@ export default function Achievements() {
                   <span>{totalPoints % 100}/100 points to next level</span>
                 </div>
                 
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 transition-colors duration-200">
+                <div className="w-full bg-gray-200 rounded-full h-2.5 transition-colors duration-200">
                   <div 
-                    className="bg-indigo-500 dark:bg-indigo-600 h-2.5 rounded-full transition-colors duration-200" 
+                    className="bg-indigo-500 h-2.5 rounded-full transition-colors duration-200" 
                     style={{ width: `${(totalPoints % 100)}%` }}
                   ></div>
                 </div>

@@ -17,10 +17,8 @@ import {
   User,
   BookMarked,
   Award,
-  Moon,
-  Sun
+  Mail
 } from 'lucide-react'
-import { useTheme } from '@/app/context/ThemeContext'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -31,7 +29,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
-  const { theme, toggleTheme } = useTheme()
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -44,6 +41,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'New Topic', href: '/dashboard/new-topic', icon: BookOpen },
     { name: 'My Topics', href: '/dashboard/topics', icon: BookMarked },
     { name: 'Achievements', href: '/dashboard/achievements', icon: Award },
+    { name: 'Contact Us', href: '/dashboard/contact', icon: Mail },
   ]
 
   const userNavigation = [
@@ -55,37 +53,35 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen bg-bg-primary transition-colors duration-200">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 flex z-40 md:hidden ${sidebarOpen ? '' : 'hidden'}`} role="dialog" aria-modal="true">
-        {/* Overlay */}
-        <div 
-          className="fixed inset-0 bg-gray-600 bg-opacity-75" 
-          aria-hidden="true"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-
-        {/* Sidebar */}
-        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-bg-secondary">
+        {/* Remove the overlay completely */}
+        
+        {/* Sidebar - Make it completely opaque with solid white background */}
+        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl border-r-2 border-gray-200">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               type="button"
-              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="ml-1 flex items-center justify-center h-12 w-12 rounded-md bg-white border-2 border-gray-300 shadow-md text-gray-700 hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-500 transition-all duration-200"
               onClick={() => setSidebarOpen(false)}
+              style={{
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              }}
             >
               <span className="sr-only">Close sidebar</span>
-              <X className="h-6 w-6 text-white" />
+              <X className="h-6 w-6" />
             </button>
           </div>
 
           <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-            <div className="flex-shrink-0 flex items-center px-4">
+            <div className="flex-shrink-0 flex items-center px-4 mb-4 border-b pb-4">
               <Image 
                 src="/images/logo.png" 
-                alt="StudyGuide Logo" 
+                alt="TopicSimplify Logo" 
                 width={150} 
                 height={50} 
                 className="h-8 w-auto"
               />
             </div>
-            <nav className="mt-5 px-2 space-y-1">
+            <nav className="mt-2 px-4 space-y-2">
               {navigation.map((item) => {
                 const isActive = pathname === item.href
                 return (
@@ -93,27 +89,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.name}
                     href={item.href}
                     className={`
-                      group flex items-center px-2 py-2 text-base font-medium rounded-md transition-all duration-200
-                      ${isActive 
-                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 shadow-sm' 
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 hover:text-indigo-700 dark:hover:text-indigo-300'
+                      group flex items-center px-3 py-3 text-base font-medium rounded-md border ${
+                        isActive
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm'
+                          : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 border-transparent hover:border-indigo-100'
                       }
                     `}
                   >
                     <item.icon 
-                      className={`mr-4 h-6 w-6 transition-colors duration-200
-                        ${isActive 
-                          ? 'text-indigo-500 dark:text-indigo-400' 
-                          : 'text-gray-500 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400'
-                        }
-                      `} 
+                      className={`mr-4 h-6 w-6 ${
+                        isActive
+                          ? 'text-indigo-500'
+                          : 'text-gray-500 group-hover:text-indigo-500'
+                      }`} 
                     />
                     {item.name}
                     {isActive && (
                       <motion.div
                         layoutId="sidebar-active-indicator"
                         className="absolute left-0 w-1 h-8 bg-indigo-500 rounded-r-full"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       />
                     )}
                   </Link>
@@ -121,19 +115,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               })}
             </nav>
           </div>
-          <div className="flex-shrink-0 flex border-t border-border-primary p-4">
+          <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
             <button
               onClick={handleSignOut}
-              className="flex-shrink-0 group block w-full"
+              className="group flex items-center px-3 py-3 w-full text-base font-medium rounded-md border border-transparent hover:border-red-100 text-gray-700 hover:bg-red-50 hover:text-red-700"
             >
-              <div className="flex items-center">
-                <div>
-                  <LogOut className="inline-block h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-base font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">Sign out</p>
-                </div>
-              </div>
+              <LogOut className="inline-block h-6 w-6 text-gray-500 group-hover:text-red-500 mr-4" />
+              <span>Sign out</span>
             </button>
           </div>
         </div>
@@ -160,27 +148,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.name}
                     href={item.href}
                     className={`
-                      relative group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-all duration-200
-                      ${isActive 
-                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 shadow-sm' 
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 hover:text-indigo-700 dark:hover:text-indigo-300'
+                      group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                        isActive
+                          ? 'bg-indigo-50 text-indigo-700 shadow-sm'
+                          : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
                       }
                     `}
                   >
                     <item.icon 
-                      className={`mr-3 h-5 w-5 transition-colors duration-200
-                        ${isActive 
-                          ? 'text-indigo-500 dark:text-indigo-400' 
-                          : 'text-gray-500 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400'
-                        }
-                      `} 
+                      className={`mr-3 flex-shrink-0 h-6 w-6 ${
+                        isActive
+                          ? 'text-indigo-500'
+                          : 'text-gray-500 group-hover:text-indigo-500'
+                      }`} 
                     />
                     {item.name}
                     {isActive && (
                       <motion.div
                         layoutId="sidebar-active-indicator-desktop"
                         className="absolute left-0 w-1 h-8 bg-indigo-500 rounded-r-full"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       />
                     )}
                   </Link>
@@ -191,15 +177,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex-shrink-0 flex border-t border-border-primary p-4">
             <button
               onClick={handleSignOut}
-              className="flex-shrink-0 group block w-full"
+              className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
             >
-              <div className="flex items-center">
-                <div>
-                  <LogOut className="inline-block h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">Sign out</p>
-                </div>
+              <LogOut className="inline-block h-5 w-5 text-gray-500 group-hover:text-indigo-500" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-700 group-hover:text-indigo-700">Sign out</p>
               </div>
             </button>
           </div>
@@ -211,27 +193,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-bg-primary">
           <button
             type="button"
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+            className="h-12 w-12 inline-flex items-center justify-center rounded-md bg-white border-2 border-gray-300 shadow-md text-gray-700 hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-500 transition-all duration-200"
             onClick={() => setSidebarOpen(true)}
+            style={{
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            }}
           >
             <span className="sr-only">Open sidebar</span>
             <Menu className="h-6 w-6" />
           </button>
         </div>
         <main className="flex-1">
-          <div className="flex justify-end p-4">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </button>
-          </div>
           {children}
         </main>
       </div>

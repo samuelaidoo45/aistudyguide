@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>StudyGuide - AI-Powered Learning Assistant</title>
+        <title>TopicSimplify - AI-Powered Learning Assistant</title>
         <meta
           name="description"
           content="Harness the power of AI to break down any subject into digestible, structured knowledge. Master new concepts faster than ever before."

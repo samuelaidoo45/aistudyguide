@@ -125,7 +125,7 @@ export default function TopicsList() {
           <h1 className="text-2xl font-bold text-text-primary transition-colors duration-200">My Topics</h1>
           <Link
             href="/dashboard/new-topic"
-            className="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors duration-200"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
           >
             Create New Topic
           </Link>
@@ -133,7 +133,7 @@ export default function TopicsList() {
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 dark:border-indigo-400 transition-colors duration-200"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 transition-colors duration-200"></div>
           </div>
         ) : topics.length === 0 ? (
           <div className="text-center py-12 bg-bg-secondary rounded-lg shadow border border-border-primary transition-colors duration-200">
@@ -141,7 +141,7 @@ export default function TopicsList() {
             <p className="text-text-tertiary mb-6 transition-colors duration-200">Get started by creating your first study topic.</p>
             <Link
               href="/dashboard/new-topic"
-              className="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors duration-200"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
             >
               Create Your First Topic
             </Link>
@@ -151,10 +151,10 @@ export default function TopicsList() {
             {topics.map(topic => (
               <div 
                 key={topic.id} 
-                className="bg-bg-secondary p-6 rounded-lg shadow cursor-pointer hover:shadow-md transition-all border border-border-primary dark:hover:border-indigo-800/30"
+                className="p-4 bg-bg-secondary rounded-lg shadow-sm hover:shadow-md transition-all border border-border-primary"
                 onClick={() => handleTopicClick(topic.id)}
               >
-                <h2 className="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mb-2 transition-colors duration-200">
+                <h2 className="text-xl font-semibold text-indigo-600 mb-2 transition-colors duration-200">
                   {topic.title || topic.name || 'Untitled Topic'}
                 </h2>
                 
@@ -168,9 +168,9 @@ export default function TopicsList() {
                   <div className="mt-4">
                     <div className="flex items-center">
                       <span className="text-sm text-text-secondary mr-2 transition-colors duration-200">Progress:</span>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 transition-colors duration-200">
+                      <div className="w-full bg-gray-200 rounded-full h-2 transition-colors duration-200">
                         <div 
-                          className="bg-indigo-600 dark:bg-indigo-500 h-2 rounded-full transition-colors duration-200" 
+                          className="bg-indigo-600 h-2 rounded-full transition-colors duration-200" 
                           style={{ width: `${topic.progress}%` }}
                         ></div>
                       </div>
@@ -181,7 +181,7 @@ export default function TopicsList() {
                 
                 <div className="mt-4 text-right">
                   <button 
-                    className="text-indigo-600 dark:text-indigo-400 text-sm hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors duration-200"
+                    className="text-indigo-600 text-sm hover:text-indigo-800 transition-colors duration-200"
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent triggering the parent onClick
                       handleTopicClick(topic.id);

@@ -2,9 +2,9 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/app/lib/supabase'
 import { motion } from 'framer-motion'
 import toast, { Toaster } from 'react-hot-toast'
@@ -14,29 +14,74 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [initialCheckDone, setInitialCheckDone] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
+
+  // Check for error parameters
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error) {
+      toast.error(`Authentication error: ${error}`)
+    }
+  }, [searchParams])
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          console.log('User already logged in, redirecting to dashboard')
+          router.push('/dashboard')
+        }
+      } catch (error) {
+        console.error('Error checking user:', error)
+      } finally {
+        setInitialCheckDone(true)
+      }
+    }
+
+    checkUser()
+  }, [supabase, router])
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting to sign in with email:', email)
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
+        console.error('Login error:', error)
         throw error
       }
 
+      console.log('Login successful, user:', data.user)
       toast.success('Logged in successfully!')
-      router.push('/dashboard')
-      router.refresh()
+      
+      // Verify the session was created
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session) {
+        console.log('Session verified, user ID:', sessionData.session.user.id)
+        
+        // Set a custom cookie to help with session detection
+        document.cookie = `auth-session-active=true; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      } else {
+        console.warn('Session not found after login')
+      }
+      
+      // Redirect directly to dashboard without using router.push
+      // This ensures a full page reload which helps with session detection
+      window.location.href = '/dashboard';
     } catch (error: any) {
+      console.error('Failed to log in with email:', error)
       toast.error(error.message || 'Failed to log in')
-    } finally {
       setLoading(false)
     }
   }
@@ -45,20 +90,54 @@ export default function Login() {
     setLoading(true)
     
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Attempting to sign in with Google')
+      
+      // Get the current origin for the redirect URL
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      const redirectTo = `${origin}/auth/callback` // Use the callback route
+      
+      console.log('Redirect URL:', redirectTo)
+      
+      // Use signInWithOAuth with minimal options
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+          redirectTo,
+          // Ensure we're using the same storage key as in the Supabase client
+          scopes: 'email profile'
+        }
       })
 
       if (error) {
+        console.error('Google login error:', error)
         throw error
       }
+      
+      if (!data?.url) {
+        console.error('No OAuth URL returned')
+        throw new Error('Failed to get OAuth URL')
+      }
+      
+      console.log('OAuth sign-in initiated, URL:', data.url)
+      
+      // Redirect the user to the OAuth URL
+      window.location.href = data.url
+      
+      // No need to set loading to false as we're redirecting away
     } catch (error: any) {
+      console.error('Failed to initiate Google login:', error)
       toast.error(error.message || 'Failed to log in with Google')
       setLoading(false)
     }
+  }
+
+  // Don't render anything until initial check is done
+  if (!initialCheckDone) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    )
   }
 
   return (

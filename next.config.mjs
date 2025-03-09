@@ -15,6 +15,17 @@ const nextConfig = {
   },
   // Configure static page generation
   output: 'standalone',
+  // Improve image handling
+  images: {
+    unoptimized: true, // Disable image optimization to prevent issues in production
+    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
 };
 
 export default nextConfig; 

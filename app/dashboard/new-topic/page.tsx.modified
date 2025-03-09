@@ -1,0 +1,899 @@
+"use client";
+
+import React, { useState, useRef, useEffect, useCallback, Suspense } from "react";
+import { createClient } from '@/app/lib/supabase';
+import DashboardLayout from '@/app/components/DashboardLayout';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { 
+  BookOpen, 
+  Brain, 
+  Code, 
+  Calculator, 
+  FlaskConical, 
+  Dna, 
+  GraduationCap, 
+  Globe,
+  TrendingUp,
+  Palette,
+  Sparkles,
+  ChevronRight,
+  Loader2,
+  Home,
+  ChevronLeft,
+  Info,
+  Moon,
+  Sun,
+  FileText,
+  Download,
+  Volume2
+} from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+
+type ViewState = "input" | "mainOutline" | "subOutline" | "finalContent";
+
+interface TopicData {
+  id?: string;
+  user_id: string;
+  title: string;
+  main_outline: string;
+  created_at?: string;
+  last_accessed?: string;
+  progress: number;
+  category?: string;
+  total_study_time?: number;
+}
+
+interface SubtopicData {
+  id?: string;
+  topic_id: string;
+  title: string;
+  content: string;
+  created_at?: string;
+  last_accessed?: string;
+}
+
+interface NoteData {
+  id?: string;
+  subtopic_id: string;
+  title: string;
+  content: string;
+  created_at?: string;
+}
+
+interface DiveDeeperData {
+  id?: string;
+  note_id: string;
+  question: string;
+  content: string;
+  created_at?: string;
+}
+
+interface QuizData {
+  id?: string;
+  note_id: string;
+  content: string;
+  created_at?: string;
+  last_score?: number;
+}
+
+interface NavigationStep {
+  name: string;
+  state: 'current' | 'complete' | 'upcoming';
+  isClickable: boolean;
+  targetView: ViewState;
+}
+
+const popularTopics = [
+  {
+    category: 'Computer Science',
+    topics: [
+      'JavaScript Fundamentals',
+      'React.js for Frontend Development',
+      'Data Structures and Algorithms',
+      'Machine Learning with Python',
+      'Cybersecurity Fundamentals',
+      'Cloud Computing with AWS'
+    ],
+    icon: Code
+  },
+  {
+    category: 'Business & Finance',
+    topics: [
+      'Financial Literacy Basics',
+      'Investment Strategies for Beginners',
+      'Digital Marketing Fundamentals',
+      'Project Management Methodologies',
+      'Entrepreneurship Essentials',
+      'Business Communication Skills'
+    ],
+    icon: TrendingUp
+  },
+  {
+    category: 'Health & Wellness',
+    topics: [
+      'Nutrition Fundamentals',
+      'Stress Management Techniques',
+      'Effective Exercise Routines',
+      'Mental Health Awareness',
+      'Sleep Science and Optimization',
+      'Mindfulness and Meditation'
+    ],
+    icon: Brain
+  },
+  {
+    category: 'Personal Development',
+    topics: [
+      'Time Management Strategies',
+      'Effective Communication Skills',
+      'Public Speaking Fundamentals',
+      'Building Healthy Habits',
+      'Goal Setting and Achievement',
+      'Critical Thinking Skills'
+    ],
+    icon: Sparkles
+  },
+  {
+    category: 'Science & Technology',
+    topics: [
+      'Climate Change and Sustainability',
+      'Artificial Intelligence Ethics',
+      'Renewable Energy Technologies',
+      'Quantum Computing Basics',
+      'Biotechnology Advancements',
+      'Space Exploration and Astronomy'
+    ],
+    icon: FlaskConical
+  },
+  {
+    category: 'Arts & Humanities',
+    topics: [
+      'Creative Writing Techniques',
+      'Art History Fundamentals',
+      'Philosophy for Everyday Life',
+      'Music Theory Basics',
+      'Film Analysis and Criticism',
+      'World Religions and Cultures'
+    ],
+    icon: Palette
+  },
+  {
+    category: 'Languages',
+    topics: [
+      'Spanish for Travelers',
+      'Mandarin Chinese Basics',
+      'Professional English Communication',
+      'French for Beginners',
+      'Japanese Language and Culture',
+      'Arabic Language Fundamentals'
+    ],
+    icon: Globe
+  },
+  {
+    category: 'Mathematics',
+    topics: [
+      'Practical Statistics for Data Analysis',
+      'Applied Calculus in Real Life',
+      'Financial Mathematics',
+      'Probability Theory Basics',
+      'Linear Algebra Applications',
+      'Mathematical Problem Solving'
+    ],
+    icon: Calculator
+  },
+  {
+    category: 'Education & Learning',
+    topics: [
+      'Effective Study Techniques',
+      'Memory Improvement Methods',
+      'Speed Reading Strategies',
+      'Learning How to Learn',
+      'Teaching Methodologies',
+      'Educational Psychology'
+    ],
+    icon: GraduationCap
+  }
+]
+
+const steps = ['input', 'mainOutline', 'subOutline', 'finalContent'] as ViewState[];
+
+// URL Parameter Handler Component
+interface UrlParamHandlerProps {
+  urlTopic: string | null;
+  urlSubtopic: string | null;
+  urlSubsubtopic: string | null;
+  handleBreakdown: (topic?: string) => Promise<void>;
+  handleSelectSubtopic: (subtopic: string) => Promise<void>;
+  handleSelectSubSubtopic: (subsubtopic: string) => Promise<void>;
+}
+
+const UrlParamHandler: React.FC<UrlParamHandlerProps> = ({ 
+  urlTopic, 
+  urlSubtopic, 
+  urlSubsubtopic, 
+  handleBreakdown, 
+  handleSelectSubtopic, 
+  handleSelectSubSubtopic 
+}) => {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (urlTopic && !initialized) {
+      setInitialized(true);
+      
+      // Set up a sequence of actions with delays
+      const sequence = async () => {
+        // First, handle the main topic
+        await handleBreakdown(urlTopic);
+        
+        // If we have a subtopic, handle it after a delay
+        if (urlSubtopic) {
+          setTimeout(async () => {
+            await handleSelectSubtopic(urlSubtopic);
+            
+            // If we have a subsubtopic, handle it after another delay
+            if (urlSubsubtopic) {
+              setTimeout(async () => {
+                await handleSelectSubSubtopic(urlSubsubtopic);
+              }, 1000);
+            }
+          }, 1000);
+        }
+      };
+      
+      sequence();
+    }
+  }, [urlTopic, urlSubtopic, urlSubsubtopic, initialized, handleBreakdown, handleSelectSubtopic, handleSelectSubSubtopic]);
+  
+  return null; // This component doesn't render anything
+};
+
+// Wrap the export with Suspense
+export default function NewTopicPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+      <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+      <span className="ml-2 text-text-primary">Loading...</span>
+    </div>}>
+      <NewTopic />
+    </Suspense>
+  );
+}
+
+// Remove the return type to fix the error
+function NewTopic() {
+  // Topic and view states.
+  const [topic, setTopic] = useState<string>("");
+  const [view, setView] = useState<ViewState>("input");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  
+  // Caches for already streamed HTML.
+  const mainOutlineCache = useRef<{ [key: string]: string }>({});
+  const subOutlineCache = useRef<{ [key: string]: string }>({});
+
+  // State for streamed HTML.
+  const [mainOutlineHTML, setMainOutlineHTML] = useState("");
+  const [subOutlineHTML, setSubOutlineHTML] = useState("");
+  const [finalContent, setFinalContent] = useState<string | null>(null);
+
+  const [selectedSubtopic, setSelectedSubtopic] = useState<string>("");
+  const [selectedSubSubtopic, setSelectedSubSubtopic] = useState<string>("");
+  const [selectedNote, setSelectedNote] = useState<any>(null);
+
+  // Streaming completion states.
+  const [streamingDone, setStreamingDone] = useState<boolean>(false);
+  const [subOutlineStreamingDone, setSubOutlineStreamingDone] = useState<boolean>(false);
+
+  // Quiz and dive deeper states
+  const [quizContent, setQuizContent] = useState<string>("");
+  const [isQuizzing, setIsQuizzing] = useState<boolean>(false);
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState<boolean>(false);
+  
+  const [diveDeeper, setDiveDeeper] = useState<string>("");
+  const [followUpQuestion, setFollowUpQuestion] = useState<string>("");
+  const [isDivingDeeper, setIsDivingDeeper] = useState<boolean>(false);
+  const [isGeneratingDiveDeeper, setIsGeneratingDiveDeeper] = useState<boolean>(false);
+  
+  const [notesView, setNotesView] = useState<string>("notes");
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  
+  // URL parameters
+  const [urlTopic, setUrlTopic] = useState<string | null>(null);
+  const [urlSubtopic, setUrlSubtopic] = useState<string | null>(null);
+  const [urlSubsubtopic, setUrlSubsubtopic] = useState<string | null>(null);
+  
+  // Create Supabase client
+  const supabase = createClient();
+  
+  // Initialize from URL parameters
+  useEffect(() => {
+    let isMounted = true;
+    
+    const loadFromUrl = async () => {
+      if (urlTopic && view === "input") {
+        // Set the topic
+        setTopic(urlTopic);
+        
+        // Check if this topic already exists in Supabase
+        if (user) {
+          const existingTopic = await getTopicByTitle(urlTopic);
+          
+          if (existingTopic) {
+            console.log('Found existing topic:', existingTopic);
+            
+            // Update the last_accessed timestamp
+            await supabase
+              .from('topics')
+              .update({ last_accessed: new Date().toISOString() })
+              .eq('id', existingTopic.id);
+              
+            // Create a study session
+            await supabase
+              .from('study_sessions')
+              .insert([{
+                user_id: user.id,
+                topic_id: existingTopic.id,
+                duration: 0, // Initial duration, will be updated when they finish
+              }]);
+          }
+        }
+        
+        // Load the main outline
+        await handleBreakdown(urlTopic);
+        
+        if (!isMounted) return;
+        
+        // If we have a subtopic, load it after a delay
+        if (urlSubtopic) {
+          setTimeout(async () => {
+            if (!isMounted) return;
+            
+            // Check if this subtopic already exists in Supabase
+            if (user) {
+              const existingTopic = await getTopicByTitle(urlTopic);
+              
+              if (existingTopic) {
+                const existingSubtopic = await getSubtopicByTitle(urlSubtopic, existingTopic.id!);
+                
+                if (existingSubtopic) {
+                  console.log('Found existing subtopic:', existingSubtopic);
+                  
+                  // Update the last_accessed timestamp
+                  await supabase
+                    .from('subtopics')
+                    .update({ last_accessed: new Date().toISOString() })
+                    .eq('id', existingSubtopic.id);
+                }
+              }
+            }
+            
+            await handleSelectSubtopic(urlSubtopic);
+            
+            if (!isMounted) return;
+            
+            // If we have a subsubtopic, load it after another delay
+            if (urlSubsubtopic) {
+              setTimeout(async () => {
+                if (!isMounted) return;
+                
+                // Check if this note already exists in Supabase
+                if (user) {
+                  const existingTopic = await getTopicByTitle(urlTopic);
+                  
+                  if (existingTopic) {
+                    const existingSubtopic = await getSubtopicByTitle(urlSubtopic, existingTopic.id!);
+                    
+                    if (existingSubtopic) {
+                      // Check for existing note
+                      const { data: existingNote } = await supabase
+                        .from('notes')
+                        .select('*')
+                        .eq('subtopic_id', existingSubtopic.id!)
+                        .eq('title', urlSubsubtopic)
+                        .maybeSingle();
+                        
+                      if (existingNote) {
+                        console.log('Found existing note:', existingNote);
+                        
+                        // Load dive deeper content
+                        const { data: diveDeeperData } = await supabase
+                          .from('dive_deeper')
+                          .select('*')
+                          .eq('note_id', existingNote.id);
+                          
+                        if (diveDeeperData && diveDeeperData.length > 0) {
+                          setDiveDeeper(diveDeeperData[0].content);
+                          setFollowUpQuestion(diveDeeperData[0].question);
+                        }
+                        
+                        // Load quiz content
+                        const { data: quizData } = await supabase
+                          .from('quizzes')
+                          .select('*')
+                          .eq('note_id', existingNote.id)
+                          .maybeSingle();
+                          
+                        if (quizData) {
+                          setQuizContent(quizData.content);
+                        }
+                      }
+                    }
+                  }
+                }
+                
+                await handleSelectSubSubtopic(urlSubsubtopic);
+              }, 1000);
+            }
+          }, 1000);
+        }
+      }
+    };
+    
+    loadFromUrl();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Get user on component mount
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+  }, [supabase]);
+
+  // Define handleBreakdown function
+  async function handleBreakdown(newTopic?: string) {
+    const topicToUse = newTopic || topic;
+    if (!topicToUse.trim()) return;
+    
+    setLoading(true);
+    setError(null);
+    setView("mainOutline");
+    
+    // Fetch main outline via streaming API
+    try {
+      if (mainOutlineCache.current[topicToUse]) {
+        setMainOutlineHTML(mainOutlineCache.current[topicToUse]);
+        setStreamingDone(true);
+        setLoading(false);
+      } else {
+        const html = await fetchMainOutlineHTMLStream(topicToUse);
+        mainOutlineCache.current[topicToUse] = html;
+        setMainOutlineHTML(html);
+        setStreamingDone(true);
+        setLoading(false);
+        
+        // Save to database if user is logged in
+        if (user) {
+          saveTopic({
+            user_id: user.id,
+            title: topicToUse,
+            main_outline: html,
+            progress: 0,
+            category: 'General'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching main outline:', error);
+      setError('Failed to generate outline. Please try again.');
+      setLoading(false);
+    }
+  }
+  
+  // Define handleSelectSubtopic function
+  async function handleSelectSubtopic(subtopic: string) {
+    if (!topic) return;
+    setLoading(true);
+    setError(null);
+    setSelectedSubtopic(subtopic);
+    setSubOutlineStreamingDone(false);
+    setSubOutlineHTML(""); // Clear previous sub‑outline if any.
+    setView("subOutline");
+    try {
+      if (subOutlineCache.current[subtopic]) {
+        setSubOutlineHTML(subOutlineCache.current[subtopic]);
+        setSubOutlineStreamingDone(true);
+        setLoading(false);
+      } else {
+        const html = await fetchSubOutlineHTMLStream(subtopic, topic);
+        subOutlineCache.current[subtopic] = html;
+        setSubOutlineHTML(html);
+        setSubOutlineStreamingDone(true);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error fetching sub-outline:', error);
+      setError('Failed to generate sub-outline. Please try again.');
+      setLoading(false);
+    }
+  }
+  
+  // Define handleSelectSubSubtopic function
+  async function handleSelectSubSubtopic(subsubtopic: string) {
+    if (!topic || !selectedSubtopic) return;
+    setLoading(true);
+    setError(null);
+    setSelectedSubSubtopic(subsubtopic);
+    setFinalContent(null);
+    setView("finalContent");
+    try {
+      const html = await fetchNotesStream(subsubtopic, topic, selectedSubtopic);
+      setFinalContent(html);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+      setError('Failed to generate notes. Please try again.');
+      setLoading(false);
+    }
+  }
+
+  // Generate a quiz based on the notes
+  async function handleGenerateQuiz() {
+    if (isQuizzing) return;
+    
+    setIsGeneratingQuiz(true);
+    setIsQuizzing(true);
+    setNotesView("quiz");
+    
+    try {
+      toast.loading('Generating quiz...', { id: 'generating-quiz' });
+      
+      // Fetch quiz via streaming API
+      const response = await fetch('/api/generateQuiz', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mainTopic: topic,
+          parentTopic: selectedSubtopic,
+          subsubtopic: selectedSubSubtopic
+        }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch quiz');
+      
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+      
+      // Initialize with a loading message
+      setQuizContent(`
+        <div class="streaming-quiz">
+          <div class="flex items-center mb-4">
+            <div class="spinner mr-3"></div>
+            <h3 class="text-lg font-semibold">Generating quiz for ${selectedSubSubtopic}...</h3>
+          </div>
+          <p class="text-gray-600 mb-2">Creating questions to test your knowledge...</p>
+          <div class="streaming-content"></div>
+        </div>
+      `);
+      
+      let accumulatedContent = '';
+      const decoder = new TextDecoder();
+      let isFirstChunk = true;
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        
+        // Clean up any partial HTML tags that might cause rendering issues
+        const cleanedChunk = chunk.replace(/-question'>/g, '-question">');
+        
+        // For the first meaningful chunk, replace the loading message
+        if (isFirstChunk && cleanedChunk.trim().length > 10) {
+          isFirstChunk = false;
+          accumulatedContent = cleanedChunk;
+          setQuizContent(accumulatedContent);
+        } else {
+          // For subsequent chunks, append to the content
+          accumulatedContent += cleanedChunk;
+          
+          // Update the streaming content
+          if (document.querySelector('.streaming-content') && isFirstChunk) {
+            // If we're still showing the loading UI, update the streaming content
+            const streamingContent = document.querySelector('.streaming-content');
+            if (streamingContent) {
+              streamingContent.innerHTML = accumulatedContent;
+            }
+          } else {
+            // Otherwise, update the entire quiz content
+            setQuizContent(accumulatedContent);
+          }
+        }
+        
+        // Add a small delay to make the streaming more visible
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      
+      toast.success('Quiz generated!', { id: 'generating-quiz' });
+      
+      // After streaming is complete, add a class to enable interactivity
+      setTimeout(() => {
+        const quizContainer = document.querySelector('.quiz-container');
+        if (quizContainer) {
+          quizContainer.classList.add('quiz-ready');
+        }
+      }, 500);
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      toast.error('Failed to generate quiz', { id: 'generating-quiz' });
+      setQuizContent('<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"><p>Failed to generate quiz. Please try again.</p></div>');
+    } finally {
+      setIsGeneratingQuiz(false);
+      setIsQuizzing(false);
+    }
+  }
+
+  // Fix the handleDiveDeeper function
+  async function handleDiveDeeper() {
+    if (!followUpQuestion.trim() || isDivingDeeper) return;
+    
+    setIsGeneratingDiveDeeper(true);
+    setIsDivingDeeper(true);
+    setNotesView("diveDeeper");
+    
+    // Initialize with a loading message
+    setDiveDeeper(`
+      <div class="streaming-dive-deeper">
+        <div class="flex items-center mb-4">
+          <div class="spinner mr-3"></div>
+          <h3 class="text-lg font-semibold">Generating answer...</h3>
+        </div>
+        <p class="text-gray-600 mb-2">Analyzing your question: "${followUpQuestion}"</p>
+        <div class="streaming-content"></div>
+      </div>
+    `);
+    
+    try {
+      toast.loading('Generating deeper insights...', { id: 'generating-dive-deeper' });
+      
+      // Fetch dive deeper content via streaming API
+      const response = await fetch('/api/generate-dive-deeper', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: followUpQuestion,
+          mainTopic: topic,
+          parentTopic: selectedSubtopic,
+          subsubtopic: selectedSubSubtopic
+        }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch dive deeper content');
+      
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+      
+      let accumulatedContent = '';
+      const decoder = new TextDecoder();
+      let isFirstChunk = true;
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        
+        // For the first meaningful chunk, replace the loading message
+        if (isFirstChunk && chunk.trim().length > 10) {
+          isFirstChunk = false;
+          accumulatedContent = chunk;
+          setDiveDeeper(accumulatedContent);
+        } else {
+          // For subsequent chunks, append to the content
+          accumulatedContent += chunk;
+          
+          // Update the streaming content
+          if (document.querySelector('.streaming-content') && isFirstChunk) {
+            // If we're still showing the loading UI, update the streaming content
+            const streamingContent = document.querySelector('.streaming-content');
+            if (streamingContent) {
+              streamingContent.innerHTML = accumulatedContent;
+            }
+          } else {
+            // Otherwise, update the entire content
+            setDiveDeeper(accumulatedContent);
+          }
+        }
+        
+        // Add a small delay to make the streaming more visible
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      
+      // Save the dive deeper content to the database if user is logged in
+      if (user && selectedNote && selectedNote.id) {
+        try {
+          const diveDeeperData: DiveDeeperData = {
+            note_id: selectedNote.id,
+            question: followUpQuestion,
+            content: accumulatedContent,
+          };
+          
+          await saveDiveDeeper(diveDeeperData);
+        } catch (saveError) {
+          console.error('Error saving dive deeper content:', saveError);
+        }
+      }
+      
+      // Clear the question input
+      setFollowUpQuestion('');
+    } catch (error) {
+      console.error('Error generating dive deeper content:', error);
+      toast.error('Failed to generate insights', { id: 'generating-dive-deeper' });
+      setDiveDeeper('<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"><p>Failed to generate deeper insights. Please try again.</p></div>');
+    } finally {
+      setIsGeneratingDiveDeeper(false);
+      setIsDivingDeeper(false);
+    }
+  }
+
+  // ... existing code ...
+
+  // Add explicit return statement
+  return (
+    <>
+      <DashboardLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {renderBreadcrumbs()}
+          <AnimatePresence mode="wait">
+            {view === "input" && (
+              <motion.div
+                key="input"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                {/* ... existing code ... */}
+              </motion.div>
+            )}
+            {view === "mainOutline" && renderMainOutline()}
+            {view === "subOutline" && renderSubOutline()}
+            {view === "finalContent" && renderFinalContent()}
+          </AnimatePresence>
+        </div>
+      </DashboardLayout>
+      
+      {/* Add the URL parameter handler */}
+      {urlTopic && (
+        <UrlParamHandler
+          urlTopic={urlTopic}
+          urlSubtopic={urlSubtopic}
+          urlSubsubtopic={urlSubsubtopic}
+          handleBreakdown={handleBreakdown}
+          handleSelectSubtopic={handleSelectSubtopic}
+          handleSelectSubSubtopic={handleSelectSubSubtopic}
+        />
+      )}
+    </>
+  );
+}
+
+// Define fetchMainOutlineHTMLStream function
+async function fetchMainOutlineHTMLStream(topic: string): Promise<string> {
+  // Implementation details
+  return "";
+}
+
+// Define fetchSubOutlineHTMLStream function
+async function fetchSubOutlineHTMLStream(subtopic: string, mainTopic: string): Promise<string> {
+  // Implementation details
+  return "";
+}
+
+// Define fetchNotesStream function
+async function fetchNotesStream(subsubtopic: string, mainTopic: string, parentTopic: string): Promise<string> {
+  // Implementation details
+  return "";
+}
+
+// Define saveTopic function
+async function saveTopic(topicData: TopicData) {
+  // Implementation details
+}
+
+// Define saveDiveDeeper function
+async function saveDiveDeeper(diveDeeperData: DiveDeeperData) {
+  // Implementation details
+}
+
+// Define getTopicByTitle function
+async function getTopicByTitle(title: string) {
+  // Implementation details
+  return { id: "dummy-topic-id" };
+}
+
+// Define getSubtopicByTitle function
+async function getSubtopicByTitle(title: string, topicId: string) {
+  // Implementation details
+  return { id: "dummy-subtopic-id" };
+}// Define renderBreadcrumbs function
+function renderBreadcrumbs() {
+  // Implementation details
+  return null;
+}// Define renderMainOutline function
+function renderMainOutline() {
+  // Implementation details
+  return null;
+}
+
+// Define renderSubOutline function
+function renderSubOutline() {
+  // Implementation details
+  return null;
+}
+
+// Define renderFinalContent function
+function renderFinalContent() {
+  // Implementation details
+  return null;
+}
+<style jsx global>{`
+  /* Streaming Quiz Styles */
+  .streaming-quiz,
+  .streaming-dive-deeper {
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: #374151;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes loading {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 3px solid rgba(99, 102, 241, 0.2);
+    border-radius: 50%;
+    border-top-color: rgba(99, 102, 241, 1);
+    animation: spin 1s linear infinite;
+  }
+
+  .streaming-content {
+    min-height: 2rem;
+  }
+
+  .quiz-ready .quiz-option {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .quiz-ready .quiz-option:hover {
+    background-color: #f3f4f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+`}</style>
+
+
+
+

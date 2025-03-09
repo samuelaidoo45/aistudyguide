@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/app/lib/supabase'
 import { motion } from 'framer-motion'
 import toast, { Toaster } from 'react-hot-toast'
-import Image from 'next/image'
+import Logo from '@/app/components/Logo'
 
 export default function Register() {
   const [email, setEmail] = useState('')
@@ -75,17 +75,7 @@ export default function Register() {
       <Toaster position="top-center" />
       
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link href="/">
-          <div className="flex justify-center">
-            <Image 
-              src="/images/logo.png" 
-              alt="StudyGuide Logo" 
-              width={180} 
-              height={60} 
-              className="cursor-pointer"
-            />
-          </div>
-        </Link>
+        <Logo />
         <motion.h2 
           className="mt-6 text-center text-3xl font-extrabold text-gray-900"
           initial={{ opacity: 0, y: -20 }}

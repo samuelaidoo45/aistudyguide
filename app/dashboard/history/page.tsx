@@ -226,7 +226,7 @@ export default function StudyHistory() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 dark:border-indigo-400 transition-colors duration-200"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 transition-colors duration-200"></div>
         </div>
       </DashboardLayout>
     )
@@ -259,10 +259,10 @@ export default function StudyHistory() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="bg-bg-secondary dark:bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200">
+              <div className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200">
                 <div className="p-5">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <BookOpen className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -277,10 +277,10 @@ export default function StudyHistory() {
                 </div>
               </div>
 
-              <div className="bg-bg-secondary dark:bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200">
+              <div className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200">
                 <div className="p-5">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <Clock className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -297,10 +297,10 @@ export default function StudyHistory() {
                 </div>
               </div>
 
-              <div className="bg-bg-secondary dark:bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200">
+              <div className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200">
                 <div className="p-5">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <Calendar className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -317,10 +317,10 @@ export default function StudyHistory() {
                 </div>
               </div>
 
-              <div className="bg-bg-secondary dark:bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200">
+              <div className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200">
                 <div className="p-5">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
@@ -351,7 +351,7 @@ export default function StudyHistory() {
                 <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                   <div className="shadow overflow-hidden border border-border-primary rounded-lg transition-colors duration-200">
                     <table className="min-w-full divide-y divide-border-primary transition-colors duration-200">
-                      <thead className="bg-bg-tertiary dark:bg-bg-tertiary transition-colors duration-200">
+                      <thead className="bg-bg-tertiary transition-colors duration-200">
                         <tr>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider transition-colors duration-200">
                             Topic
@@ -373,7 +373,7 @@ export default function StudyHistory() {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-bg-secondary dark:bg-bg-secondary divide-y divide-border-primary transition-colors duration-200">
+                      <tbody className="bg-bg-secondary divide-y divide-border-primary transition-colors duration-200">
                         {studySessions.length > 0 ? (
                           studySessions.map((session) => (
                             <tr key={session.id}>
@@ -388,8 +388,8 @@ export default function StudyHistory() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
-                                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mr-2 w-24 transition-colors duration-200">
-                                    <div className="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full transition-colors duration-200" style={{ width: `${session.topic.progress}%` }}></div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2 w-24 transition-colors duration-200">
+                                    <div className="bg-indigo-600 h-2.5 rounded-full transition-colors duration-200" style={{ width: `${session.topic.progress}%` }}></div>
                                   </div>
                                   <span className="text-sm text-text-tertiary transition-colors duration-200">{session.topic.progress}%</span>
                                 </div>
@@ -398,7 +398,7 @@ export default function StudyHistory() {
                                 <div className="flex flex-wrap gap-1">
                                   {session.concepts && session.concepts.length > 0 ? (
                                     session.concepts.map((concept, index) => (
-                                      <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 transition-colors duration-200">
+                                      <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 transition-colors duration-200">
                                         {concept}
                                       </span>
                                     ))
@@ -410,7 +410,7 @@ export default function StudyHistory() {
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button 
                                   onClick={() => continueFromSession(session)}
-                                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 inline-flex items-center transition-colors duration-200"
+                                  className="text-indigo-600 hover:text-indigo-900 inline-flex items-center transition-colors duration-200"
                                 >
                                   Continue <ArrowUpRight className="ml-1 h-4 w-4" />
                                 </button>
@@ -441,7 +441,7 @@ export default function StudyHistory() {
               >
                 <Link
                   href="/dashboard/new-topic"
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 transition-colors duration-200"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   Start New Topic

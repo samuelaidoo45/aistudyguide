@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "types/**/*.d.ts"
-  ],
+, "app/dashboard/new-topic/page1.tsx.bak"  ],
   "exclude": ["node_modules"]
 }

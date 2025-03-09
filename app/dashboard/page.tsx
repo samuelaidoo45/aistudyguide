@@ -40,21 +40,27 @@ export default function Dashboard() {
   useEffect(() => {
     const getUser = async () => {
       try {
+        console.log('Dashboard: Attempting to get user')
         const { data: { user } } = await supabase.auth.getUser()
+        console.log('Dashboard: User data:', user ? `User ID: ${user.id}` : 'No user found')
         setUser(user)
         if (user) {
           await fetchDashboardData(user.id)
+        } else {
+          console.log('Dashboard: No user found, middleware should handle redirection')
         }
       } catch (error) {
         console.error('Error fetching user:', error)
         toast.error('Failed to load user data')
       } finally {
+        // Stop the loading animation whether the user is found or not
         setLoading(false)
       }
     }
-
+  
     getUser()
   }, [supabase])
+  
 
   const fetchDashboardData = async (userId: string) => {
     try {
@@ -93,7 +99,14 @@ export default function Dashboard() {
         }
       }
       
-      const topics = topicsResult.data || []
+      const topics: Topic[] = (topicsResult.data as any[]).map(item => ({
+        id: item.id,
+        title: item.title,
+        progress: item.progress,
+        last_accessed: item.last_accessed,
+        total_study_time: item.total_study_time,
+        category: item.category
+      })) || []
       const achievements = achievementsResult.data || []
       
       // Calculate total study time
@@ -325,7 +338,7 @@ export default function Dashboard() {
               >
                 <div className="p-5">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <BookOpen className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -340,7 +353,7 @@ export default function Dashboard() {
                 </div>
                 <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
                   <div className="text-sm">
-                    <Link href="/dashboard/topics" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors duration-200">
+                    <Link href="/dashboard/topics" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
                       View all topics
                     </Link>
                   </div>
@@ -355,7 +368,7 @@ export default function Dashboard() {
               >
                 <div className="p-5">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <Clock className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -372,7 +385,7 @@ export default function Dashboard() {
                 </div>
                 <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
                   <div className="text-sm">
-                    <Link href="/dashboard/achievements" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors duration-200">
+                    <Link href="/dashboard/achievements" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
                       View achievements
                     </Link>
                   </div>
@@ -387,7 +400,7 @@ export default function Dashboard() {
               >
                 <div className="p-5">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 dark:bg-indigo-600 rounded-md p-3 transition-colors duration-200">
+                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
                       <Award className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -404,7 +417,7 @@ export default function Dashboard() {
                 </div>
                 <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
                   <div className="text-sm">
-                    <Link href="/dashboard/achievements" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors duration-200">
+                    <Link href="/dashboard/achievements" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
                       View achievements
                     </Link>
                   </div>
@@ -435,7 +448,7 @@ export default function Dashboard() {
                             handleTopicClick(topic.id);
                           }
                         }}
-                        className="block hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
+                        className="block hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                         tabIndex={0}
                         role="button"
                         aria-label={`Continue studying ${topic.title}`}
@@ -443,24 +456,24 @@ export default function Dashboard() {
                         <div className="px-4 py-4 sm:px-6">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <BookMarked className="h-5 w-5 text-indigo-500 dark:text-indigo-400 mr-3 transition-colors duration-200" aria-hidden="true" />
-                              <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 truncate transition-colors duration-200">{topic.title}</p>
+                              <BookMarked className="h-5 w-5 text-indigo-500 mr-3 transition-colors duration-200" aria-hidden="true" />
+                              <p className="text-sm font-medium text-indigo-600 truncate transition-colors duration-200">{topic.title}</p>
                             </div>
                             <div className="ml-2 flex-shrink-0 flex">
-                              <ChevronRight className="h-5 w-5 text-gray-400 dark:text-gray-500 transition-colors duration-200" aria-hidden="true" />
+                              <ChevronRight className="h-5 w-5 text-gray-400 transition-colors duration-200" aria-hidden="true" />
                             </div>
                           </div>
                           <div className="mt-2 sm:flex sm:justify-between">
                             <div className="sm:flex">
                               <p className="flex items-center text-sm text-text-tertiary transition-colors duration-200">
-                                <History className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400 dark:text-gray-500 transition-colors duration-200" aria-hidden="true" />
+                                <History className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400 transition-colors duration-200" aria-hidden="true" />
                                 <span>Last accessed on {formatDate(topic.last_accessed)}</span>
                               </p>
                             </div>
                             <div className="mt-2 flex items-center text-sm text-text-tertiary sm:mt-0 transition-colors duration-200">
-                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 transition-colors duration-200" role="progressbar" aria-valuenow={topic.progress} aria-valuemin={0} aria-valuemax={100}>
+                              <div className="w-full bg-gray-200 rounded-full h-2.5 transition-colors duration-200" role="progressbar" aria-valuenow={topic.progress} aria-valuemin={0} aria-valuemax={100}>
                                 <div 
-                                  className="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full transition-colors duration-200" 
+                                  className="bg-indigo-600 h-2.5 rounded-full transition-colors duration-200" 
                                   style={{ width: `${topic.progress}%` }}
                                 ></div>
                               </div>
