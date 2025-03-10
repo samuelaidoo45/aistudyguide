@@ -45,8 +45,8 @@ const Hero = () => {
           structured knowledge. Master new concepts faster than ever before.
         </p>
 
-        {/* Call to Action Button - Direct to sign in */}
-        <Link href="/auth/login" className="btn btn-primary">
+        {/* Call to Action Button - Direct to dashboard instead of sign in */}
+        <Link href="/dashboard" className="btn btn-primary">
           Start Learning Smarter
         </Link>
       </div>

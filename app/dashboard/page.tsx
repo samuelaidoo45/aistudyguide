@@ -6,7 +6,21 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import toast, { Toaster } from 'react-hot-toast'
 import DashboardLayout from '@/app/components/DashboardLayout'
-import { BookOpen, Clock, History, BookMarked, Award, ChevronRight } from 'lucide-react'
+import { 
+  BookOpen, 
+  Clock, 
+  History, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X,
+  User,
+  BookMarked,
+  Award,
+  Mail,
+  ChevronRight,
+  LogIn
+} from 'lucide-react'
 import Link from 'next/link'
 
 interface Topic {
@@ -47,7 +61,7 @@ export default function Dashboard() {
         if (user) {
           await fetchDashboardData(user.id)
         } else {
-          console.log('Dashboard: No user found, middleware should handle redirection')
+          console.log('Dashboard: No user found, showing limited dashboard')
         }
       } catch (error) {
         console.error('Error fetching user:', error)
@@ -309,6 +323,7 @@ export default function Dashboard() {
     )
   }
 
+  // Render different content for authenticated vs unauthenticated users
   return (
     <DashboardLayout>
       <Toaster position="top-center" />
@@ -321,192 +336,271 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            Welcome back, {user?.email?.split('@')[0] || 'User'}!
+            {user ? `Welcome back, ${user.email?.split('@')[0] || 'User'}!` : 'Welcome to AI Study Guide!'}
           </motion.h1>
         </div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          <div className="py-4">
-            {/* Dashboard content */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Quick Stats */}
+          {user ? (
+            // Authenticated user content
+            <div className="py-4">
+              {/* Dashboard content */}
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {/* Quick Stats */}
+                <motion.div 
+                  className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
+                        <BookOpen className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-text-tertiary transition-colors duration-200">Topics Studied</dt>
+                          <dd>
+                            <div className="text-lg font-medium text-text-primary transition-colors duration-200">{stats.totalTopics}</div>
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
+                    <div className="text-sm">
+                      <Link href="/dashboard/topics" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+                        View all topics
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div 
+                  className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
+                        <Clock className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-text-tertiary transition-colors duration-200">Study Time</dt>
+                          <dd>
+                            <div className="text-lg font-medium text-text-primary transition-colors duration-200">
+                              {formatStudyTime(stats.totalStudyTime)}
+                            </div>
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
+                    <div className="text-sm">
+                      <Link href="/dashboard/achievements" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+                        View achievements
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div 
+                  className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
+                        <Award className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-text-tertiary transition-colors duration-200">Achievements</dt>
+                          <dd>
+                            <div className="text-lg font-medium text-text-primary transition-colors duration-200">
+                              {stats.totalAchievements} badges
+                            </div>
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
+                    <div className="text-sm">
+                      <Link href="/dashboard/achievements" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+                        View achievements
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Recent Activity */}
               <motion.div 
-                className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200"
+                className="mt-8 bg-bg-secondary shadow overflow-hidden sm:rounded-md border border-border-primary transition-colors duration-200"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <div className="px-4 py-5 border-b border-border-primary sm:px-6 transition-colors duration-200">
+                  <h3 className="text-lg leading-6 font-medium text-text-primary transition-colors duration-200">Recent Topics</h3>
+                  <p className="mt-1 text-sm text-text-tertiary transition-colors duration-200">Continue where you left off</p>
+                </div>
+                <ul className="divide-y divide-border-primary transition-colors duration-200">
+                  {stats.recentTopics.length > 0 ? (
+                    stats.recentTopics.map((topic) => (
+                      <li key={topic.id}>
+                        <div 
+                          onClick={() => handleTopicClick(topic.id)} 
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleTopicClick(topic.id);
+                            }
+                          }}
+                          className="block hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                          tabIndex={0}
+                          role="button"
+                          aria-label={`Continue studying ${topic.title}`}
+                        >
+                          <div className="px-4 py-4 sm:px-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <BookMarked className="h-5 w-5 text-indigo-500 mr-3 transition-colors duration-200" aria-hidden="true" />
+                                <p className="text-sm font-medium text-indigo-600 truncate transition-colors duration-200">{topic.title}</p>
+                              </div>
+                              <div className="ml-2 flex-shrink-0 flex">
+                                <ChevronRight className="h-5 w-5 text-gray-400 transition-colors duration-200" aria-hidden="true" />
+                              </div>
+                            </div>
+                            <div className="mt-2 sm:flex sm:justify-between">
+                              <div className="sm:flex">
+                                <p className="flex items-center text-sm text-text-tertiary transition-colors duration-200">
+                                  <History className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400 transition-colors duration-200" aria-hidden="true" />
+                                  <span>Last accessed on {formatDate(topic.last_accessed)}</span>
+                                </p>
+                              </div>
+                              <div className="mt-2 flex items-center text-sm text-text-tertiary sm:mt-0 transition-colors duration-200">
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 transition-colors duration-200" role="progressbar" aria-valuenow={topic.progress} aria-valuemin={0} aria-valuemax={100}>
+                                  <div 
+                                    className="bg-indigo-600 h-2.5 rounded-full transition-colors duration-200" 
+                                    style={{ width: `${topic.progress}%` }}
+                                  ></div>
+                                </div>
+                                <span className="ml-2">{topic.progress}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="px-4 py-8 text-center text-text-tertiary transition-colors duration-200">
+                      No topics yet. Start your learning journey by creating a new topic!
+                    </li>
+                  )}
+                </ul>
+              </motion.div>
+
+              {/* Start New Topic Button */}
+              <motion.div 
+                className="mt-8 flex justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+              >
+                <button
+                  onClick={() => router.push('/dashboard/new-topic')}
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Start New Topic
+                </button>
+              </motion.div>
+            </div>
+          ) : (
+            // Unauthenticated user content
+            <div className="py-4">
+              <motion.div
+                className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200 p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
-                      <BookOpen className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-text-tertiary transition-colors duration-200">Topics Studied</dt>
-                        <dd>
-                          <div className="text-lg font-medium text-text-primary transition-colors duration-200">{stats.totalTopics}</div>
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
+                <div className="text-center mb-8">
+                  <h2 className="text-xl font-semibold text-text-primary mb-4">
+                    Experience the power of AI-assisted learning
+                  </h2>
+                  <p className="text-text-tertiary max-w-2xl mx-auto">
+                    You're currently using AI Study Guide in guest mode. You can explore and create new topics, 
+                    but to save your progress and access all features, please sign in.
+                  </p>
                 </div>
-                <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
-                  <div className="text-sm">
-                    <Link href="/dashboard/topics" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
-                      View all topics
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
 
-              <motion.div 
-                className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
-                      <Clock className="h-6 w-6 text-white" />
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+                    <div className="flex items-center mb-4">
+                      <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                        <BookOpen className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="ml-3 text-lg font-medium">Create Topics</h3>
                     </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-text-tertiary transition-colors duration-200">Study Time</dt>
-                        <dd>
-                          <div className="text-lg font-medium text-text-primary transition-colors duration-200">
-                            {formatStudyTime(stats.totalStudyTime)}
-                          </div>
-                        </dd>
-                      </dl>
-                    </div>
+                    <p className="text-gray-600">
+                      Break down any subject into structured, easy-to-understand outlines and notes.
+                    </p>
                   </div>
-                </div>
-                <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
-                  <div className="text-sm">
-                    <Link href="/dashboard/achievements" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
-                      View achievements
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
 
-              <motion.div 
-                className="bg-bg-secondary overflow-hidden shadow rounded-lg border border-border-primary transition-colors duration-200"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3 transition-colors duration-200">
-                      <Award className="h-6 w-6 text-white" />
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+                    <div className="flex items-center mb-4">
+                      <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                        <BookMarked className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="ml-3 text-lg font-medium">Generate Notes</h3>
                     </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-text-tertiary transition-colors duration-200">Achievements</dt>
-                        <dd>
-                          <div className="text-lg font-medium text-text-primary transition-colors duration-200">
-                            {stats.totalAchievements} badges
-                          </div>
-                        </dd>
-                      </dl>
+                    <p className="text-gray-600">
+                      Get comprehensive notes on any topic with just a few clicks.
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+                    <div className="flex items-center mb-4">
+                      <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                        <Award className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="ml-3 text-lg font-medium">Test Knowledge</h3>
                     </div>
+                    <p className="text-gray-600">
+                      Generate quizzes and dive deeper into topics to reinforce your learning.
+                    </p>
                   </div>
                 </div>
-                <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
-                  <div className="text-sm">
-                    <Link href="/dashboard/achievements" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
-                      View achievements
-                    </Link>
-                  </div>
+
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <Link 
+                    href="/dashboard/new-topic"
+                    className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <BookOpen className="h-5 w-5 mr-2" />
+                    Start New Topic
+                  </Link>
+                  
+                  <Link 
+                    href="/auth/login"
+                    className="inline-flex justify-center items-center px-6 py-3 border border-indigo-600 text-base font-medium rounded-md shadow-sm text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <LogIn className="h-5 w-5 mr-2" />
+                    Sign In to Save Progress
+                  </Link>
                 </div>
               </motion.div>
             </div>
-
-            {/* Recent Activity */}
-            <motion.div 
-              className="mt-8 bg-bg-secondary shadow overflow-hidden sm:rounded-md border border-border-primary transition-colors duration-200"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <div className="px-4 py-5 border-b border-border-primary sm:px-6 transition-colors duration-200">
-                <h3 className="text-lg leading-6 font-medium text-text-primary transition-colors duration-200">Recent Topics</h3>
-                <p className="mt-1 text-sm text-text-tertiary transition-colors duration-200">Continue where you left off</p>
-              </div>
-              <ul className="divide-y divide-border-primary transition-colors duration-200">
-                {stats.recentTopics.length > 0 ? (
-                  stats.recentTopics.map((topic) => (
-                    <li key={topic.id}>
-                      <div 
-                        onClick={() => handleTopicClick(topic.id)} 
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleTopicClick(topic.id);
-                          }
-                        }}
-                        className="block hover:bg-gray-50 cursor-pointer transition-colors duration-200"
-                        tabIndex={0}
-                        role="button"
-                        aria-label={`Continue studying ${topic.title}`}
-                      >
-                        <div className="px-4 py-4 sm:px-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <BookMarked className="h-5 w-5 text-indigo-500 mr-3 transition-colors duration-200" aria-hidden="true" />
-                              <p className="text-sm font-medium text-indigo-600 truncate transition-colors duration-200">{topic.title}</p>
-                            </div>
-                            <div className="ml-2 flex-shrink-0 flex">
-                              <ChevronRight className="h-5 w-5 text-gray-400 transition-colors duration-200" aria-hidden="true" />
-                            </div>
-                          </div>
-                          <div className="mt-2 sm:flex sm:justify-between">
-                            <div className="sm:flex">
-                              <p className="flex items-center text-sm text-text-tertiary transition-colors duration-200">
-                                <History className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400 transition-colors duration-200" aria-hidden="true" />
-                                <span>Last accessed on {formatDate(topic.last_accessed)}</span>
-                              </p>
-                            </div>
-                            <div className="mt-2 flex items-center text-sm text-text-tertiary sm:mt-0 transition-colors duration-200">
-                              <div className="w-full bg-gray-200 rounded-full h-2.5 transition-colors duration-200" role="progressbar" aria-valuenow={topic.progress} aria-valuemin={0} aria-valuemax={100}>
-                                <div 
-                                  className="bg-indigo-600 h-2.5 rounded-full transition-colors duration-200" 
-                                  style={{ width: `${topic.progress}%` }}
-                                ></div>
-                              </div>
-                              <span className="ml-2">{topic.progress}%</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  ))
-                ) : (
-                  <li className="px-4 py-8 text-center text-text-tertiary transition-colors duration-200">
-                    No topics yet. Start your learning journey by creating a new topic!
-                  </li>
-                )}
-              </ul>
-            </motion.div>
-
-            {/* Start New Topic Button */}
-            <motion.div 
-              className="mt-8 flex justify-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            >
-              <button
-                onClick={() => router.push('/dashboard/new-topic')}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Start New Topic
-              </button>
-            </motion.div>
-          </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

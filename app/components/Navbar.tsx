@@ -232,7 +232,7 @@ const Navbar = () => {
                     className="btn btn-primary text-white"
                     style={{ color: 'white' }}
                   >
-                    Get Started
+                    Sign Up
                   </Link>
                 </motion.div>
               )}

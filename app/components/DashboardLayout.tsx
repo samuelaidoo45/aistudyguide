@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, ReactNode } from 'react'
+import { useState, ReactNode, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
@@ -17,7 +17,8 @@ import {
   User,
   BookMarked,
   Award,
-  Mail
+  Mail,
+  LogIn
 } from 'lucide-react'
 
 interface DashboardLayoutProps {
@@ -26,23 +27,55 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+      } catch (error) {
+        console.error("Error fetching user:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getUser()
+  }, [supabase])
+
+  const handleAuthAction = async () => {
+    if (user) {
+      // Sign out if user is authenticated
+      await supabase.auth.signOut()
+      router.push('/')
+      router.refresh()
+    } else {
+      // Redirect to login if user is not authenticated
+      router.push('/auth/login')
+    }
   }
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'New Topic', href: '/dashboard/new-topic', icon: BookOpen },
+  ]
+
+  // Add additional navigation items only for authenticated users
+  const authenticatedNavigation = [
     { name: 'My Topics', href: '/dashboard/topics', icon: BookMarked },
     { name: 'Achievements', href: '/dashboard/achievements', icon: Award },
     { name: 'Contact Us', href: '/dashboard/contact', icon: Mail },
   ]
+
+  // Combine navigation items based on authentication status
+  const fullNavigation = user 
+    ? [...navigation, ...authenticatedNavigation]
+    : navigation
 
   const userNavigation = [
     { name: 'Your Profile', href: '/dashboard/profile' },
@@ -82,7 +115,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               />
             </div>
             <nav className="mt-2 px-4 space-y-2">
-              {navigation.map((item) => {
+              {fullNavigation.map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
@@ -117,11 +150,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
           <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
             <button
-              onClick={handleSignOut}
-              className="group flex items-center px-3 py-3 w-full text-base font-medium rounded-md border border-transparent hover:border-red-100 text-gray-700 hover:bg-red-50 hover:text-red-700"
+              onClick={handleAuthAction}
+              className={`group flex items-center px-3 py-3 w-full text-base font-medium rounded-md border border-transparent ${
+                user 
+                  ? 'hover:border-red-100 hover:bg-red-50 hover:text-red-700' 
+                  : 'hover:border-indigo-100 hover:bg-indigo-50 hover:text-indigo-700'
+              } text-gray-700`}
             >
-              <LogOut className="inline-block h-6 w-6 text-gray-500 group-hover:text-red-500 mr-4" />
-              <span>Sign out</span>
+              {user ? (
+                <LogOut className="inline-block h-6 w-6 text-gray-500 group-hover:text-red-500 mr-4" />
+              ) : (
+                <LogIn className="inline-block h-6 w-6 text-gray-500 group-hover:text-indigo-500 mr-4" />
+              )}
+              <span>{user ? 'Sign out' : 'Sign in'}</span>
             </button>
           </div>
         </div>
@@ -141,7 +182,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               />
             </div>
             <nav className="mt-5 flex-1 px-2 space-y-1">
-              {navigation.map((item) => {
+              {fullNavigation.map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
@@ -176,12 +217,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
           <div className="flex-shrink-0 flex border-t border-border-primary p-4">
             <button
-              onClick={handleSignOut}
-              className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+              onClick={handleAuthAction}
+              className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-50 ${
+                user ? 'hover:text-red-700' : 'hover:text-indigo-700'
+              }`}
             >
-              <LogOut className="inline-block h-5 w-5 text-gray-500 group-hover:text-indigo-500" />
+              {user ? (
+                <LogOut className="inline-block h-5 w-5 text-gray-500 group-hover:text-red-500" />
+              ) : (
+                <LogIn className="inline-block h-5 w-5 text-gray-500 group-hover:text-indigo-500" />
+              )}
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700 group-hover:text-indigo-700">Sign out</p>
+                <p className={`text-sm font-medium text-gray-700 ${
+                  user ? 'group-hover:text-red-700' : 'group-hover:text-indigo-700'
+                }`}>
+                  {user ? 'Sign out' : 'Sign in'}
+                </p>
               </div>
             </button>
           </div>

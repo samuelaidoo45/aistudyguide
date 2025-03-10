@@ -32,7 +32,7 @@ const CTA = () => {
         <p className="text-xl mb-8 max-w-2xl mx-auto">
           Join thousands of students who are already using our platform to master new subjects faster and more effectively.
         </p>
-        <Link href="/auth/login" className="btn btn-primary">
+        <Link href="/dashboard" className="btn btn-primary">
           Get Started Now
         </Link>
       </div>
