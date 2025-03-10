@@ -538,7 +538,7 @@ export default function Dashboard() {
                     Experience the power of AI-assisted learning
                   </h2>
                   <p className="text-text-tertiary max-w-2xl mx-auto">
-                    You're currently using AI Study Guide in guest mode. You can explore and create new topics, 
+                    You're currently using TopicSimplify in guest mode. You can explore and create new topics, 
                     but to save your progress and access all features, please sign in.
                   </p>
                 </div>

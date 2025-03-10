@@ -6,7 +6,7 @@ const Sidebar = () => {
   return (
     <nav className={styles.sidebar}>
       <div className={styles.sidebarHeader}>StudyGuide</div>
-      <Link href="/start-now">
+      <Link href="/dashboard">
         <a className={`${styles.navLink} ${styles.active}`}>
           <Home size={20} /> Home
         </a>

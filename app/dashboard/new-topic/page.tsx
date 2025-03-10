@@ -287,6 +287,7 @@ function NewTopic() {
 
   // Streaming completion states.
   const [streamingDone, setStreamingDone] = useState<boolean>(false);
+  const [mainOutlineStreamingDone, setMainOutlineStreamingDone] = useState<boolean>(false);
   const [subOutlineStreamingDone, setSubOutlineStreamingDone] = useState<boolean>(false);
 
   const [darkMode, setDarkMode] = useState<boolean>(false);
@@ -906,6 +907,7 @@ function NewTopic() {
     setLoading(true);
     setError(null);
     setStreamingDone(false);
+    setMainOutlineStreamingDone(false);
     setMainOutlineHTML(""); // Clear previous outline if any.
     setView("mainOutline");
     
@@ -913,12 +915,14 @@ function NewTopic() {
       if (mainOutlineCache.current[topicToUse]) {
         setMainOutlineHTML(mainOutlineCache.current[topicToUse]);
         setStreamingDone(true);
+        setMainOutlineStreamingDone(true);
         setLoading(false);
       } else {
         const html = await fetchMainOutlineHTMLStream(topicToUse);
         mainOutlineCache.current[topicToUse] = html;
         setMainOutlineHTML(html);
         setStreamingDone(true);
+        setMainOutlineStreamingDone(true);
         setLoading(false);
         
         // Save topic to Supabase if user is logged in
@@ -2588,15 +2592,15 @@ function NewTopic() {
           {breadcrumbs.map((breadcrumb, index) => (
             <li key={breadcrumb.name} className="flex items-center whitespace-nowrap">
               {index > 0 && (
-                <ChevronRight className="flex-shrink-0 h-4 w-4 text-gray-400 mx-1" aria-hidden="true" />
+                <ChevronRight className="flex-shrink-0 h-4 w-4 text-gray-600 dark:text-gray-300 mx-1" aria-hidden="true" />
               )}
               {breadcrumb.onClick ? (
                 <button
                   onClick={breadcrumb.onClick}
                   className={`text-sm font-medium px-2.5 py-1.5 rounded-md transition-colors flex items-center ${
                     breadcrumb.current
-                      ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      ? 'text-white bg-indigo-600 dark:bg-indigo-500 font-semibold shadow-sm'
+                      : 'text-gray-800 dark:text-gray-100 hover:text-white hover:bg-indigo-500 dark:hover:bg-indigo-600 bg-gray-100 dark:bg-gray-700'
                   } ${index === breadcrumbs.length - 1 ? 'max-w-[150px] sm:max-w-xs truncate' : ''}`}
                   title={breadcrumb.name}
                 >
@@ -2608,8 +2612,8 @@ function NewTopic() {
                   href={breadcrumb.href}
                   className={`text-sm font-medium px-2.5 py-1.5 rounded-md transition-colors flex items-center ${
                     breadcrumb.current
-                      ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      ? 'text-white bg-indigo-600 dark:bg-indigo-500 font-semibold shadow-sm'
+                      : 'text-gray-800 dark:text-gray-100 hover:text-white hover:bg-indigo-500 dark:hover:bg-indigo-600 bg-gray-100 dark:bg-gray-700'
                   } ${index === breadcrumbs.length - 1 ? 'max-w-[150px] sm:max-w-xs truncate' : ''}`}
                   title={breadcrumb.name}
                 >
@@ -2639,30 +2643,31 @@ function NewTopic() {
             setTopic('');
             setMainOutlineHTML('');
           }}
-          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center mb-3 transition-colors"
+          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to New Topic
         </button>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mt-3">
           <h2 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
-            <BookOpen className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" />
-            {topic}
+            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              {topic}
+            </span>
           </h2>
           {loading && (
             <div className="flex items-center text-indigo-600 dark:text-indigo-400">
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              <span>Generating outline...</span>
+              <span>Generating...</span>
             </div>
           )}
         </div>
       </div>
       
-      {!loading && streamingDone && (
-        <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg flex items-start">
-          <Info className="w-6 h-6 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
-          <p className="text-indigo-800 text-sm font-medium">
-            Click on any topic below to generate a detailed sub-outline. Each section can be explored further to generate comprehensive study notes.
+      {!loading && mainOutlineStreamingDone && (
+        <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
+          <Info className="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
+          <p className="text-white font-medium">
+            Click on any topic below to generate a detailed sub-outline for that specific area.
           </p>
         </div>
       )}
@@ -2672,63 +2677,6 @@ function NewTopic() {
         dangerouslySetInnerHTML={{ __html: mainOutlineHTML }}
         onClick={handleMainOutlineClick}
       />
-      
-      {!loading && streamingDone && (
-        <div className="mt-6 pt-4 border-t border-border-primary">
-          <button
-            onClick={() => {
-              setView('input');
-              setTopic('');
-              setMainOutlineHTML('');
-            }}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to New Topic
-          </button>
-        </div>
-      )}
-      
-      <style jsx global>{`
-        .outline-content h2 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          margin-top: 1.5rem;
-          margin-bottom: 0.75rem;
-          color: var(--text-primary);
-          transition: color 0.3s ease;
-        }
-        
-        .outline-content h2.outline-item:hover {
-          color: var(--primary-600);
-        }
-        
-        .dark .outline-content h2.outline-item:hover {
-          color: var(--primary-400);
-        }
-        
-        .outline-content ul {
-          list-style-type: disc;
-          margin-left: 1.5rem;
-          margin-bottom: 1.5rem;
-          color: var(--text-secondary);
-        }
-        
-        .outline-content li {
-          margin-bottom: 0.5rem;
-          transition: color 0.3s ease;
-        }
-        
-        .outline-content .section-title {
-          font-size: 1.125rem;
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: 0.75rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid var(--border-primary);
-          transition: color 0.3s ease, border-color 0.3s ease;
-        }
-      `}</style>
     </motion.div>
   );
 
@@ -2763,7 +2711,9 @@ function NewTopic() {
         </div>
         <div className="flex justify-between items-center">
           <h3 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
-            {selectedSubtopic}
+            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              {selectedSubtopic}
+            </span>
           </h3>
           {loading && (
             <div className="flex items-center text-indigo-600 dark:text-indigo-400">
@@ -2775,9 +2725,9 @@ function NewTopic() {
       </div>
       
       {!loading && subOutlineStreamingDone && (
-        <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg flex items-start">
-          <Info className="w-6 h-6 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
-          <p className="text-indigo-800 text-sm font-medium">
+        <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
+          <Info className="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
+          <p className="text-white font-medium">
             Click on any subtopic below to generate detailed study notes for that specific area.
           </p>
         </div>
@@ -2811,63 +2761,6 @@ function NewTopic() {
           </button>
         </div>
       )}
-      
-      <style jsx global>{`
-        .suboutline-content h3 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          margin-top: 1.5rem;
-          margin-bottom: 0.75rem;
-          color: var(--text-primary);
-          transition: color 0.3s ease;
-        }
-        
-        .suboutline-content h3:hover {
-          color: var(--primary-600);
-        }
-        
-        .dark .suboutline-content h3:hover {
-          color: var(--primary-400);
-        }
-        
-        .suboutline-content ul {
-          list-style-type: disc;
-          margin-left: 1.5rem;
-          margin-bottom: 1.5rem;
-          color: var(--text-secondary);
-        }
-        
-        .suboutline-content li {
-          margin-bottom: 0.5rem;
-          transition: color 0.3s ease;
-        }
-        
-        .suboutline-content .section-card {
-          background-color: var(--bg-tertiary);
-          border: 1px solid var(--border-primary);
-          border-radius: 0.5rem;
-          padding: 1rem;
-          margin-bottom: 1rem;
-          transition: all 0.3s ease;
-        }
-        
-        .suboutline-content .section-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .dark .suboutline-content .section-card:hover {
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-        
-        .suboutline-content .section-card h3 {
-          font-size: 1.1rem;
-          font-weight: 600;
-          margin-top: 0;
-          margin-bottom: 0.5rem;
-          color: var(--text-primary);
-        }
-      `}</style>
     </motion.div>
   );
 

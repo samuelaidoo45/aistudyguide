@@ -11,6 +11,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Redirect /start-now to /dashboard
+  if (request.nextUrl.pathname === '/start-now' || request.nextUrl.pathname.startsWith('/start-now/')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
   if (request.nextUrl.pathname.startsWith('/auth/callback')) {
     return NextResponse.next()
   }
