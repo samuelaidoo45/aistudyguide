@@ -2,7 +2,7 @@ const Testimonials = () => {
   const testimonials = [
     {
       content:
-        'StudyGuide has revolutionized how I approach new subjects. The AI-generated outlines save me hours of research time.',
+        'TopicSimplify has revolutionized how I approach new subjects. The AI-generated outlines save me hours of research time.',
       author: 'Sarah Chen',
       role: 'Graduate Student',
     },

@@ -336,7 +336,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {user ? `Welcome back, ${user.email?.split('@')[0] || 'User'}!` : 'Welcome to AI Study Guide!'}
+            {user ? `Welcome back, ${user.email?.split('@')[0] || 'User'}!` : 'Welcome to TopicSimplify!'}
           </motion.h1>
         </div>
         
