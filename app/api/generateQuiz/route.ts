@@ -56,7 +56,7 @@ Make sure to:
 4. Use clear, concise language
 5. Ensure all questions are factually accurate
 
-Do not include any explanations or additional text outside the HTML structure. DO NOT ADD {```html ```} or `;
+Do not include any explanations or additional text outside the HTML structure. DO NOT ADD ${"```html ```"} or `;
 
     // Create messages to send to the OpenAI API
     const messages = [
