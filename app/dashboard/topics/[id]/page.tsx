@@ -7,6 +7,7 @@ import DashboardLayout from '@/app/components/DashboardLayout'
 import { createClient } from '@/app/lib/supabase'
 import { Info, ChevronLeft, Loader2, RefreshCw, BookOpen, FileText, ArrowLeft, Download, Volume2, Brain, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { exportToWord } from '@/app/utils/wordExport'
 
 // Define types
 interface Topic {
@@ -1421,14 +1422,26 @@ export default function TopicPage() {
           <BookOpen className="w-6 h-6 mr-2 text-indigo-600" />
           Main Outline
         </h2>
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="px-4 py-3 bg-white border-2 border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all shadow-sm hover:shadow-md flex items-center justify-center sm:justify-start w-full sm:w-auto"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          <span className="font-medium">Back to Dashboard</span>
-        </button>
-              </div>
+        <div className="flex items-center gap-2">
+          {topic?.main_outline && (
+            <button
+              onClick={() => exportToWord(topic.main_outline, `${topic.title || topic.name || 'topic'}-main-outline`)}
+              className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+              title="Export to Word"
+            >
+              <FileText className="w-4 h-4 mr-1" />
+              Word
+            </button>
+          )}
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="px-4 py-3 bg-white border-2 border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all shadow-sm hover:shadow-md flex items-center justify-center sm:justify-start w-full sm:w-auto"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            <span className="font-medium">Back to Dashboard</span>
+          </button>
+        </div>
+      </div>
       
       {topic?.main_outline && (
         <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg flex items-start">
@@ -1436,7 +1449,7 @@ export default function TopicPage() {
           <p className="text-indigo-800 text-sm font-medium">
             Click on any section below to see a detailed outline. Each section can be explored further to generate comprehensive study notes.
           </p>
-            </div>
+        </div>
       )}
       
       {topic?.main_outline ? (
@@ -1596,33 +1609,45 @@ export default function TopicPage() {
       className="bg-bg-secondary rounded-xl shadow-md p-6 border border-border-primary transition-colors duration-200"
           >
       <div className="mb-6 flex justify-between items-center">
-              <div>
-              <button
+        <div>
+          <button
             onClick={handleBackToMain}
             className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center mb-3 transition-colors"
-              >
+          >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to main outline
-              </button>
+          </button>
           <h3 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
             {activeSection}
           </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          {activeSection && subOutlines[activeSection] && (
+            <button
+              onClick={() => exportToWord(subOutlines[activeSection].content, `${activeSection}-sub-outline`)}
+              className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+              title="Export to Word"
+            >
+              <FileText className="w-4 h-4 mr-1" />
+              Word
+            </button>
+          )}
+          {generatingContent && (
+            <div className="flex items-center text-indigo-600 dark:text-indigo-400">
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              <span>Generating...</span>
             </div>
-        {generatingContent && (
-          <div className="flex items-center text-indigo-600 dark:text-indigo-400">
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            <span>Generating...</span>
-                      </div>
-        )}
-                    </div>
+          )}
+        </div>
+      </div>
       
       {activeSection && subOutlines[activeSection] && (
         <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg flex items-start">
           <Info className="w-6 h-6 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
           <p className="text-indigo-800 text-sm font-medium">
-            Click on any subtopic below to generate detailed study notes for that specific area.
+            Click on any section below to see detailed notes. Each section provides in-depth information about the topic.
           </p>
-                </div>
+        </div>
       )}
       
       {activeSection && subOutlines[activeSection] ? (

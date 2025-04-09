@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import React from 'react';
+import { exportToWord } from '@/app/utils/wordExport';
 
 type ViewState = "input" | "mainOutline" | "subOutline" | "finalContent";
 
@@ -2664,12 +2665,32 @@ function NewTopic() {
       </div>
       
       {!loading && mainOutlineStreamingDone && (
-        <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
-          <Info className="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
-          <p className="text-white font-medium">
-            Click on any topic below to generate a detailed sub-outline for that specific area.
-          </p>
-        </div>
+        <>
+          <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
+            <Info className="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
+            <p className="text-white font-medium">
+              Click on any topic below to generate a detailed sub-outline for that specific area.
+            </p>
+          </div>
+          <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center">
+            <h2 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200 mb-4 sm:mb-0">
+              <BookOpen className="w-6 h-6 mr-2 text-indigo-600" />
+              Main Outline
+            </h2>
+            <div className="flex items-center gap-2">
+              {mainOutlineHTML && (
+                <button
+                  onClick={() => exportToWord(mainOutlineHTML, `${topic || 'topic'}-main-outline`)}
+                  className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+                  title="Export to Word"
+                >
+                  <FileText className="w-4 h-4 mr-1" />
+                  Word
+                </button>
+              )}
+            </div>
+          </div>
+        </>
       )}
       
       <div 
@@ -2710,27 +2731,57 @@ function NewTopic() {
           </button>
         </div>
         <div className="flex justify-between items-center">
-          <h3 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <div>
+            <button
+              onClick={handleBackToMainOutline}
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center mb-3 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back to main outline
+            </button>
+            <h3 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
               {selectedSubtopic}
-            </span>
-          </h3>
-          {loading && (
-            <div className="flex items-center text-indigo-600 dark:text-indigo-400">
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              <span>Generating...</span>
-            </div>
-          )}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            {subOutlineHTML && (
+              <button
+                onClick={() => exportToWord(subOutlineHTML, `${selectedSubtopic || 'subtopic'}-sub-outline`)}
+                className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+                title="Export to Word"
+              >
+                <FileText className="w-4 h-4 mr-1" />
+                Word
+              </button>
+            )}
+            {generatingContent && (
+              <div className="flex items-center text-indigo-600 dark:text-indigo-400">
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <span>Generating...</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
       {!loading && subOutlineStreamingDone && (
-        <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
-          <Info className="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
-          <p className="text-white font-medium">
-            Click on any subtopic below to generate detailed study notes for that specific area.
-          </p>
-        </div>
+        <>
+          <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
+            <Info className="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
+            <p className="text-white font-medium">
+              Click on any subtopic below to generate detailed study notes for that specific area.
+            </p>
+          </div>
+          <div className="mb-4">
+            <button
+              onClick={() => exportToWord(subOutlineHTML || '', `${selectedSubtopic || 'subtopic'}-sub-outline`)}
+              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download Sub-outline
+            </button>
+          </div>
+        </>
       )}
       
       <div 
