@@ -53,11 +53,6 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <div className="flex justify-center items-center py-8">
-          <a href="https://www.tinylaun.ch/" rel="dofollow" target="_blank" className="hover:opacity-90 transition-opacity">
-            <img src="/tinylaunch.svg" alt="TinyLaunch Badge" width="619" height="188" />
-          </a>
-        </div>
         <svg
           className="wave wave-bottom"
           viewBox="0 0 1440 220"

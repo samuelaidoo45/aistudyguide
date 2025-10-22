@@ -34,7 +34,7 @@ import { exportToWord } from '@/app/utils/wordExport';
 
 type ViewState = "input" | "mainOutline" | "subOutline" | "finalContent";
 
-interface TopicData {
+interface TopicData extends Record<string, unknown> {
   id?: string;
   user_id: string;
   title: string;
@@ -46,7 +46,7 @@ interface TopicData {
   total_study_time?: number;
 }
 
-interface SubtopicData {
+interface SubtopicData extends Record<string, unknown> {
   id?: string;
   topic_id: string;
   title: string;
@@ -55,7 +55,7 @@ interface SubtopicData {
   last_accessed?: string;
 }
 
-interface NoteData {
+interface NoteData extends Record<string, unknown> {
   id?: string;
   subtopic_id: string;
   title: string;
@@ -63,7 +63,7 @@ interface NoteData {
   created_at?: string;
 }
 
-interface DiveDeeperData {
+interface DiveDeeperData extends Record<string, unknown> {
   id?: string;
   note_id: string;
   question: string;
@@ -71,7 +71,7 @@ interface DiveDeeperData {
   created_at?: string;
 }
 
-interface QuizData {
+interface QuizData extends Record<string, unknown> {
   id?: string;
   note_id: string;
   content: string;
@@ -304,6 +304,7 @@ function NewTopic() {
   const [quizContent, setQuizContent] = useState<string>("");
   const [followUpQuestion, setFollowUpQuestion] = useState<string>("");
   const [notesView, setNotesView] = useState<"notes" | "quiz" | "diveDeeper">("notes");
+  const [generatingContent, setGeneratingContent] = useState<boolean>(false);
   
   const supabase = createClient();
   const searchParams = useSearchParams();
@@ -324,7 +325,7 @@ function NewTopic() {
         if (user) {
           const existingTopic = await getTopicByTitle(urlTopic);
           
-          if (existingTopic) {
+          if (existingTopic && existingTopic.id) {
             console.log('Found existing topic:', existingTopic);
             
             // Update the last_accessed timestamp
@@ -358,10 +359,10 @@ function NewTopic() {
             if (user) {
               const existingTopic = await getTopicByTitle(urlTopic);
               
-              if (existingTopic) {
-                const existingSubtopic = await getSubtopicByTitle(urlSubtopic, existingTopic.id!);
+              if (existingTopic && existingTopic.id) {
+                const existingSubtopic = await getSubtopicByTitle(urlSubtopic, existingTopic.id);
                 
-                if (existingSubtopic) {
+                if (existingSubtopic && existingSubtopic.id) {
                   console.log('Found existing subtopic:', existingSubtopic);
                   
                   // Update the last_accessed timestamp
@@ -386,41 +387,43 @@ function NewTopic() {
                 if (user) {
                   const existingTopic = await getTopicByTitle(urlTopic);
                   
-                  if (existingTopic) {
-                    const existingSubtopic = await getSubtopicByTitle(urlSubtopic, existingTopic.id!);
+                  if (existingTopic && existingTopic.id) {
+                    const existingSubtopic = await getSubtopicByTitle(urlSubtopic, existingTopic.id);
                     
-                    if (existingSubtopic) {
+                    if (existingSubtopic && existingSubtopic.id) {
                       // Check for existing note
                       const { data: existingNote } = await supabase
                         .from('notes')
                         .select('*')
-                        .eq('subtopic_id', existingSubtopic.id!)
+                        .eq('subtopic_id', existingSubtopic.id)
                         .eq('title', urlSubsubtopic)
                         .maybeSingle();
                         
-                      if (existingNote) {
+                      if (existingNote && typeof existingNote === 'object' && 'id' in existingNote) {
                         console.log('Found existing note:', existingNote);
+                        const noteId = (existingNote as any).id;
                         
                         // Load dive deeper content
                         const { data: diveDeeperData } = await supabase
                           .from('dive_deeper')
                           .select('*')
-                          .eq('note_id', existingNote.id);
+                          .eq('note_id', noteId);
                           
                         if (diveDeeperData && diveDeeperData.length > 0) {
-                          setDiveDeeper(diveDeeperData[0].content);
-                          setFollowUpQuestion(diveDeeperData[0].question);
+                          const firstDeeper = diveDeeperData[0] as DiveDeeperData;
+                          setDiveDeeper(firstDeeper.content as string);
+                          setFollowUpQuestion(firstDeeper.question as string);
                         }
                         
                         // Load quiz content
                         const { data: quizData } = await supabase
                           .from('quizzes')
                           .select('*')
-                          .eq('note_id', existingNote.id)
+                          .eq('note_id', noteId)
                           .maybeSingle();
                           
-                        if (quizData) {
-                          setQuizContent(quizData.content);
+                        if (quizData && typeof quizData === 'object' && 'content' in quizData) {
+                          setQuizContent((quizData as QuizData).content as string);
                         }
                       }
                     }
@@ -1135,7 +1138,7 @@ function NewTopic() {
     }
   }
 
-  async function getTopicByTitle(title: string) {
+  async function getTopicByTitle(title: string): Promise<TopicData | null> {
     try {
       if (!user || !user.id) {
         console.log('User not authenticated, cannot fetch topic');
@@ -1160,12 +1163,12 @@ function NewTopic() {
       if (allMatches && allMatches.length > 1) {
         console.log(`Found ${allMatches.length} topics with the same title. Using the most recent one.`);
         // Sort by last_accessed in descending order (most recent first)
-        const sortedMatches = [...allMatches].sort((a, b) => {
+        const sortedMatches = [...allMatches].sort((a: any, b: any) => {
           return new Date(b.last_accessed || b.created_at).getTime() - 
                  new Date(a.last_accessed || a.created_at).getTime();
         });
         
-        return sortedMatches[0];
+        return sortedMatches[0] as TopicData;
       }
       
       // If there's exactly one match or no matches, use maybeSingle
@@ -1188,7 +1191,7 @@ function NewTopic() {
       }
       
       console.log('Topic found:', data);
-      return data;
+      return data as TopicData;
     } catch (error: any) {
       // Handle unexpected errors
       console.error('Unexpected error getting topic:', error?.message || 'Unknown error');
@@ -1196,7 +1199,7 @@ function NewTopic() {
     }
   }
 
-  async function getSubtopicByTitle(title: string, topicId: string) {
+  async function getSubtopicByTitle(title: string, topicId: string): Promise<SubtopicData | null> {
     try {
       console.log('Getting subtopic by title:', title, 'for topic:', topicId);
       
@@ -1216,12 +1219,12 @@ function NewTopic() {
       if (allMatches && allMatches.length > 1) {
         console.log(`Found ${allMatches.length} subtopics with the same title. Using the most recent one.`);
         // Sort by last_accessed in descending order (most recent first)
-        const sortedMatches = [...allMatches].sort((a, b) => {
+        const sortedMatches = [...allMatches].sort((a: any, b: any) => {
           return new Date(b.last_accessed || b.created_at).getTime() - 
                  new Date(a.last_accessed || a.created_at).getTime();
         });
         
-        return sortedMatches[0];
+        return sortedMatches[0] as SubtopicData;
       }
       
       // If there's exactly one match or no matches, use maybeSingle
@@ -1244,7 +1247,7 @@ function NewTopic() {
       }
       
       console.log('Subtopic found:', data);
-      return data;
+      return data as SubtopicData;
     } catch (error: any) {
       console.error('Unexpected error getting subtopic:', error?.message || 'Unknown error');
       return null;
@@ -1521,7 +1524,7 @@ function NewTopic() {
       const totalStudyTime = studySessions?.reduce((total: number, session: any) => 
         total + (session.duration || 0), 0) || 0;
       
-      if (existingAchievements) {
+      if (existingAchievements && typeof existingAchievements === 'object' && 'id' in existingAchievements) {
         // Update existing achievements
         await supabase
           .from('achievements')
@@ -1531,7 +1534,7 @@ function NewTopic() {
             total_study_time: totalStudyTime,
             updated_at: new Date().toISOString()
           })
-          .eq('id', existingAchievements.id);
+          .eq('id', (existingAchievements as any).id);
       } else {
         // Create new achievements record
         await supabase
@@ -1563,7 +1566,7 @@ function NewTopic() {
       let topicId;
       const existingTopic = await getTopicByTitle(topic);
       
-      if (existingTopic) {
+      if (existingTopic && existingTopic.id) {
         topicId = existingTopic.id;
         
         // Update last_accessed
@@ -1593,14 +1596,14 @@ function NewTopic() {
           throw new Error("Failed to save topic");
         }
         
-        topicId = newTopic.id;
+        topicId = (newTopic as any).id;
       }
       
       // Get or create subtopic
-      let subtopicId;
-      const existingSubtopic = await getSubtopicByTitle(selectedSubtopic, topicId);
+      let subtopicId: string | undefined;
+      const existingSubtopic = await getSubtopicByTitle(selectedSubtopic, topicId as string);
       
-      if (existingSubtopic) {
+      if (existingSubtopic && existingSubtopic.id) {
         subtopicId = existingSubtopic.id;
         
         // Update last_accessed
@@ -1630,11 +1633,15 @@ function NewTopic() {
           throw new Error("Failed to save subtopic");
         }
         
-        subtopicId = newSubtopic.id;
+        subtopicId = (newSubtopic as any).id as string;
       }
       
       // Get or create note
-      let noteId;
+      if (!subtopicId) {
+        throw new Error("Subtopic ID is required to save note");
+      }
+      
+      let noteId: string | undefined;
       const { data: existingNote, error: noteQueryError } = await supabase
         .from('notes')
         .select('*')
@@ -1646,8 +1653,8 @@ function NewTopic() {
         console.error("Error querying note:", noteQueryError);
       }
       
-      if (existingNote) {
-        noteId = existingNote.id;
+      if (existingNote && typeof existingNote === 'object' && 'id' in existingNote) {
+        noteId = (existingNote as any).id as string;
         
         // Update existing note
         const { error: updateError } = await supabase
@@ -1656,7 +1663,7 @@ function NewTopic() {
             content: noteContent,
             updated_at: new Date().toISOString()
           })
-          .eq('id', noteId);
+          .eq('id', noteId as string);
           
         if (updateError) {
           console.error("Error updating note:", updateError);
@@ -1681,11 +1688,11 @@ function NewTopic() {
           throw new Error("Failed to create note");
         }
         
-        noteId = newNote.id;
+        noteId = (newNote as any).id;
       }
       
       // Save dive deeper content if available
-      if (diveDeeper) {
+      if (diveDeeper && noteId) {
         const { data: existingDiveDeeper, error: diveDeeperQueryError } = await supabase
           .from('dive_deeper')
           .select('*')
@@ -1696,7 +1703,7 @@ function NewTopic() {
           console.error("Error querying dive deeper:", diveDeeperQueryError);
         }
         
-        if (existingDiveDeeper) {
+        if (existingDiveDeeper && typeof existingDiveDeeper === 'object' && 'id' in existingDiveDeeper) {
           // Update existing dive deeper
           const { error: updateError } = await supabase
             .from('dive_deeper')
@@ -1705,7 +1712,7 @@ function NewTopic() {
               question: followUpQuestion || '',
               updated_at: new Date().toISOString()
             })
-            .eq('id', existingDiveDeeper.id);
+            .eq('id', (existingDiveDeeper as any).id);
             
           if (updateError) {
             console.error("Error updating dive deeper:", updateError);
@@ -1729,7 +1736,7 @@ function NewTopic() {
       }
       
       // Save quiz content if available
-      if (quizContent) {
+      if (quizContent && noteId) {
         const { data: existingQuiz, error: quizQueryError } = await supabase
           .from('quizzes')
           .select('*')
@@ -1740,7 +1747,7 @@ function NewTopic() {
           console.error("Error querying quiz:", quizQueryError);
         }
         
-        if (existingQuiz) {
+        if (existingQuiz && typeof existingQuiz === 'object' && 'id' in existingQuiz) {
           // Update existing quiz
           const { error: updateError } = await supabase
             .from('quizzes')
@@ -1748,7 +1755,7 @@ function NewTopic() {
               content: quizContent,
               updated_at: new Date().toISOString()
             })
-            .eq('id', existingQuiz.id);
+            .eq('id', (existingQuiz as any).id);
             
           if (updateError) {
             console.error("Error updating quiz:", updateError);
@@ -1780,9 +1787,9 @@ function NewTopic() {
         .limit(1)
         .maybeSingle();
         
-      if (studySession) {
+      if (studySession && typeof studySession === 'object' && 'id' in studySession && 'created_at' in studySession) {
         // Calculate duration (time since session started)
-        const startTime = new Date(studySession.created_at).getTime();
+        const startTime = new Date((studySession as any).created_at).getTime();
         const endTime = new Date().getTime();
         const durationInMinutes = Math.round((endTime - startTime) / 60000);
         
@@ -1793,7 +1800,7 @@ function NewTopic() {
             completed: true,
             updated_at: new Date().toISOString()
           })
-          .eq('id', studySession.id);
+          .eq('id', (studySession as any).id);
       }
 
       toast.success("Your note has been saved");
@@ -2680,7 +2687,7 @@ function NewTopic() {
             <div className="flex items-center gap-2">
               {mainOutlineHTML && (
                 <button
-                  onClick={() => exportToWord(mainOutlineHTML, `${topic || 'topic'}-main-outline`)}
+                  onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(mainOutlineHTML, `${topic || 'topic'}-main-outline`)}
                   className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
                   title="Export to Word"
                 >
@@ -2746,7 +2753,7 @@ function NewTopic() {
           <div className="flex items-center gap-2">
             {subOutlineHTML && (
               <button
-                onClick={() => exportToWord(subOutlineHTML, `${selectedSubtopic || 'subtopic'}-sub-outline`)}
+                onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(subOutlineHTML, `${selectedSubtopic || 'subtopic'}-sub-outline`)}
                 className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
                 title="Export to Word"
               >
@@ -2774,7 +2781,7 @@ function NewTopic() {
           </div>
           <div className="mb-4">
             <button
-              onClick={() => exportToWord(subOutlineHTML || '', `${selectedSubtopic || 'subtopic'}-sub-outline`)}
+              onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(subOutlineHTML || '', `${selectedSubtopic || 'subtopic'}-sub-outline`)}
               className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm"
             >
               <Download className="w-4 h-4 mr-2" />
