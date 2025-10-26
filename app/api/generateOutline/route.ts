@@ -20,45 +20,81 @@ export async function POST(request: Request) {
 <div class="outline-sections">
   <div class="section-card">
     <h3 class="section-title">
-      <i data-lucide="chevron-down"></i> Chapter 1
+      <i data-lucide="chevron-down"></i> Chapter 1: Foundations and Core Concepts
     </h3>
+    <p class="section-description" style="margin: 8px 0; padding: 0 12px; color: #64748b; font-size: 14px; line-height: 1.6;">
+      This chapter establishes the fundamental principles and introduces essential terminology needed to understand the topic. 
+      Students will learn the historical context, key definitions, and core theories that form the foundation of this subject.
+    </p>
     <div class="subsection-container">
       <div class="subtopic-item">
-        <span>Fundamental principles</span>
+        <span>1.1 Historical Background and Evolution</span>
         <i data-lucide="chevron-right"></i>
       </div>
       <div class="subtopic-item">
-        <span>Key terminology</span>
+        <span>1.2 Fundamental Principles and Laws</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>1.3 Key Terminology and Definitions</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>1.4 Core Concepts and Frameworks</span>
         <i data-lucide="chevron-right"></i>
       </div>
     </div>
   </div>
   <div class="section-card">
     <h3 class="section-title">
-      <i data-lucide="chevron-down"></i> Chapter 2
+      <i data-lucide="chevron-down"></i> Chapter 2: Advanced Theory and Methods
     </h3>
+    <p class="section-description" style="margin: 8px 0; padding: 0 12px; color: #64748b; font-size: 14px; line-height: 1.6;">
+      Building on foundational knowledge, this chapter explores advanced theoretical frameworks and methodologies. 
+      Learn about cutting-edge research, analytical techniques, and how experts approach complex problems in this field.
+    </p>
     <div class="subsection-container">
       <div class="subtopic-item">
-        <span>Advanced theories</span>
+        <span>2.1 Advanced Theoretical Frameworks</span>
         <i data-lucide="chevron-right"></i>
       </div>
       <div class="subtopic-item">
-        <span>Current research</span>
+        <span>2.2 Research Methodologies</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>2.3 Analytical Tools and Techniques</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>2.4 Current Research and Innovations</span>
         <i data-lucide="chevron-right"></i>
       </div>
     </div>
   </div>
   <div class="section-card">
     <h3 class="section-title">
-      <i data-lucide="chevron-down"></i> Chapter 3
+      <i data-lucide="chevron-down"></i> Chapter 3: Practical Applications and Case Studies
     </h3>
+    <p class="section-description" style="margin: 8px 0; padding: 0 12px; color: #64748b; font-size: 14px; line-height: 1.6;">
+      This chapter demonstrates real-world applications through case studies and practical examples. 
+      Discover how theoretical concepts translate into practice, explore industry applications, and learn best practices from successful implementations.
+    </p>
     <div class="subsection-container">
       <div class="subtopic-item">
-        <span>Practical applications</span>
+        <span>3.1 Real-World Case Studies</span>
         <i data-lucide="chevron-right"></i>
       </div>
       <div class="subtopic-item">
-        <span>Future implications</span>
+        <span>3.2 Industry Applications</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>3.3 Best Practices and Guidelines</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>3.4 Problem-Solving Strategies</span>
         <i data-lucide="chevron-right"></i>
       </div>
     </div>
@@ -71,13 +107,34 @@ export async function POST(request: Request) {
       {
         role: "system",
         content:
-          "You are an AI assistant specialized in creating study guides. " +
-          "When given a topic, create a very detailed outline that encompasses all that needs to be known for the topic. " +
-          "Generate a very dynamic outline and it should be exactly as the example generate the best outline needed.The outline should cover all needed to known. When asked about a specific subtopic, provide detailed notes. " +
-          "Output only a complete HTML snippet that exactly follows the structure below. Do not include any extra commentary or markdown formatting.\n\n" +
+          "You are an expert curriculum designer and professional textbook author specialized in creating comprehensive study guides. " +
+          "Your task is to create a detailed, professional book-like outline that covers the topic comprehensively, similar to how a university textbook or professional course would be structured.\n\n" +
+          
+          "GUIDELINES FOR CREATING THE OUTLINE:\n" +
+          "1. Create 6-10 well-organized chapters that progress logically from foundational to advanced concepts\n" +
+          "2. Each chapter should have:\n" +
+          "   - A descriptive title that clearly indicates what will be covered\n" +
+          "   - A 2-3 sentence description explaining the chapter's focus and learning objectives\n" +
+          "   - 4-6 detailed subtopics with numbered sections (e.g., 1.1, 1.2, etc.)\n" +
+          "3. Subtopic names should be specific and descriptive, not generic\n" +
+          "4. Structure the outline to follow a logical progression:\n" +
+          "   - Start with foundations, history, and basic concepts\n" +
+          "   - Progress to intermediate theories and methodologies\n" +
+          "   - Include advanced applications and specialized topics\n" +
+          "   - End with practical applications, case studies, and future directions\n" +
+          "5. Ensure comprehensive coverage - include theoretical, practical, and contemporary aspects\n" +
+          "6. Make it academically rigorous yet accessible\n\n" +
+          
+          "OUTPUT FORMAT:\n" +
+          "Output ONLY a complete HTML snippet that exactly follows the structure below. " +
+          "Do not include any extra commentary, explanations, or markdown formatting. " +
+          "Start directly with the <div> tag and ensure all HTML is properly formatted.\n\n" +
+          
+          "EXAMPLE STRUCTURE:\n" +
           htmlExample +
           "\n\n" +
-          "Now, generate the HTML outline for the following topic."
+          "Now, create a comprehensive, professional book-like outline for the following topic. " +
+          "Think like a university professor designing a complete course curriculum."
       },
       {
         role: "user",
