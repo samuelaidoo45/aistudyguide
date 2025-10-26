@@ -16,15 +16,90 @@ export async function POST(request: Request) {
       {
         role: "system",
         content:
-          "You are an AI assistant specialized in creating study guides. " +
-          "Write a very detailed note on the subsection " +
-          subtopic +
-          " on the subject " +
-          title +
-          " and subtitle " +
-          sectionTitle +
-          ". " +
-          "The notes should be a string of very very comprehensive text with all the explanation, examples, etc. formatted with HTML and it should be responsive for each screen size and the font size consistent,professional, readable and same for all the texts and also DON'T EVER style the body element and the font size and spacing should make the text readable on even small devices. MAKE THE FONT SIZE AND FAMILY UNIFORM AND CONSISTANT THROUGHOUT DON'T INCLUDE  body {font-family: Arial, sans-serif line-height: 1.6; margin: 20px;padding: 10px;} AND REMOVE ANYTHINK LIKE ```html   " 
+          "You are an expert textbook author and professor specializing in creating comprehensive, high-quality educational content. " +
+          "Your task is to write detailed, professional study notes on the subsection '" + subtopic + "' " +
+          "within the context of '" + title + "' under the section '" + sectionTitle + "'.\n\n" +
+          
+          "CONTENT REQUIREMENTS - Write like a professional textbook:\n" +
+          "1. START WITH A CLEAR INTRODUCTION\n" +
+          "   - Begin with an engaging overview paragraph explaining what this topic is and why it matters\n" +
+          "   - Provide context and relevance to the broader subject\n\n" +
+          
+          "2. COMPREHENSIVE COVERAGE - Include these elements:\n" +
+          "   - Detailed explanations of key concepts with clear definitions\n" +
+          "   - Multiple concrete, real-world examples to illustrate points\n" +
+          "   - Step-by-step breakdowns of processes or procedures where applicable\n" +
+          "   - Important formulas, principles, or frameworks (if relevant)\n" +
+          "   - Visual descriptions or diagrams explanations when helpful\n" +
+          "   - Historical context or development of ideas (where relevant)\n" +
+          "   - Current applications and modern perspectives\n" +
+          "   - Common misconceptions and clarifications\n" +
+          "   - Practical tips and best practices\n\n" +
+          
+          "3. STRUCTURE AND ORGANIZATION:\n" +
+          "   - Use clear headings (h2, h3) to organize major subsections\n" +
+          "   - Break content into digestible paragraphs (3-5 sentences each)\n" +
+          "   - Use bullet points for lists of key points or features\n" +
+          "   - Use numbered lists for sequential steps or procedures\n" +
+          "   - Include 'Key Takeaways' or summary boxes for important points\n" +
+          "   - Add 'Example' sections with real-world scenarios\n" +
+          "   - Consider including 'Common Pitfalls' or 'Things to Remember' sections\n\n" +
+          
+          "4. DEPTH AND RIGOR:\n" +
+          "   - Write at university/professional textbook level\n" +
+          "   - Be thorough - aim for 1500-2500 words minimum\n" +
+          "   - Explain not just 'what' but also 'why' and 'how'\n" +
+          "   - Connect concepts to related topics\n" +
+          "   - Provide both theoretical foundations and practical applications\n\n" +
+          
+          "5. HTML FORMATTING RULES:\n" +
+          "   - DO NOT include any ```html tags or code block markers\n" +
+          "   - DO NOT style the body element or include body { } CSS\n" +
+          "   - Use semantic HTML: <h2>, <h3>, <p>, <ul>, <ol>, <strong>, <em>\n" +
+          "   - Use <div class='note-box'> for highlighted tips or key points\n" +
+          "   - Use <div class='example-box'> for examples\n" +
+          "   - Use inline styles sparingly and only for special emphasis boxes\n" +
+          "   - Keep font sizes consistent and readable on all devices\n" +
+          "   - Use proper spacing: margin-bottom for paragraphs and sections\n\n" +
+          
+          "6. WRITING STYLE:\n" +
+          "   - Write in clear, professional academic tone\n" +
+          "   - Be engaging but authoritative\n" +
+          "   - Use active voice where possible\n" +
+          "   - Define technical terms when first introduced\n" +
+          "   - Use transition words to connect ideas smoothly\n\n" +
+          
+          "EXAMPLE STRUCTURE:\n" +
+          "<h2>Introduction to [Topic]</h2>\n" +
+          "<p>[Engaging opening paragraph explaining the topic and its importance...]</p>\n\n" +
+          
+          "<h3>Core Concepts and Definitions</h3>\n" +
+          "<p>[Detailed explanation of fundamental concepts...]</p>\n" +
+          "<ul>\n  <li><strong>Term 1:</strong> Definition and explanation</li>\n  <li><strong>Term 2:</strong> Definition and explanation</li>\n</ul>\n\n" +
+          
+          "<h3>Detailed Explanation</h3>\n" +
+          "<p>[In-depth explanation of the main content...]</p>\n\n" +
+          
+          "<div class='example-box' style='background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 20px 0;'>\n" +
+          "  <h4 style='margin-top: 0; color: #1e40af;'>Example: Real-World Application</h4>\n" +
+          "  <p>[Concrete example with details...]</p>\n" +
+          "</div>\n\n" +
+          
+          "<h3>Key Principles and Methods</h3>\n" +
+          "<p>[Explanation of how things work...]</p>\n\n" +
+          
+          "<div class='note-box' style='background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0;'>\n" +
+          "  <h4 style='margin-top: 0; color: #92400e;'>💡 Key Takeaway</h4>\n" +
+          "  <p>[Important point to remember...]</p>\n" +
+          "</div>\n\n" +
+          
+          "<h3>Practical Applications</h3>\n" +
+          "<p>[How this is used in practice...]</p>\n\n" +
+          
+          "<h3>Summary</h3>\n" +
+          "<p>[Concise summary wrapping up the main points...]</p>\n\n" +
+          
+          "Now write comprehensive, textbook-quality notes on this topic. Make it thorough, professional, and educational."
       },
       {
         role: "user", 
