@@ -819,15 +819,21 @@ transform: translateY(20px);
 }
 
 .outline-content h2.outline-item:hover,
-.suboutline-content h3:hover,
+.suboutline-content h3:hover:not(.section-title),
 .suboutline-content .section-card:hover {
   color: var(--primary-600);
 }
 
 .dark .outline-content h2.outline-item:hover,
-.dark .suboutline-content h3:hover,
+.dark .suboutline-content h3:hover:not(.section-title),
 .dark .suboutline-content .section-card:hover {
   color: var(--primary-400);
+}
+
+/* Specifically prevent section-title hover effects */
+.suboutline-content .section-title:hover {
+  color: var(--text-primary) !important;
+  cursor: default !important;
 }
 
 .outline-content ul,
@@ -885,6 +891,8 @@ transform: translateY(20px);
   border-bottom: 1px solid var(--border-primary);
   transition: color 0.2s ease, border-color 0.2s ease;
   letter-spacing: -0.01em;
+  cursor: default !important; /* Prevent section titles from being clickable */
+  pointer-events: none; /* Disable click events on section titles */
 }
 
 .suboutline-content .section-card {

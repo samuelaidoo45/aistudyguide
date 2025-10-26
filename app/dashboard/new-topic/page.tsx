@@ -1381,6 +1381,12 @@ function NewTopic() {
     e.preventDefault();
     const target = e.target as HTMLElement;
     
+    // Prevent section titles from being clickable
+    const sectionTitle = target.closest('.section-title');
+    if (sectionTitle) {
+      return; // Exit early if clicking on a section title
+    }
+    
     // Find the closest clickable element
     const clickedItem = target.closest('.subtopic-item') || 
                         target.closest('.suboutline-item') || 
