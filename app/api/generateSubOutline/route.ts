@@ -19,45 +19,124 @@ export async function POST(request: Request) {
 <div class="outline-sections">
   <div class="section-card">
     <h3 class="section-title">
-      <i data-lucide="chevron-down"></i> Section 1
+      <i data-lucide="chevron-down"></i> Section 1: Introduction and Foundational Concepts
     </h3>
+    <p class="section-description" style="margin: 8px 0; padding: 0 12px; color: #64748b; font-size: 14px; line-height: 1.6;">
+      This section introduces the fundamental concepts and establishes the groundwork for understanding this topic. 
+      You'll learn the essential definitions, historical context, and key principles that form the foundation for deeper study.
+    </p>
     <div class="subsection-container">
       <div class="subtopic-item">
-        <span>Fundamental principles</span>
+        <span>1.1 Overview and Introduction</span>
         <i data-lucide="chevron-right"></i>
       </div>
       <div class="subtopic-item">
-        <span>Key terminology</span>
+        <span>1.2 Historical Development and Context</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>1.3 Key Definitions and Terminology</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>1.4 Core Principles and Concepts</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>1.5 Foundational Theories and Models</span>
         <i data-lucide="chevron-right"></i>
       </div>
     </div>
   </div>
   <div class="section-card">
     <h3 class="section-title">
-      <i data-lucide="chevron-down"></i> Section 2
+      <i data-lucide="chevron-down"></i> Section 2: Core Mechanisms and Processes
     </h3>
+    <p class="section-description" style="margin: 8px 0; padding: 0 12px; color: #64748b; font-size: 14px; line-height: 1.6;">
+      Explore the detailed mechanisms and processes that drive this topic. 
+      This section examines how things work, the underlying systems, and the step-by-step procedures involved in understanding the subject matter.
+    </p>
     <div class="subsection-container">
       <div class="subtopic-item">
-        <span>Advanced theories</span>
+        <span>2.1 Primary Mechanisms and Systems</span>
         <i data-lucide="chevron-right"></i>
       </div>
       <div class="subtopic-item">
-        <span>Current research</span>
+        <span>2.2 Process Analysis and Workflows</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>2.3 Interaction and Dependencies</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>2.4 Technical Specifications and Details</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>2.5 Operational Principles</span>
         <i data-lucide="chevron-right"></i>
       </div>
     </div>
   </div>
   <div class="section-card">
     <h3 class="section-title">
-      <i data-lucide="chevron-down"></i> Section 3
+      <i data-lucide="chevron-down"></i> Section 3: Advanced Topics and Specialized Areas
     </h3>
+    <p class="section-description" style="margin: 8px 0; padding: 0 12px; color: #64748b; font-size: 14px; line-height: 1.6;">
+      Delve into advanced topics and specialized areas that require deeper understanding. 
+      This section covers complex theories, cutting-edge research, and sophisticated concepts that build upon the fundamentals.
+    </p>
     <div class="subsection-container">
       <div class="subtopic-item">
-        <span>Practical applications</span>
+        <span>3.1 Advanced Theoretical Frameworks</span>
         <i data-lucide="chevron-right"></i>
       </div>
       <div class="subtopic-item">
-        <span>Future implications</span>
+        <span>3.2 Specialized Methodologies</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>3.3 Complex Problem-Solving Approaches</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>3.4 Current Research and Developments</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>3.5 Emerging Trends and Innovations</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+  </div>
+  <div class="section-card">
+    <h3 class="section-title">
+      <i data-lucide="chevron-down"></i> Section 4: Practical Applications and Implementation
+    </h3>
+    <p class="section-description" style="margin: 8px 0; padding: 0 12px; color: #64748b; font-size: 14px; line-height: 1.6;">
+      Learn how to apply theoretical knowledge in real-world scenarios. 
+      This section provides practical examples, case studies, implementation strategies, and hands-on approaches to using what you've learned.
+    </p>
+    <div class="subsection-container">
+      <div class="subtopic-item">
+        <span>4.1 Real-World Case Studies</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>4.2 Implementation Strategies</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>4.3 Best Practices and Guidelines</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>4.4 Common Challenges and Solutions</span>
+        <i data-lucide="chevron-right"></i>
+      </div>
+      <div class="subtopic-item">
+        <span>4.5 Tools and Resources</span>
         <i data-lucide="chevron-right"></i>
       </div>
     </div>
@@ -69,14 +148,38 @@ export async function POST(request: Request) {
       {
         role: "system",
         content:
-          "You are an AI assistant specialized in creating study guides. " +
-          "When given an outline is clicked, create a very detailed sub-outline that encompasses all that needs to be known for the outline, output only a complete HTML snippet " +
-          "that exactly follows the structure below. Do not include any extra text, commentary, or markdown formatting. " +
-          "The HTML should be a set of nested elements that looks like this:\n\n" +
+          "You are an expert textbook author and curriculum designer specializing in creating comprehensive, detailed study materials. " +
+          "Your task is to create an in-depth sub-outline that breaks down a specific chapter or topic into detailed, professional sections, " +
+          "similar to how a university textbook chapter would be structured with multiple sections and subsections.\n\n" +
+          
+          "GUIDELINES FOR CREATING THE SUB-OUTLINE:\n" +
+          "1. Create 5-8 well-organized sections that comprehensively cover the chapter/topic\n" +
+          "2. Each section should have:\n" +
+          "   - A clear, descriptive title that indicates the specific content covered\n" +
+          "   - A 2-3 sentence description explaining what students will learn and why it's important\n" +
+          "   - 4-6 detailed subsections with numbered sections (e.g., 1.1, 1.2, 2.1, 2.2, etc.)\n" +
+          "3. Subsection names must be specific and detailed, not generic\n" +
+          "4. Structure the sub-outline with a logical learning progression:\n" +
+          "   - Start with introduction and foundational concepts\n" +
+          "   - Progress to core mechanisms, processes, and systems\n" +
+          "   - Include advanced topics and specialized areas\n" +
+          "   - Cover practical applications and implementation\n" +
+          "   - End with challenges, solutions, and future perspectives\n" +
+          "5. Go deep - this is a detailed breakdown of a single chapter, so be thorough\n" +
+          "6. Make it academically rigorous with textbook-level depth\n" +
+          "7. Think of this as creating a detailed table of contents for one chapter of a professional textbook\n\n" +
+          
+          "OUTPUT FORMAT:\n" +
+          "Output ONLY a complete HTML snippet that exactly follows the structure below. " +
+          "Do not include any extra commentary, explanations, or markdown formatting. " +
+          "Start directly with the <div> tag and ensure all HTML is properly formatted.\n\n" +
+          
+          "EXAMPLE STRUCTURE:\n" +
           htmlExample +
           "\n\n" +
-          "Now, generate the HTML for the sub‑outline based on the user's input. The sub outline should not be realistic as if it a book" +
-          "Replace the section titles and subsection titles as appropriate, but keep the overall structure intact."
+          "Now, create a comprehensive, detailed sub-outline for the given chapter/topic. " +
+          "Think like a textbook author breaking down a single chapter into multiple detailed sections with clear learning objectives. " +
+          "Make it realistic, thorough, and structured like a professional academic book chapter."
       },
       {
         role: "user",
