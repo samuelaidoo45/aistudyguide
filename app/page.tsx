@@ -54,62 +54,57 @@ export default function Home() {
       <main>
         <Hero />
         <svg
-          className="wave wave-bottom"
+          className="wave wave-bottom text-gray-50 dark:text-gray-900 fill-current"
           viewBox="0 0 1440 220"
           preserveAspectRatio="none"
         >
           <path
-            fill="#fff"
-            fillOpacity="1"
             d="M0,96L48,106.7C96,117,192,139,288,160C384,181,480,203,576,202.7C672,203,768,181,864,154.7C960,128,1056,96,1152,112C1248,128,1344,192,1392,224L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+            fillOpacity="1"
           ></path>
         </svg>
         <Features />
         <svg
-          className="wave wave-top"
+          className="wave wave-top text-white dark:text-gray-800 fill-current"
           viewBox="0 0 1440 220"
           preserveAspectRatio="none"
         >
           <path
-            fill="#fff"
-            fillOpacity="1"
             d="M0,96L48,106.7C96,117,192,139,288,160C384,181,480,203,576,202.7C672,203,768,181,864,154.7C960,128,1056,96,1152,112C1248,128,1344,192,1392,224L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+            fillOpacity="1"
           ></path>
         </svg>
         <HowItWorks />
         <svg
-          className="wave wave-bottom"
+          className="wave wave-bottom text-gray-50 dark:text-gray-900 fill-current"
           viewBox="0 0 1440 220"
           preserveAspectRatio="none"
         >
           <path
-            fill="#fff"
-            fillOpacity="1"
             d="M0,96L48,106.7C96,117,192,139,288,160C384,181,480,203,576,202.7C672,203,768,181,864,154.7C960,128,1056,96,1152,112C1248,128,1344,192,1392,224L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+            fillOpacity="1"
           ></path>
         </svg>
         <Testimonials />
         <svg
-          className="wave wave-top"
+          className="wave wave-top text-indigo-100 dark:text-indigo-900 fill-current"
           viewBox="0 0 1440 220"
           preserveAspectRatio="none"
         >
           <path
-            fill="#fff"
-            fillOpacity="1"
             d="M0,96L48,106.7C96,117,192,139,288,160C384,181,480,203,576,202.7C672,203,768,181,864,154.7C960,128,1056,96,1152,112C1248,128,1344,192,1392,224L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+            fillOpacity="1"
           ></path>
         </svg>
         <CTA />
         <svg
-          className="wave wave-bottom"
+          className="wave wave-bottom text-indigo-900 dark:text-[#0f0e1a] fill-current"
           viewBox="0 0 1440 220"
           preserveAspectRatio="none"
         >
           <path
-            fill="#312e81"
-            fillOpacity="1"
             d="M0,192L48,208C96,224,192,256,288,256C384,256,480,224,576,213.3C672,203,768,213,864,192C960,171,1056,117,1152,117.3C1248,117,1344,171,1392,197.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+            fillOpacity="1"
           ></path>
         </svg>
       </main>

@@ -65,38 +65,6 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Mobile menu styles - Improved with solid background and better visibility
-  const mobileMenuStyle = {
-    position: 'absolute' as const,
-    top: '70px',
-    left: '16px',
-    right: '16px',
-    backgroundColor: '#FFFFFF',
-    padding: '16px',
-    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)',
-    zIndex: 50,
-    display: isMenuOpen ? 'flex' : 'none',
-    flexDirection: 'column' as const,
-    gap: '10px',
-    borderRadius: '8px',
-    border: '2px solid #e5e7eb'
-  };
-
-  // Mobile menu item styles - Enhanced for better visibility
-  const mobileMenuItemStyle = {
-    padding: '14px 16px',
-    borderRadius: '6px',
-    backgroundColor: '#f3f4f6',
-    color: '#374151',
-    fontWeight: 600,
-    textAlign: 'left' as const,
-    display: 'block',
-    width: '100%',
-    marginBottom: '8px',
-    border: '1px solid #e5e7eb',
-    transition: 'all 0.2s ease'
-  };
-
   return (
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`} ref={navRef}>
       <div className="navbar-container">
@@ -108,6 +76,7 @@ const Navbar = () => {
               alt="TopicSimplify Logo" 
               fill
               style={{ objectFit: 'contain' }}
+              className="dark:brightness-0 dark:invert"
               priority
               sizes="150px"
               onError={(e) => {
@@ -117,7 +86,7 @@ const Navbar = () => {
                 const parent = target.parentElement;
                 if (parent) {
                   const fallback = document.createElement('div');
-                  fallback.className = 'text-xl font-bold text-indigo-600';
+                  fallback.className = 'text-xl font-bold text-indigo-600 dark:text-indigo-400';
                   fallback.textContent = 'TopicSimplify';
                   parent.appendChild(fallback);
                 }
@@ -126,64 +95,37 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* Hamburger Button (Visible on Mobile) - Enhanced for better visibility */}
+        {/* Hamburger Button (Visible on Mobile) */}
         <button
-          className="mobile-only bg-white p-2 rounded-md border-2 border-gray-300 shadow-md"
+          className="md:hidden hamburger-btn"
           aria-label="Toggle navigation menu"
           onClick={toggleMenu}
-          style={{
-            width: '44px',
-            height: '44px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 60,
-            backgroundColor: isMenuOpen ? '#f0f5ff' : '#ffffff',
-            borderColor: isMenuOpen ? '#4f46e5' : '#d1d5db'
-          }}
         >
           <div style={{ width: '24px', height: '18px', position: 'relative' }}>
             <span 
+              className="hamburger-line"
               style={{
-                display: 'block',
-                position: 'absolute',
-                height: '3px',
-                width: '100%',
-                background: isMenuOpen ? '#4f46e5' : '#374151',
-                borderRadius: '2px',
-                opacity: 1,
                 left: 0,
+                backgroundColor: 'var(--text-primary)',
                 transform: isMenuOpen ? 'rotate(45deg)' : 'rotate(0)',
-                transition: 'transform 0.25s ease-in-out, background 0.25s ease',
                 top: isMenuOpen ? '8px' : '0'
               }}
             />
             <span 
+              className="hamburger-line"
               style={{
-                display: 'block',
-                position: 'absolute',
-                height: '3px',
-                width: '100%',
-                background: isMenuOpen ? '#4f46e5' : '#374151',
-                borderRadius: '2px',
-                opacity: isMenuOpen ? 0 : 1,
                 left: 0,
-                transition: 'opacity 0.25s ease-in-out, background 0.25s ease',
+                backgroundColor: 'var(--text-primary)',
+                opacity: isMenuOpen ? 0 : 1,
                 top: '8px'
               }}
             />
             <span 
+              className="hamburger-line"
               style={{
-                display: 'block',
-                position: 'absolute',
-                height: '3px',
-                width: '100%',
-                background: isMenuOpen ? '#4f46e5' : '#374151',
-                borderRadius: '2px',
-                opacity: 1,
                 left: 0,
+                backgroundColor: 'var(--text-primary)',
                 transform: isMenuOpen ? 'rotate(-45deg)' : 'rotate(0)',
-                transition: 'transform 0.25s ease-in-out, background 0.25s ease',
                 top: isMenuOpen ? '8px' : '16px'
               }}
             />
@@ -223,7 +165,7 @@ const Navbar = () => {
                 >
                   <Link 
                     href="/auth/login" 
-                    className="text-indigo-600 hover:text-indigo-500 font-medium"
+                    className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
                   >
                     Sign in
                   </Link>
@@ -240,34 +182,25 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Menu (Completely separate from desktop menu) */}
-        <div className="mobile-only" style={mobileMenuStyle}>
+        {/* Mobile Menu */}
+        <div className={`md:hidden mobile-menu ${isMenuOpen ? 'flex' : 'hidden'}`}>
           <Link 
             href="#features" 
-            style={{
-              ...mobileMenuItemStyle,
-              borderLeft: '4px solid #818cf8'
-            }} 
+            className="mobile-menu-item border-l-4 border-indigo-400"
             onClick={() => setIsMenuOpen(false)}
           >
             Features
           </Link>
           <Link 
             href="#how-it-works" 
-            style={{
-              ...mobileMenuItemStyle,
-              borderLeft: '4px solid #818cf8'
-            }} 
+            className="mobile-menu-item border-l-4 border-indigo-400"
             onClick={() => setIsMenuOpen(false)}
           >
             How It Works
           </Link>
           <Link 
             href="#testimonials" 
-            style={{
-              ...mobileMenuItemStyle,
-              borderLeft: '4px solid #818cf8'
-            }} 
+            className="mobile-menu-item border-l-4 border-indigo-400"
             onClick={() => setIsMenuOpen(false)}
           >
             Testimonials
@@ -278,14 +211,7 @@ const Navbar = () => {
               {user ? (
                 <Link 
                   href="/dashboard" 
-                  style={{
-                    ...mobileMenuItemStyle,
-                    backgroundColor: '#4f46e5',
-                    color: 'white',
-                    fontWeight: 600,
-                    textAlign: 'center' as const,
-                    borderLeft: 'none'
-                  }}
+                  className="mobile-menu-item mobile-menu-item-highlight"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
@@ -294,24 +220,14 @@ const Navbar = () => {
                 <>
                   <Link 
                     href="/auth/login" 
-                    style={{
-                      ...mobileMenuItemStyle,
-                      borderLeft: '4px solid #818cf8'
-                    }}
+                    className="mobile-menu-item border-l-4 border-indigo-400"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Sign in
                   </Link>
                   <Link 
                     href="/auth/register" 
-                    style={{
-                      ...mobileMenuItemStyle,
-                      backgroundColor: '#4f46e5',
-                      color: 'white',
-                      fontWeight: 600,
-                      textAlign: 'center' as const,
-                      borderLeft: 'none'
-                    }}
+                    className="mobile-menu-item mobile-menu-item-highlight"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Get Started

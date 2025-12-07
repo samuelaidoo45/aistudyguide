@@ -42,6 +42,7 @@ export default function Logo({ href = "/", className = "" }: LogoProps) {
           // Only hide the image client-side after mount if there was an error
           opacity: isMounted && logoError ? 0 : 1 
         }}
+        className="dark:brightness-0 dark:invert"
         priority
         sizes="150px"
         onLoad={handleLogoLoad}
@@ -50,7 +51,7 @@ export default function Logo({ href = "/", className = "" }: LogoProps) {
       
       {/* Always render the text fallback for SSR */}
       <div 
-        className="text-xl font-bold text-indigo-600 absolute inset-0 flex items-center justify-center"
+        className="text-xl font-bold text-indigo-600 dark:text-indigo-400 absolute inset-0 flex items-center justify-center"
         style={{ 
           // Only hide the text client-side after mount if the logo loaded successfully
           opacity: isMounted && logoLoaded && !logoError ? 0 : 1 
@@ -70,4 +71,4 @@ export default function Logo({ href = "/", className = "" }: LogoProps) {
   }
 
   return logoContent;
-} 
+}
