@@ -312,116 +312,6 @@ function NewTopic() {
   const urlSubtopic = searchParams.get('subtopic');
   const urlSubsubtopic = searchParams.get('subsubtopic');
 
-  // Restore state from localStorage on mount
-  useEffect(() => {
-    // Only restore if there are no URL parameters (URL params take priority)
-    if (!urlTopic && !urlSubtopic && !urlSubsubtopic) {
-      try {
-        const savedState = localStorage.getItem('studyGuideState');
-        if (savedState) {
-          const state = JSON.parse(savedState);
-          
-          // Restore all state
-          if (state.view) setView(state.view);
-          if (state.topic) setTopic(state.topic);
-          if (state.mainOutlineHTML) setMainOutlineHTML(state.mainOutlineHTML);
-          if (state.subOutlineHTML) setSubOutlineHTML(state.subOutlineHTML);
-          if (state.finalContent) setFinalContent(state.finalContent);
-          if (state.selectedSubtopic) setSelectedSubtopic(state.selectedSubtopic);
-          if (state.selectedSubSubtopic) setSelectedSubSubtopic(state.selectedSubSubtopic);
-          if (state.selectedNote) setSelectedNote(state.selectedNote);
-          if (state.noteContent) setNoteContent(state.noteContent);
-          if (state.notesView) setNotesView(state.notesView);
-          
-          // Restore streaming done states
-          if (state.mainOutlineStreamingDone !== undefined) {
-            setMainOutlineStreamingDone(state.mainOutlineStreamingDone);
-          }
-          if (state.subOutlineStreamingDone !== undefined) {
-            setSubOutlineStreamingDone(state.subOutlineStreamingDone);
-          }
-          if (state.streamingDone !== undefined) {
-            setStreamingDone(state.streamingDone);
-          }
-          
-          console.log('Restored state from localStorage:', state.view);
-        }
-      } catch (error) {
-        console.error('Error restoring state from localStorage:', error);
-        // Clear corrupted state
-        localStorage.removeItem('studyGuideState');
-      }
-    }
-  }, [urlTopic, urlSubtopic, urlSubsubtopic]);
-
-  // Save state to localStorage whenever key states change
-  useEffect(() => {
-    // Don't save during initial mount or when loading
-    if (view === "input" && !topic) return;
-    
-    try {
-      const stateToSave = {
-        view,
-        topic,
-        mainOutlineHTML,
-        subOutlineHTML,
-        finalContent,
-        selectedSubtopic,
-        selectedSubSubtopic,
-        selectedNote,
-        noteContent,
-        notesView,
-        mainOutlineStreamingDone,
-        subOutlineStreamingDone,
-        streamingDone,
-        timestamp: new Date().toISOString()
-      };
-      
-      localStorage.setItem('studyGuideState', JSON.stringify(stateToSave));
-      console.log('Saved state to localStorage:', view);
-    } catch (error) {
-      console.error('Error saving state to localStorage:', error);
-    }
-  }, [
-    view, 
-    topic, 
-    mainOutlineHTML, 
-    subOutlineHTML, 
-    finalContent, 
-    selectedSubtopic, 
-    selectedSubSubtopic,
-    selectedNote,
-    noteContent,
-    notesView,
-    mainOutlineStreamingDone,
-    subOutlineStreamingDone,
-    streamingDone
-  ]);
-
-  // Helper function to clear all state and start fresh
-  const clearStateAndStartNew = () => {
-    setView('input');
-    setTopic('');
-    setMainOutlineHTML('');
-    setSubOutlineHTML('');
-    setFinalContent(null);
-    setSelectedSubtopic('');
-    setSelectedSubSubtopic('');
-    setSelectedNote('');
-    setNoteContent('');
-    setNotesView('notes');
-    setDiveDeeper('');
-    setQuizContent('');
-    setFollowUpQuestion('');
-    setMainOutlineStreamingDone(false);
-    setSubOutlineStreamingDone(false);
-    setStreamingDone(false);
-    
-    // Clear localStorage
-    localStorage.removeItem('studyGuideState');
-    console.log('Cleared all state and localStorage');
-  };
-
   // Initialize from URL parameters
   useEffect(() => {
     let isMounted = true;
@@ -2352,7 +2242,11 @@ function NewTopic() {
       <div className="mb-4">
         <div className="flex flex-wrap gap-2 mb-3">
           <button
-            onClick={clearStateAndStartNew}
+            onClick={() => {
+              setView('input');
+              setTopic('');
+              setMainOutlineHTML('');
+            }}
             className="text-indigo-600 hover:text-indigo-700 flex items-center"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
@@ -2495,7 +2389,11 @@ function NewTopic() {
                 Back to Notes
               </button>
               <button
-                onClick={clearStateAndStartNew}
+                onClick={() => {
+                  setView('input');
+                  setTopic('');
+                  setMainOutlineHTML('');
+                }}
                 className="text-indigo-600 hover:text-indigo-700 flex items-center"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
@@ -2554,7 +2452,11 @@ function NewTopic() {
                 Back to Notes
               </button>
               <button
-                onClick={clearStateAndStartNew}
+                onClick={() => {
+                  setView('input');
+                  setTopic('');
+                  setMainOutlineHTML('');
+                }}
                 className="text-indigo-600 hover:text-indigo-700 flex items-center"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
@@ -2609,7 +2511,11 @@ function NewTopic() {
                 Back to Notes
               </button>
               <button
-                onClick={clearStateAndStartNew}
+                onClick={() => {
+                  setView('input');
+                  setTopic('');
+                  setMainOutlineHTML('');
+                }}
                 className="text-indigo-600 hover:text-indigo-700 flex items-center"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
@@ -2654,7 +2560,13 @@ function NewTopic() {
       current: view === 'input',
       onClick: () => {
         if (view !== 'input') {
-          clearStateAndStartNew();
+          setView('input');
+          setTopic('');
+          setMainOutlineHTML('');
+          setSubOutlineHTML('');
+          setFinalContent(null);
+          setSelectedSubtopic('');
+          setSelectedSubSubtopic('');
         }
       }
     });
@@ -2740,7 +2652,11 @@ function NewTopic() {
     >
       <div className="mb-6">
         <button
-          onClick={clearStateAndStartNew}
+          onClick={() => {
+            setView('input');
+            setTopic('');
+            setMainOutlineHTML('');
+          }}
           className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
