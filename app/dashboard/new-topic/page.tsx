@@ -2968,18 +2968,18 @@ function NewTopic() {
                 className="space-y-8"
               >
                 {/* Topic Input Section */}
-                <div className="bg-bg-secondary rounded-xl shadow-sm border border-border-primary overflow-hidden transition-colors duration-200">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-colors duration-200">
                   <div className="p-6">
-                    <h2 className="text-2xl font-bold text-text-primary mb-4 transition-colors duration-200">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4 transition-colors duration-200">
                       What would you like to learn about?
                     </h2>
-                    <p className="text-text-secondary mb-6 transition-colors duration-200">
+                    <p className="text-gray-600 mb-6 transition-colors duration-200">
                       Enter a topic and we'll create a comprehensive study guide with outlines, notes, and quizzes.
                     </p>
                     
                     <div className="space-y-4">
                       <div>
-                        <label htmlFor="topic" className="block text-sm font-medium text-text-secondary mb-1 transition-colors duration-200">
+                        <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1 transition-colors duration-200">
                           Topic
                         </label>
                         <input
@@ -2988,7 +2988,7 @@ function NewTopic() {
                           value={topic}
                           onChange={(e) => setTopic(e.target.value)}
                           placeholder="e.g. Machine Learning, World War II, Quantum Physics"
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         />
                       </div>
                       
