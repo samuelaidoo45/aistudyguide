@@ -9,6 +9,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import Link from 'next/link'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
+import StoryStoryBanner from '@/app/components/StoryStoryBanner'
 
 interface StudySession {
   id: string
@@ -448,6 +449,15 @@ export default function StudyHistory() {
                 </Link>
               </motion.div>
             )}
+
+            {/* StoryStory Promotion */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <StoryStoryBanner />
+            </motion.div>
           </div>
         </div>
       </div>

@@ -22,6 +22,7 @@ import {
   LogIn
 } from 'lucide-react'
 import Link from 'next/link'
+import StoryStoryBanner from '@/app/components/StoryStoryBanner'
 
 interface Topic {
   id: string
@@ -523,6 +524,15 @@ export default function Dashboard() {
                   Start New Topic
                 </button>
               </motion.div>
+
+              {/* StoryStory Promotion */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <StoryStoryBanner />
+              </motion.div>
             </div>
           ) : (
             // Unauthenticated user content
@@ -598,6 +608,15 @@ export default function Dashboard() {
                     Sign In to Save Progress
                   </Link>
                 </div>
+              </motion.div>
+
+              {/* StoryStory Promotion */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <StoryStoryBanner />
               </motion.div>
             </div>
           )}

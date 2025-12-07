@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, Suspense } from "react";
+import React, { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { createClient } from '@/app/lib/supabase';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +29,7 @@ import {
   Volume2
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import React from 'react';
+import StoryStoryBanner from '@/app/components/StoryStoryBanner';
 import { exportToWord } from '@/app/utils/wordExport';
 
 type ViewState = "input" | "mainOutline" | "subOutline" | "finalContent";
@@ -3100,6 +3100,9 @@ function NewTopic() {
                     </div>
                   </div>
                 </div>
+
+                {/* StoryStory Promotion Banner */}
+                <StoryStoryBanner />
               </motion.div>
             )}
             {view === "mainOutline" && renderMainOutline()}
