@@ -371,7 +371,7 @@ export default function Dashboard() {
                   </div>
                   <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
                     <div className="text-sm">
-                      <Link href="/dashboard/topics" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+                      <Link href="/dashboard/topics" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors duration-200">
                         View all topics
                       </Link>
                     </div>
@@ -403,7 +403,7 @@ export default function Dashboard() {
                   </div>
                   <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
                     <div className="text-sm">
-                      <Link href="/dashboard/achievements" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+                      <Link href="/dashboard/achievements" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors duration-200">
                         View achievements
                       </Link>
                     </div>
@@ -435,7 +435,7 @@ export default function Dashboard() {
                   </div>
                   <div className="bg-bg-tertiary px-5 py-3 transition-colors duration-200">
                     <div className="text-sm">
-                      <Link href="/dashboard/achievements" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+                      <Link href="/dashboard/achievements" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors duration-200">
                         View achievements
                       </Link>
                     </div>
@@ -475,7 +475,7 @@ export default function Dashboard() {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
                                 <BookMarked className="h-5 w-5 text-indigo-500 mr-3 transition-colors duration-200" aria-hidden="true" />
-                                <p className="text-sm font-medium text-indigo-600 truncate transition-colors duration-200">{topic.title}</p>
+                                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 truncate transition-colors duration-200">{topic.title}</p>
                               </div>
                               <div className="ml-2 flex-shrink-0 flex">
                                 <ChevronRight className="h-5 w-5 text-gray-400 transition-colors duration-200" aria-hidden="true" />
@@ -489,7 +489,7 @@ export default function Dashboard() {
                                 </p>
                               </div>
                               <div className="mt-2 flex items-center text-sm text-text-tertiary sm:mt-0 transition-colors duration-200">
-                                <div className="w-full bg-gray-200 rounded-full h-2.5 transition-colors duration-200" role="progressbar" aria-valuenow={topic.progress} aria-valuemin={0} aria-valuemax={100}>
+                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 transition-colors duration-200" role="progressbar" aria-valuenow={topic.progress} aria-valuemin={0} aria-valuemax={100}>
                                   <div 
                                     className="bg-indigo-600 h-2.5 rounded-full transition-colors duration-200" 
                                     style={{ width: `${topic.progress}%` }}
@@ -554,38 +554,38 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+                  <div className="bg-bg-secondary p-5 rounded-lg shadow-sm border border-border-primary">
                     <div className="flex items-center mb-4">
                       <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
                         <BookOpen className="h-6 w-6 text-white" />
                       </div>
                       <h3 className="ml-3 text-lg font-medium">Create Topics</h3>
                     </div>
-                    <p className="text-gray-600">
+                    <p className="text-text-secondary">
                       Break down any subject into structured, easy-to-understand outlines and notes.
                     </p>
                   </div>
 
-                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+                  <div className="bg-bg-secondary p-5 rounded-lg shadow-sm border border-border-primary">
                     <div className="flex items-center mb-4">
                       <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
                         <BookMarked className="h-6 w-6 text-white" />
                       </div>
                       <h3 className="ml-3 text-lg font-medium">Generate Notes</h3>
                     </div>
-                    <p className="text-gray-600">
+                    <p className="text-text-secondary">
                       Get comprehensive notes on any topic with just a few clicks.
                     </p>
                   </div>
 
-                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+                  <div className="bg-bg-secondary p-5 rounded-lg shadow-sm border border-border-primary">
                     <div className="flex items-center mb-4">
                       <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
                         <Award className="h-6 w-6 text-white" />
                       </div>
                       <h3 className="ml-3 text-lg font-medium">Test Knowledge</h3>
                     </div>
-                    <p className="text-gray-600">
+                    <p className="text-text-secondary">
                       Generate quizzes and dive deeper into topics to reinforce your learning.
                     </p>
                   </div>
@@ -602,7 +602,7 @@ export default function Dashboard() {
                   
                   <Link 
                     href="/auth/login"
-                    className="inline-flex justify-center items-center px-6 py-3 border border-indigo-600 text-base font-medium rounded-md shadow-sm text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="inline-flex justify-center items-center px-6 py-3 border border-indigo-600 text-base font-medium rounded-md shadow-sm text-indigo-600 dark:text-indigo-400 bg-bg-secondary hover:bg-indigo-50 dark:hover:bg-indigo-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
                     <LogIn className="h-5 w-5 mr-2" />
                     Sign In to Save Progress

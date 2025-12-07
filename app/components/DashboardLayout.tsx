@@ -18,8 +18,11 @@ import {
   BookMarked,
   Award,
   Mail,
-  LogIn
+  LogIn,
+  Moon,
+  Sun
 } from 'lucide-react'
+import { useTheme } from '../context/ThemeContext'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -29,6 +32,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const { theme, toggleTheme } = useTheme()
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
@@ -89,11 +93,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Remove the overlay completely */}
         
         {/* Sidebar - Make it completely opaque with solid white background */}
-        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl border-r-2 border-gray-200">
+        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-bg-secondary shadow-xl border-r-2 border-border-primary">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               type="button"
-              className="ml-1 flex items-center justify-center h-12 w-12 rounded-md bg-white border-2 border-gray-300 shadow-md text-gray-700 hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-500 transition-all duration-200"
+              className="ml-1 flex items-center justify-center h-12 w-12 rounded-md bg-bg-secondary border-2 border-border-primary shadow-md text-text-secondary hover:bg-bg-tertiary hover:text-indigo-600 hover:border-indigo-500 transition-all duration-200"
               onClick={() => setSidebarOpen(false)}
               style={{
                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
@@ -124,8 +128,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     className={`
                       group flex items-center px-3 py-3 text-base font-medium rounded-md border ${
                         isActive
-                          ? 'bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm'
-                          : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 border-transparent hover:border-indigo-100'
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-100 shadow-sm dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800'
+                          : 'text-text-secondary hover:bg-indigo-50 hover:text-indigo-700 border-transparent hover:border-indigo-100 dark:hover:bg-indigo-900/10 dark:hover:text-indigo-300 dark:hover:border-indigo-800'
                       }
                     `}
                   >
@@ -133,7 +137,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       className={`mr-4 h-6 w-6 ${
                         isActive
                           ? 'text-indigo-500'
-                          : 'text-gray-500 group-hover:text-indigo-500'
+                          : 'text-text-tertiary group-hover:text-indigo-500'
                       }`} 
                     />
                     {item.name}
@@ -148,19 +152,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               })}
             </nav>
           </div>
-          <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
+          <div className="flex-shrink-0 flex flex-col border-t border-border-primary p-4 gap-2">
+            <button
+              onClick={toggleTheme}
+              className="group flex items-center px-3 py-3 w-full text-base font-medium rounded-md border border-transparent text-text-secondary hover:bg-gray-50 hover:text-gray-900"
+            >
+              {theme === 'dark' ? (
+                <Sun className="inline-block h-6 w-6 text-text-tertiary group-hover:text-yellow-500 mr-4" />
+              ) : (
+                <Moon className="inline-block h-6 w-6 text-text-tertiary group-hover:text-indigo-500 mr-4" />
+              )}
+              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
             <button
               onClick={handleAuthAction}
               className={`group flex items-center px-3 py-3 w-full text-base font-medium rounded-md border border-transparent ${
                 user 
                   ? 'hover:border-red-100 hover:bg-red-50 hover:text-red-700' 
                   : 'hover:border-indigo-100 hover:bg-indigo-50 hover:text-indigo-700'
-              } text-gray-700`}
+              } text-text-secondary`}
             >
               {user ? (
-                <LogOut className="inline-block h-6 w-6 text-gray-500 group-hover:text-red-500 mr-4" />
+                <LogOut className="inline-block h-6 w-6 text-text-tertiary group-hover:text-red-500 mr-4" />
               ) : (
-                <LogIn className="inline-block h-6 w-6 text-gray-500 group-hover:text-indigo-500 mr-4" />
+                <LogIn className="inline-block h-6 w-6 text-text-tertiary group-hover:text-indigo-500 mr-4" />
               )}
               <span>{user ? 'Sign out' : 'Sign in'}</span>
             </button>
@@ -191,8 +206,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     className={`
                       group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                         isActive
-                          ? 'bg-indigo-50 text-indigo-700 shadow-sm'
-                          : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
+                          ? 'bg-indigo-50 text-indigo-700 shadow-sm dark:bg-indigo-900/20 dark:text-indigo-300'
+                          : 'text-text-secondary hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-900/10 dark:hover:text-indigo-300'
                       }
                     `}
                   >
@@ -200,7 +215,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       className={`mr-3 flex-shrink-0 h-6 w-6 ${
                         isActive
                           ? 'text-indigo-500'
-                          : 'text-gray-500 group-hover:text-indigo-500'
+                          : 'text-text-tertiary group-hover:text-indigo-500'
                       }`} 
                     />
                     {item.name}
@@ -215,20 +230,31 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               })}
             </nav>
           </div>
-          <div className="flex-shrink-0 flex border-t border-border-primary p-4">
+          <div className="flex-shrink-0 flex flex-col border-t border-border-primary p-4 gap-2">
+            <button
+              onClick={toggleTheme}
+              className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-text-secondary hover:bg-indigo-50 hover:text-indigo-700"
+            >
+              {theme === 'dark' ? (
+                <Sun className="mr-3 flex-shrink-0 h-6 w-6 text-text-tertiary group-hover:text-yellow-500" />
+              ) : (
+                <Moon className="mr-3 flex-shrink-0 h-6 w-6 text-text-tertiary group-hover:text-indigo-500" />
+              )}
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </button>
             <button
               onClick={handleAuthAction}
-              className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-50 ${
+              className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md text-text-secondary hover:bg-indigo-50 ${
                 user ? 'hover:text-red-700' : 'hover:text-indigo-700'
               }`}
             >
               {user ? (
-                <LogOut className="inline-block h-5 w-5 text-gray-500 group-hover:text-red-500" />
+                <LogOut className="inline-block h-5 w-5 text-text-tertiary group-hover:text-red-500" />
               ) : (
-                <LogIn className="inline-block h-5 w-5 text-gray-500 group-hover:text-indigo-500" />
+                <LogIn className="inline-block h-5 w-5 text-text-tertiary group-hover:text-indigo-500" />
               )}
               <div className="ml-3">
-                <p className={`text-sm font-medium text-gray-700 ${
+                <p className={`text-sm font-medium text-text-secondary ${
                   user ? 'group-hover:text-red-700' : 'group-hover:text-indigo-700'
                 }`}>
                   {user ? 'Sign out' : 'Sign in'}
@@ -244,7 +270,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="sticky top-0 z-10 mobile-only pl-1 pt-1 sm:pl-3 sm:pt-3 bg-bg-primary">
           <button
             type="button"
-            className="h-12 w-12 inline-flex items-center justify-center rounded-md bg-white border-2 border-gray-300 shadow-md text-gray-700 hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-500 transition-all duration-200"
+            className="h-12 w-12 inline-flex items-center justify-center rounded-md bg-bg-secondary border-2 border-border-primary shadow-md text-text-secondary hover:bg-bg-tertiary hover:text-indigo-600 hover:border-indigo-500 transition-all duration-200"
             onClick={() => setSidebarOpen(true)}
             style={{
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'

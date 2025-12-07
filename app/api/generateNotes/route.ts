@@ -80,16 +80,16 @@ export async function POST(request: Request) {
           "<h3>Detailed Explanation</h3>\n" +
           "<p>[In-depth explanation of the main content...]</p>\n\n" +
           
-          "<div class='example-box' style='background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 20px 0;'>\n" +
-          "  <h4 style='margin-top: 0; color: #1e40af;'>Example: Real-World Application</h4>\n" +
+          "<div class='example-box'>\n" +
+          "  <h4>Example: Real-World Application</h4>\n" +
           "  <p>[Concrete example with details...]</p>\n" +
           "</div>\n\n" +
           
           "<h3>Key Principles and Methods</h3>\n" +
           "<p>[Explanation of how things work...]</p>\n\n" +
           
-          "<div class='note-box' style='background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0;'>\n" +
-          "  <h4 style='margin-top: 0; color: #92400e;'>💡 Key Takeaway</h4>\n" +
+          "<div class='note-box'>\n" +
+          "  <h4>💡 Key Takeaway</h4>\n" +
           "  <p>[Important point to remember...]</p>\n" +
           "</div>\n\n" +
           

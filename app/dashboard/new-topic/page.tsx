@@ -603,7 +603,19 @@ function NewTopic() {
         })
       });
 
-      if (!response.ok) throw new Error('Failed to fetch sub-outline');
+      if (!response.ok) {
+        let errorMessage = `Failed to fetch sub-outline (${response.status})`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error) errorMessage = errorData.error;
+          if (errorData.details) errorMessage += `: ${errorData.details}`;
+        } catch (e) {
+          const text = await response.text();
+          if (text) errorMessage += `: ${text}`;
+        }
+        console.error(errorMessage);
+        throw new Error(errorMessage);
+      }
 
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No reader available');
@@ -2225,7 +2237,7 @@ function NewTopic() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white rounded-lg shadow-lg p-4 sm:p-6"
+      className="bg-bg-secondary rounded-lg shadow-lg p-4 sm:p-6 border border-border-primary"
     >
       <div className="mb-4">
         <div className="flex flex-wrap gap-2 sm:gap-4 mb-4">
@@ -2235,21 +2247,21 @@ function NewTopic() {
               setTopic('');
               setMainOutlineHTML('');
             }}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to New Topic
           </button>
           <button
             onClick={handleBackToMainOutline}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Main Outline
           </button>
           <button
             onClick={handleBackToSubOutline}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Sub-outline
@@ -2257,10 +2269,10 @@ function NewTopic() {
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="w-full sm:w-auto">
-            <h4 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
+            <h4 className="text-xl sm:text-2xl font-bold text-text-primary break-words">
               {selectedSubSubtopic}
             </h4>
-            <p className="text-indigo-600 text-sm sm:text-base font-medium mt-1 break-words">
+            <p className="text-indigo-600 dark:text-indigo-400 text-sm sm:text-base font-medium mt-1 break-words">
               {selectedSubtopic}
             </p>
           </div>
@@ -2310,14 +2322,14 @@ function NewTopic() {
 
           {/* Dive Deeper Section */}
           <div className="mt-8 border-t pt-6">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Dive Deeper</h4>
+            <h4 className="text-lg font-semibold text-text-primary mb-4">Dive Deeper</h4>
             <div className="flex flex-col sm:flex-row gap-2 mb-4">
               <input
                 type="text"
                 value={followUpQuestion}
                 onChange={(e) => setFollowUpQuestion(e.target.value)}
                 placeholder="Ask a follow-up question about this topic..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-border-primary bg-bg-tertiary text-text-primary rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
               <button
                 onClick={handleDiveDeeper}
@@ -2342,7 +2354,7 @@ function NewTopic() {
           {/* Quiz Section */}
           <div className="mt-8 border-t pt-6">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-              <h4 className="text-lg font-semibold text-gray-800">Test Your Knowledge</h4>
+              <h4 className="text-lg font-semibold text-text-primary">Test Your Knowledge</h4>
               <button
                 onClick={handleGenerateQuiz}
                 disabled={isQuizzing}
@@ -2396,7 +2408,7 @@ function NewTopic() {
       {notesView === "quiz" && (
         <div className="quiz-view">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h4 className="text-xl sm:text-2xl font-bold text-gray-900 break-words w-full sm:w-auto">Quiz: {selectedSubSubtopic}</h4>
+            <h4 className="text-xl sm:text-2xl font-bold text-text-primary break-words w-full sm:w-auto">Quiz: {selectedSubSubtopic}</h4>
             <button
               onClick={() => setNotesView("notes")}
               className="inline-flex items-center px-3 py-2 border border-indigo-200 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors whitespace-nowrap"
@@ -2466,7 +2478,7 @@ function NewTopic() {
       {notesView === "diveDeeper" && (
         <div className="dive-deeper-view">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h4 className="text-xl sm:text-2xl font-bold text-gray-900 break-words w-full sm:w-auto">Deep Dive: {followUpQuestion}</h4>
+            <h4 className="text-xl sm:text-2xl font-bold text-text-primary break-words w-full sm:w-auto">Deep Dive: {followUpQuestion}</h4>
             <button
               onClick={() => setNotesView("notes")}
               className="inline-flex items-center px-3 py-2 border border-indigo-200 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors whitespace-nowrap"
@@ -2968,18 +2980,18 @@ function NewTopic() {
                 className="space-y-8"
               >
                 {/* Topic Input Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-colors duration-200">
+                <div className="bg-bg-secondary rounded-xl shadow-sm border border-border-primary overflow-hidden transition-colors duration-200">
                   <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4 transition-colors duration-200">
+                    <h2 className="text-2xl font-bold text-text-primary mb-4 transition-colors duration-200">
                       What would you like to learn about?
                     </h2>
-                    <p className="text-gray-600 mb-6 transition-colors duration-200">
+                    <p className="text-text-secondary mb-6 transition-colors duration-200">
                       Enter a topic and we'll create a comprehensive study guide with outlines, notes, and quizzes.
                     </p>
                     
                     <div className="space-y-4">
                       <div>
-                        <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1 transition-colors duration-200">
+                        <label htmlFor="topic" className="block text-sm font-medium text-text-secondary mb-1 transition-colors duration-200">
                           Topic
                         </label>
                         <input
@@ -2988,7 +3000,7 @@ function NewTopic() {
                           value={topic}
                           onChange={(e) => setTopic(e.target.value)}
                           placeholder="e.g. Machine Learning, World War II, Quantum Physics"
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                          className="w-full px-4 py-3 rounded-lg border border-border-primary shadow-sm bg-bg-tertiary text-text-primary focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         />
                       </div>
                       
