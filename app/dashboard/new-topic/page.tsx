@@ -2364,33 +2364,26 @@ function NewTopic() {
           <div className="mt-8 pt-6 border-t">
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setNotesView("notes")}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Notes
-              </button>
-              <button
                 onClick={() => {
                   setView('input');
                   setTopic('');
                   setMainOutlineHTML('');
                 }}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to New Topic
               </button>
               <button
                 onClick={handleBackToMainOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Main Outline
               </button>
               <button
                 onClick={handleBackToSubOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Sub-outline
@@ -2406,7 +2399,7 @@ function NewTopic() {
             <h4 className="text-xl sm:text-2xl font-bold text-gray-900 break-words w-full sm:w-auto">Quiz: {selectedSubSubtopic}</h4>
             <button
               onClick={() => setNotesView("notes")}
-              className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base whitespace-nowrap"
+              className="inline-flex items-center px-3 py-2 border border-indigo-200 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors whitespace-nowrap"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back to notes
@@ -2435,7 +2428,7 @@ function NewTopic() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setNotesView("notes")}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Notes
@@ -2446,21 +2439,21 @@ function NewTopic() {
                   setTopic('');
                   setMainOutlineHTML('');
                 }}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to New Topic
               </button>
               <button
                 onClick={handleBackToMainOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Main Outline
               </button>
               <button
                 onClick={handleBackToSubOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Sub-outline
@@ -2476,7 +2469,7 @@ function NewTopic() {
             <h4 className="text-xl sm:text-2xl font-bold text-gray-900 break-words w-full sm:w-auto">Deep Dive: {followUpQuestion}</h4>
             <button
               onClick={() => setNotesView("notes")}
-              className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base whitespace-nowrap"
+              className="inline-flex items-center px-3 py-2 border border-indigo-200 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors whitespace-nowrap"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back to notes
@@ -2494,7 +2487,7 @@ function NewTopic() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setNotesView("notes")}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Notes
@@ -2505,21 +2498,21 @@ function NewTopic() {
                   setTopic('');
                   setMainOutlineHTML('');
                 }}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to New Topic
               </button>
               <button
                 onClick={handleBackToMainOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Main Outline
               </button>
               <button
                 onClick={handleBackToSubOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
+                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Sub-outline
@@ -2600,10 +2593,10 @@ function NewTopic() {
               {breadcrumb.onClick ? (
                 <button
                   onClick={breadcrumb.onClick}
-                  className={`text-sm font-medium px-2.5 py-1.5 rounded-md transition-colors flex items-center ${
+                  className={`text-sm font-medium px-3 py-2 rounded-md transition-colors flex items-center ${
                     breadcrumb.current
-                      ? 'text-white bg-indigo-600 dark:bg-indigo-500 font-semibold shadow-sm'
-                      : 'text-gray-800 dark:text-gray-100 hover:text-white hover:bg-indigo-500 dark:hover:bg-indigo-600 bg-gray-100 dark:bg-gray-700'
+                      ? 'text-white bg-indigo-600 font-bold shadow-sm border border-transparent'
+                      : 'text-indigo-600 bg-white border border-indigo-200 hover:bg-indigo-50'
                   } ${index === breadcrumbs.length - 1 ? 'max-w-[150px] sm:max-w-xs truncate' : ''}`}
                   title={breadcrumb.name}
                 >
@@ -2613,10 +2606,10 @@ function NewTopic() {
               ) : (
                 <a
                   href={breadcrumb.href}
-                  className={`text-sm font-medium px-2.5 py-1.5 rounded-md transition-colors flex items-center ${
+                  className={`text-sm font-medium px-3 py-2 rounded-md transition-colors flex items-center ${
                     breadcrumb.current
-                      ? 'text-white bg-indigo-600 dark:bg-indigo-500 font-semibold shadow-sm'
-                      : 'text-gray-800 dark:text-gray-100 hover:text-white hover:bg-indigo-500 dark:hover:bg-indigo-600 bg-gray-100 dark:bg-gray-700'
+                      ? 'text-white bg-indigo-600 font-bold shadow-sm border border-transparent'
+                      : 'text-indigo-600 bg-white border border-indigo-200 hover:bg-indigo-50'
                   } ${index === breadcrumbs.length - 1 ? 'max-w-[150px] sm:max-w-xs truncate' : ''}`}
                   title={breadcrumb.name}
                 >
@@ -2646,14 +2639,14 @@ function NewTopic() {
             setTopic('');
             setMainOutlineHTML('');
           }}
-          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
+          className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to New Topic
         </button>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-3 gap-2">
           <h2 className="text-xl sm:text-2xl font-bold text-text-primary flex items-center transition-colors duration-200 break-words w-full">
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-indigo-600 dark:text-indigo-400">
               {topic}
             </span>
           </h2>
@@ -2668,8 +2661,8 @@ function NewTopic() {
       
       {!loading && mainOutlineStreamingDone && (
         <>
-          <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
-            <Info className="w-5 h-5 sm:w-6 sm:h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
+          <div className="mb-6 p-4 bg-indigo-600 border-l-4 border-indigo-800 rounded-r-lg flex items-start shadow-sm">
+            <Info className="w-5 h-5 text-white mr-3 mt-0.5 flex-shrink-0" />
             <p className="text-white font-medium text-sm sm:text-base">
               Click on any topic below to generate a detailed sub-outline for that specific area.
             </p>
@@ -2679,18 +2672,6 @@ function NewTopic() {
               <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-indigo-600" />
               Main Outline
             </h2>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              {mainOutlineHTML && (
-                <button
-                  onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(mainOutlineHTML, `${topic || 'topic'}-main-outline`)}
-                  className="flex items-center justify-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors w-full sm:w-auto"
-                  title="Export to Word"
-                >
-                  <FileText className="w-4 h-4 mr-1" />
-                  Word
-                </button>
-              )}
-            </div>
           </div>
         </>
       )}
@@ -2719,14 +2700,14 @@ function NewTopic() {
               setTopic('');
               setMainOutlineHTML('');
             }}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
+            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to New Topic
           </button>
           <button
             onClick={handleBackToMainOutline}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
+            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Main Outline
@@ -2739,17 +2720,7 @@ function NewTopic() {
             </h3>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            {subOutlineHTML && (
-              <button
-                onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(subOutlineHTML, `${selectedSubtopic || 'subtopic'}-sub-outline`)}
-                className="flex items-center justify-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors w-full sm:w-auto"
-                title="Export to Word"
-              >
-                <FileText className="w-4 h-4 mr-1" />
-                Word
-              </button>
-            )}
-            {generatingContent && (
+            {loading && (
               <div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm sm:text-base">
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
                 <span>Generating...</span>
@@ -2759,10 +2730,17 @@ function NewTopic() {
         </div>
       </div>
       
+      {loading && !subOutlineHTML && (
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 text-indigo-600 dark:text-indigo-400 animate-spin mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Generating sub-outline...</p>
+        </div>
+      )}
+      
       {!loading && subOutlineStreamingDone && (
-        <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
-          <Info className="w-5 h-5 sm:w-6 sm:h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
-          <p className="text-white font-medium text-sm sm:text-base">
+          <div className="mb-6 p-4 bg-indigo-600 border-l-4 border-indigo-800 rounded-r-lg flex items-start shadow-sm">
+            <Info className="w-5 h-5 text-white mr-3 mt-0.5 flex-shrink-0" />
+            <p className="text-white font-medium text-sm sm:text-base">
             Click on any subtopic below to generate detailed study notes for that specific area.
           </p>
         </div>
@@ -2782,14 +2760,14 @@ function NewTopic() {
               setTopic('');
               setMainOutlineHTML('');
             }}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
+            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to New Topic
           </button>
           <button
             onClick={handleBackToMainOutline}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
+            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Main Outline
@@ -3010,7 +2988,7 @@ function NewTopic() {
                           value={topic}
                           onChange={(e) => setTopic(e.target.value)}
                           placeholder="e.g. Machine Learning, World War II, Quantum Physics"
-                          className="w-full px-4 py-3 rounded-lg border border-border-primary bg-bg-secondary text-text-primary focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         />
                       </div>
                       
