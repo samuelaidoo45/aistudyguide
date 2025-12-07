@@ -2242,24 +2242,6 @@ function NewTopic() {
       <div className="mb-4">
         <div className="flex flex-wrap gap-2 sm:gap-4 mb-4">
           <button
-            onClick={() => {
-              setView('input');
-              setTopic('');
-              setMainOutlineHTML('');
-            }}
-            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to New Topic
-          </button>
-          <button
-            onClick={handleBackToMainOutline}
-            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to Main Outline
-          </button>
-          <button
             onClick={handleBackToSubOutline}
             className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
@@ -2376,24 +2358,6 @@ function NewTopic() {
           <div className="mt-8 pt-6 border-t">
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => {
-                  setView('input');
-                  setTopic('');
-                  setMainOutlineHTML('');
-                }}
-                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to New Topic
-              </button>
-              <button
-                onClick={handleBackToMainOutline}
-                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Main Outline
-              </button>
-              <button
                 onClick={handleBackToSubOutline}
                 className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
@@ -2445,31 +2409,6 @@ function NewTopic() {
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Notes
               </button>
-              <button
-                onClick={() => {
-                  setView('input');
-                  setTopic('');
-                  setMainOutlineHTML('');
-                }}
-                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to New Topic
-              </button>
-              <button
-                onClick={handleBackToMainOutline}
-                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Main Outline
-              </button>
-              <button
-                onClick={handleBackToSubOutline}
-                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Sub-outline
-              </button>
             </div>
           </div>
         </div>
@@ -2503,31 +2442,6 @@ function NewTopic() {
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Notes
-              </button>
-              <button
-                onClick={() => {
-                  setView('input');
-                  setTopic('');
-                  setMainOutlineHTML('');
-                }}
-                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to New Topic
-              </button>
-              <button
-                onClick={handleBackToMainOutline}
-                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Main Outline
-              </button>
-              <button
-                onClick={handleBackToSubOutline}
-                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Sub-outline
               </button>
             </div>
           </div>
@@ -2707,17 +2621,6 @@ function NewTopic() {
       <div className="mb-6">
         <div className="flex flex-wrap gap-2 sm:gap-4 mb-4">
           <button
-            onClick={() => {
-              setView('input');
-              setTopic('');
-              setMainOutlineHTML('');
-            }}
-            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to New Topic
-          </button>
-          <button
             onClick={handleBackToMainOutline}
             className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
@@ -2766,17 +2669,6 @@ function NewTopic() {
       
       {!loading && subOutlineStreamingDone && (
         <div className="mt-6 pt-4 border-t border-border-primary flex flex-wrap gap-2">
-          <button
-            onClick={() => {
-              setView('input');
-              setTopic('');
-              setMainOutlineHTML('');
-            }}
-            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to New Topic
-          </button>
           <button
             onClick={handleBackToMainOutline}
             className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
