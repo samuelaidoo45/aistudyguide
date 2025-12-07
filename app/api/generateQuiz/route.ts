@@ -5,10 +5,10 @@ export const maxDuration = 300; // 5 minutes
 // Format the quiz content with proper HTML structure for our new styling
 function formatQuizContent(content: string): string {
   // Add question numbers to the h3 elements
-  let numberedContent = content.replace(/<h3>(.*?)<\/h3>/g, (match, p1, offset, string) => {
-    // Count how many h3 tags appear before this one to determine the question number
-    const questionNumber = string.substring(0, offset).match(/<h3>/g)?.length || 0;
-    return `<h3>Question ${questionNumber + 1}: ${p1}</h3>`;
+  let questionNumber = 0;
+  let numberedContent = content.replace(/<h3>(.*?)<\/h3>/g, (match, p1) => {
+    questionNumber++;
+    return `<h3>Question ${questionNumber}: ${p1}</h3>`;
   });
   
   // Add a submit button at the end
@@ -103,84 +103,75 @@ Do not include any explanations or additional text outside the HTML structure. D
       );
     }
 
-    // Create a ReadableStream to extract only the delta.content from each JSON chunk
-    const stream = new ReadableStream({
-      async start(controller) {
-        const reader = openaiRes.body?.getReader();
-        if (!reader) {
-          controller.close();
-          return;
-        }
-        const decoder = new TextDecoder("utf-8");
-        let buffer = "";
-        let fullResponse = "";
+    // Collect the full response first, then format and send
+    const reader = openaiRes.body?.getReader();
+    if (!reader) {
+      return NextResponse.json(
+        { error: "No response body" },
+        { status: 500 }
+      );
+    }
+    
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+    let fullResponse = "";
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          // Decode the chunk and accumulate
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          // Process each complete line
-          for (let i = 0; i < lines.length - 1; i++) {
-            let line = lines[i].trim();
-            if (line.startsWith("data:")) {
-              line = line.replace(/^data:\s*/, "");
-              if (line === "[DONE]") continue;
-              try {
-                const parsed = JSON.parse(line);
-                const delta = parsed.choices?.[0]?.delta?.content;
-                if (delta) {
-                  // Remove any ```html and ``` markers from the content
-                  const cleanDelta = delta;
-                  fullResponse += delta;
-                  
-                  // Enqueue the content delta as a UTF-8 encoded chunk
-                  controller.enqueue(new TextEncoder().encode(cleanDelta));
-                }
-              } catch (err) {
-                console.error("Error parsing chunk:", err);
-              }
-            }
-          }
-          // Keep any incomplete line for the next iteration
-          buffer = lines[lines.length - 1];
-        }
-        
-        // Process any remaining buffered data
-        if (buffer.trim() && !buffer.includes("[DONE]")) {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      
+      for (let i = 0; i < lines.length - 1; i++) {
+        let line = lines[i].trim();
+        if (line.startsWith("data:")) {
+          line = line.replace(/^data:\s*/, "");
+          if (line === "[DONE]") continue;
           try {
-            const parsed = JSON.parse(buffer.trim());
+            const parsed = JSON.parse(line);
             const delta = parsed.choices?.[0]?.delta?.content;
             if (delta) {
               fullResponse += delta;
-              controller.enqueue(new TextEncoder().encode(delta));
             }
           } catch (err) {
-            console.error("Error parsing final buffer:", err);
+            console.error("Error parsing chunk:", err);
           }
         }
-        
-        // Clean up the full response if needed
-        if (fullResponse.startsWith("```html")) {
-          const cleanedResponse = fullResponse.replace(/^```html\n/, "").replace(/```$/, "");
-          // Reset the stream and send the cleaned response
-          controller.close();
-          return new NextResponse(cleanedResponse, {
-            headers: { "Content-Type": "text/html" },
-          });
+      }
+      buffer = lines[lines.length - 1];
+    }
+    
+    // Clean up the response if it has markdown code blocks
+    let cleanedResponse = fullResponse;
+    if (cleanedResponse.startsWith("```html")) {
+      cleanedResponse = cleanedResponse.replace(/^```html\n?/, "").replace(/```$/, "");
+    }
+    if (cleanedResponse.startsWith("```")) {
+      cleanedResponse = cleanedResponse.replace(/^```\n?/, "").replace(/```$/, "");
+    }
+    
+    // Format the content with question numbers and submit button
+    const formattedContent = formatQuizContent(cleanedResponse);
+    
+    // Create a stream that sends the formatted content progressively
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        // Send the content in chunks for progressive display
+        const chunkSize = 50;
+        for (let i = 0; i < formattedContent.length; i += chunkSize) {
+          const chunk = formattedContent.slice(i, i + chunkSize);
+          controller.enqueue(encoder.encode(chunk));
+          // Small delay for visual streaming effect
+          await new Promise(resolve => setTimeout(resolve, 10));
         }
-        
-        // Format the final content before returning
-        const formattedContent = formatQuizContent(fullResponse);
-        controller.enqueue(new TextEncoder().encode(formattedContent));
         controller.close();
       },
     });
 
-    // Return the streaming response with the appropriate event stream header.
     return new NextResponse(stream, {
-      headers: { "Content-Type": "text/event-stream" },
+      headers: { "Content-Type": "text/html" },
     });
   } catch (error: unknown) {
     if (error instanceof Error) {

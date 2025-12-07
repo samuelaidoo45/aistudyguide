@@ -1907,27 +1907,16 @@ function NewTopic() {
 
       let result = '';
       const decoder = new TextDecoder();
-      
-      // Get the quiz container if we're already showing the quiz view
-      const quizContainer = document.querySelector('.quiz-container');
-      
-      if (quizContainer) {
-        quizContainer.innerHTML = '<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating quiz questions...</p></div>';
-      }
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        
         const chunk = decoder.decode(value, { stream: true });
         result += chunk;
         
-        // Update the state with each chunk
+        // Update UI with accumulated result
         setQuizContent(result);
-        
-        // Update the content as chunks arrive if we're showing the quiz
-        if (quizContainer) {
-          quizContainer.innerHTML = result;
-        }
       }
 
       return result;
@@ -1944,21 +1933,20 @@ function NewTopic() {
     
     setIsGeneratingQuiz(true);
     setIsQuizzing(true);
+    setQuizContent(''); // Clear quiz content to show loading spinner
     setNotesView("quiz");
     
     try {
       toast.loading('Generating quiz...', { id: 'generating-quiz' });
       
-      // Clear existing quiz content before starting new generation
-      setQuizContent('<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating quiz questions...</p></div>');
-      
-      const quiz = await fetchQuizStream(
+      await fetchQuizStream(
         topic,
         selectedSubtopic,
         selectedSubSubtopic
       );
       
-      setQuizContent(quiz);
+      // Quiz content is already set progressively during streaming
+      // Don't set it again to avoid blinking/duplication
       toast.success('Quiz generated!', { id: 'generating-quiz' });
       
       // Initialize quiz interactivity after content is loaded
@@ -2440,6 +2428,13 @@ function NewTopic() {
             className="quiz-container prose max-w-none"
             dangerouslySetInnerHTML={{ __html: quizContent || '<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating quiz questions...</p></div>' }}
           />
+          
+          {isQuizzing && quizContent && (
+             <div className="text-center text-sm text-gray-500 mt-2 flex items-center justify-center">
+               <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+               Generating more questions...
+             </div>
+          )}
           
           {/* Bottom Navigation for Quiz View */}
           <div className="mt-8 pt-6 border-t">
