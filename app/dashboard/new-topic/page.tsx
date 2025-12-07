@@ -2225,81 +2225,75 @@ function NewTopic() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white rounded-lg shadow-lg p-6"
+      className="bg-white rounded-lg shadow-lg p-4 sm:p-6"
     >
       <div className="mb-4">
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-4">
           <button
             onClick={() => {
               setView('input');
               setTopic('');
               setMainOutlineHTML('');
             }}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center"
+            className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to New Topic
           </button>
           <button
             onClick={handleBackToMainOutline}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center"
+            className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Main Outline
           </button>
           <button
             onClick={handleBackToSubOutline}
-            className="text-indigo-600 hover:text-indigo-700 flex items-center"
+            className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Sub-outline
           </button>
         </div>
-        <div className="flex justify-between items-center">
-          <div>
-            <h4 className="text-xl font-bold text-gray-900">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="w-full sm:w-auto">
+            <h4 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
               {selectedSubSubtopic}
             </h4>
-            <p className="text-indigo-600 text-sm font-medium mt-1">
+            <p className="text-indigo-600 text-sm sm:text-base font-medium mt-1 break-words">
               {selectedSubtopic}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             {loading && (
-              <div className="flex items-center text-indigo-600">
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              <div className="flex items-center text-indigo-600 text-sm sm:text-base">
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
                 <span>Generating notes...</span>
               </div>
             )}
-            {!loading && finalContent && notesView === "notes" && (
+            
+            {!loading && finalContent && (
               <>
                 <button
-                  onClick={exportToWord}
-                  className="flex items-center px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
-                  title="Download as Word document"
+                  onClick={listenToNotes}
+                  className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors w-full sm:w-auto ${
+                    isSpeaking 
+                      ? 'bg-red-50 text-red-700 hover:bg-red-100' 
+                      : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                  }`}
+                  title={isSpeaking ? "Stop listening" : "Listen to notes"}
+                >
+                  <Volume2 className={`w-4 h-4 mr-1 ${isSpeaking ? 'animate-pulse' : ''}`} />
+                  {isSpeaking ? 'Stop' : 'Listen'}
+                </button>
+                
+                <button
+                  onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(finalContent || '', `${selectedSubSubtopic || 'notes'}-notes`)}
+                  className="flex items-center justify-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors w-full sm:w-auto"
+                  title="Export to Word"
                 >
                   <FileText className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">Word</span>
-                </button>
-                <button
-                  onClick={exportToPDF}
-                  className="flex items-center px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
-                  title="Download as PDF"
-                >
-                  <Download className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">PDF</span>
-                </button>
-                <button
-                  onClick={listenToNotes}
-                  className={`flex items-center px-3 py-1.5 text-sm ${
-                    isSpeaking 
-                      ? "bg-purple-100 text-purple-700" 
-                      : "bg-purple-50 text-purple-600 hover:bg-purple-100"
-                  } rounded-md transition-colors`}
-                  title={isSpeaking ? "Stop reading" : "Listen to notes"}
-                >
-                  <Volume2 className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">{isSpeaking ? "Stop" : "Listen"}</span>
+                  Word
                 </button>
               </>
             )}
@@ -2317,7 +2311,7 @@ function NewTopic() {
           {/* Dive Deeper Section */}
           <div className="mt-8 border-t pt-6">
             <h4 className="text-lg font-semibold text-gray-800 mb-4">Dive Deeper</h4>
-            <div className="flex gap-2 mb-4">
+            <div className="flex flex-col sm:flex-row gap-2 mb-4">
               <input
                 type="text"
                 value={followUpQuestion}
@@ -2328,7 +2322,7 @@ function NewTopic() {
               <button
                 onClick={handleDiveDeeper}
                 disabled={isDivingDeeper || !followUpQuestion.trim()}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center justify-center whitespace-nowrap"
               >
                 {isDivingDeeper ? (
                   <>
@@ -2347,12 +2341,12 @@ function NewTopic() {
 
           {/* Quiz Section */}
           <div className="mt-8 border-t pt-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
               <h4 className="text-lg font-semibold text-gray-800">Test Your Knowledge</h4>
               <button
                 onClick={handleGenerateQuiz}
                 disabled={isQuizzing}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center"
+                className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isQuizzing ? (
                   <>
@@ -2371,7 +2365,7 @@ function NewTopic() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setNotesView("notes")}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Notes
@@ -2382,21 +2376,21 @@ function NewTopic() {
                   setTopic('');
                   setMainOutlineHTML('');
                 }}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to New Topic
               </button>
               <button
                 onClick={handleBackToMainOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Main Outline
               </button>
               <button
                 onClick={handleBackToSubOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Sub-outline
@@ -2408,11 +2402,11 @@ function NewTopic() {
 
       {notesView === "quiz" && (
         <div className="quiz-view">
-          <div className="flex justify-between items-center mb-6">
-            <h4 className="text-xl font-bold text-gray-900">Quiz: {selectedSubSubtopic}</h4>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h4 className="text-xl sm:text-2xl font-bold text-gray-900 break-words w-full sm:w-auto">Quiz: {selectedSubSubtopic}</h4>
             <button
               onClick={() => setNotesView("notes")}
-              className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base whitespace-nowrap"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back to notes
@@ -2441,7 +2435,7 @@ function NewTopic() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setNotesView("notes")}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Notes
@@ -2452,21 +2446,21 @@ function NewTopic() {
                   setTopic('');
                   setMainOutlineHTML('');
                 }}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to New Topic
               </button>
               <button
                 onClick={handleBackToMainOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Main Outline
               </button>
               <button
                 onClick={handleBackToSubOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Sub-outline
@@ -2478,11 +2472,11 @@ function NewTopic() {
 
       {notesView === "diveDeeper" && (
         <div className="dive-deeper-view">
-          <div className="flex justify-between items-center mb-6">
-            <h4 className="text-xl font-bold text-gray-900">Deeper Insights: {followUpQuestion}</h4>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h4 className="text-xl sm:text-2xl font-bold text-gray-900 break-words w-full sm:w-auto">Deep Dive: {followUpQuestion}</h4>
             <button
               onClick={() => setNotesView("notes")}
-              className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base whitespace-nowrap"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back to notes
@@ -2491,7 +2485,7 @@ function NewTopic() {
           
           {/* Dive Deeper Content */}
           <div 
-            className="dive-deeper-content prose max-w-none"
+            className="prose max-w-none dive-deeper-content"
             dangerouslySetInnerHTML={{ __html: diveDeeper || '<div class="flex flex-col items-center justify-center py-12"><div class="spinner"></div><p class="mt-4 text-gray-600">Generating deeper insights...</p></div>' }}
           />
           
@@ -2500,7 +2494,7 @@ function NewTopic() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setNotesView("notes")}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Notes
@@ -2511,21 +2505,21 @@ function NewTopic() {
                   setTopic('');
                   setMainOutlineHTML('');
                 }}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to New Topic
               </button>
               <button
                 onClick={handleBackToMainOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Main Outline
               </button>
               <button
                 onClick={handleBackToSubOutline}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                className="text-indigo-600 hover:text-indigo-700 flex items-center text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to Sub-outline
@@ -2643,7 +2637,7 @@ function NewTopic() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-bg-secondary rounded-xl shadow-md p-6 border border-border-primary transition-colors duration-200"
+      className="bg-bg-secondary rounded-xl shadow-md p-4 sm:p-6 border border-border-primary transition-colors duration-200"
     >
       <div className="mb-6">
         <button
@@ -2652,20 +2646,20 @@ function NewTopic() {
             setTopic('');
             setMainOutlineHTML('');
           }}
-          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
+          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to New Topic
         </button>
-        <div className="flex justify-between items-center mt-3">
-          <h2 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-3 gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-text-primary flex items-center transition-colors duration-200 break-words w-full">
             <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
               {topic}
             </span>
           </h2>
           {loading && (
-            <div className="flex items-center text-indigo-600 dark:text-indigo-400">
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            <div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm sm:text-base">
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
               <span>Generating...</span>
             </div>
           )}
@@ -2675,21 +2669,21 @@ function NewTopic() {
       {!loading && mainOutlineStreamingDone && (
         <>
           <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
-            <Info className="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
-            <p className="text-white font-medium">
+            <Info className="w-5 h-5 sm:w-6 sm:h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
+            <p className="text-white font-medium text-sm sm:text-base">
               Click on any topic below to generate a detailed sub-outline for that specific area.
             </p>
           </div>
-          <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center">
-            <h2 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200 mb-4 sm:mb-0">
-              <BookOpen className="w-6 h-6 mr-2 text-indigo-600" />
+          <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
+              <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-indigo-600" />
               Main Outline
             </h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               {mainOutlineHTML && (
                 <button
                   onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(mainOutlineHTML, `${topic || 'topic'}-main-outline`)}
-                  className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+                  className="flex items-center justify-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors w-full sm:w-auto"
                   title="Export to Word"
                 >
                   <FileText className="w-4 h-4 mr-1" />
@@ -2715,47 +2709,40 @@ function NewTopic() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-bg-secondary rounded-xl shadow-md p-6 border border-border-primary transition-colors duration-200"
+      className="bg-bg-secondary rounded-xl shadow-md p-4 sm:p-6 border border-border-primary transition-colors duration-200"
     >
       <div className="mb-6">
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-4">
           <button
             onClick={() => {
               setView('input');
               setTopic('');
               setMainOutlineHTML('');
             }}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to New Topic
           </button>
           <button
             onClick={handleBackToMainOutline}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Main Outline
           </button>
         </div>
-        <div className="flex justify-between items-center">
-          <div>
-            <button
-              onClick={handleBackToMainOutline}
-              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center mb-3 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Back to main outline
-            </button>
-            <h3 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="w-full sm:w-auto">
+            <h3 className="text-xl sm:text-2xl font-bold text-text-primary flex items-center transition-colors duration-200 break-words">
               {selectedSubtopic}
             </h3>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {subOutlineHTML && (
               <button
                 onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(subOutlineHTML, `${selectedSubtopic || 'subtopic'}-sub-outline`)}
-                className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+                className="flex items-center justify-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors w-full sm:w-auto"
                 title="Export to Word"
               >
                 <FileText className="w-4 h-4 mr-1" />
@@ -2763,8 +2750,8 @@ function NewTopic() {
               </button>
             )}
             {generatingContent && (
-              <div className="flex items-center text-indigo-600 dark:text-indigo-400">
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              <div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm sm:text-base">
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
                 <span>Generating...</span>
               </div>
             )}
@@ -2773,23 +2760,12 @@ function NewTopic() {
       </div>
       
       {!loading && subOutlineStreamingDone && (
-        <>
-          <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
-            <Info className="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
-            <p className="text-white font-medium">
-              Click on any subtopic below to generate detailed study notes for that specific area.
-            </p>
-          </div>
-          <div className="mb-4">
-            <button
-              onClick={() => (exportToWord as unknown as (content: string, filename: string) => Promise<void>)(subOutlineHTML || '', `${selectedSubtopic || 'subtopic'}-sub-outline`)}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download Sub-outline
-            </button>
-          </div>
-        </>
+        <div className="mb-6 p-4 bg-indigo-600 dark:bg-indigo-700 rounded-lg flex items-start shadow-md">
+          <Info className="w-5 h-5 sm:w-6 sm:h-6 text-white mr-3 mt-0.5 flex-shrink-0" />
+          <p className="text-white font-medium text-sm sm:text-base">
+            Click on any subtopic below to generate detailed study notes for that specific area.
+          </p>
+        </div>
       )}
       
       <div 
@@ -2806,14 +2782,14 @@ function NewTopic() {
               setTopic('');
               setMainOutlineHTML('');
             }}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to New Topic
           </button>
           <button
             onClick={handleBackToMainOutline}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors text-sm sm:text-base"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Main Outline
