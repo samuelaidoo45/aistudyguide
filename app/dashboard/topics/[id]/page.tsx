@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Toaster, toast } from 'react-hot-toast'
 import DashboardLayout from '@/app/components/DashboardLayout'
 import { createClient } from '@/app/lib/supabase'
-import { Info, ChevronLeft, Loader2, RefreshCw, BookOpen, FileText, ArrowLeft, Download, Volume2, Brain, ChevronRight } from 'lucide-react'
+import { Info, ChevronLeft, Loader2, RefreshCw, BookOpen, FileText, ArrowLeft, Download, Volume2, Brain, ChevronRight, RotateCcw, Home } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { exportToWord } from '@/app/utils/wordExport'
 
@@ -411,30 +411,33 @@ export default function TopicPage() {
   }
 
   // Fetch or generate suboutline for a section
-  const fetchOrGenerateSubOutline = async (sectionTitle: string) => {
+  const fetchOrGenerateSubOutline = async (sectionTitle: string, force = false) => {
     try {
       setGeneratingContent(true)
       setActiveSection(sectionTitle)
       
       // First check if we already have this subtopic in the database
-      const { data: existingSubtopic, error: fetchError } = await supabase
-        .from('subtopics')
-        .select('*')
-        .eq('topic_id', topicId)
-        .eq('title', sectionTitle)
-        .single()
-      
-      if (!fetchError && existingSubtopic) {
-        // We found an existing subtopic
-        // Process to make items clickable
-        existingSubtopic.content = makeSubOutlineItemsClickable(existingSubtopic.content)
+      if (!force) {
+        const { data: existingSubtopic, error: fetchError } = await supabase
+          .from('subtopics')
+          .select('*')
+          .eq('topic_id', topicId)
+          .eq('title', sectionTitle)
+          .single()
         
-        setSubOutlines(prev => ({
-          ...prev,
-          [sectionTitle]: existingSubtopic
-        }))
-        setViewState("suboutline")
-        return
+        if (!fetchError && existingSubtopic) {
+          // We found an existing subtopic
+          // Process to make items clickable
+          existingSubtopic.content = makeSubOutlineItemsClickable(existingSubtopic.content)
+          
+          setSubOutlines(prev => ({
+            ...prev,
+            [sectionTitle]: existingSubtopic
+          }))
+          setViewState("suboutline")
+          setGeneratingContent(false)
+          return
+        }
       }
       
       // No existing subtopic, generate a new one
@@ -510,16 +513,41 @@ export default function TopicPage() {
         }
         
         // Save the suboutline to the database
-        const { data: newSubtopic, error: saveError } = await supabase
+        let saveError, newSubtopic;
+        
+        // Check for existing record to update
+        const { data: existingRecord } = await supabase
           .from('subtopics')
-          .insert({
-            topic_id: topicId,
-            title: sectionTitle,
-            content: subOutlineContent,
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single()
+          .select('id')
+          .eq('topic_id', topicId)
+          .eq('title', sectionTitle)
+          .maybeSingle();
+          
+        if (existingRecord) {
+          const { data, error } = await supabase
+            .from('subtopics')
+            .update({
+              content: subOutlineContent,
+            })
+            .eq('id', existingRecord.id)
+            .select()
+            .single();
+          saveError = error;
+          newSubtopic = data;
+        } else {
+          const { data, error } = await supabase
+            .from('subtopics')
+            .insert({
+              topic_id: topicId,
+              title: sectionTitle,
+              content: subOutlineContent,
+              created_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+          saveError = error;
+          newSubtopic = data;
+        }
         
         if (saveError) {
           console.error('Error saving subtopic:', saveError)
@@ -561,14 +589,14 @@ export default function TopicPage() {
   }
 
   // Fetch or generate notes for a section
-  const fetchOrGenerateNotes = async (sectionTitle: string) => {
+  const fetchOrGenerateNotes = async (sectionTitle: string, force = false) => {
     if (!activeSection || !sectionTitle) return;
     
     setGeneratingContent(true);
     
     try {
       // Check if we already have notes for this section
-      if (notes[sectionTitle]) {
+      if (!force && notes[sectionTitle]) {
         setActiveSubSection(sectionTitle);
         setViewState("notes");
         setGeneratingContent(false);
@@ -583,15 +611,19 @@ export default function TopicPage() {
       }
             
       // Check if notes exist in the database
-      const { data: existingNotes, error: notesError } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('subtopic_id', subtopicId)
-        .eq('title', sectionTitle)
-        .maybeSingle();
-      
-      if (notesError) {
-        console.error('Error fetching notes:', notesError ? JSON.stringify(notesError) : 'Unknown error');
+      let existingNotes = null;
+      if (!force) {
+        const { data, error: notesError } = await supabase
+          .from('notes')
+          .select('*')
+          .eq('subtopic_id', subtopicId)
+          .eq('title', sectionTitle)
+          .maybeSingle();
+        
+        if (notesError) {
+          console.error('Error fetching notes:', notesError ? JSON.stringify(notesError) : 'Unknown error');
+        }
+        existingNotes = data;
       }
       
       if (existingNotes) {
@@ -664,16 +696,40 @@ export default function TopicPage() {
           }
           
           // Save the notes to the database
-          const { data: newNote, error: createError } = await supabase
+          let createError, newNote;
+          
+          const { data: existingNoteCheck } = await supabase
             .from('notes')
-            .insert({
-              subtopic_id: subtopicId,
-              title: sectionTitle,
-              content: notesContent,
-              created_at: new Date().toISOString()
-            })
-            .select()
-            .single();
+            .select('id')
+            .eq('subtopic_id', subtopicId)
+            .eq('title', sectionTitle)
+            .maybeSingle();
+            
+          if (existingNoteCheck) {
+             const { data, error } = await supabase
+              .from('notes')
+              .update({
+                content: notesContent
+              })
+              .eq('id', existingNoteCheck.id)
+              .select()
+              .single();
+             createError = error;
+             newNote = data;
+          } else {
+             const { data, error } = await supabase
+              .from('notes')
+              .insert({
+                subtopic_id: subtopicId,
+                title: sectionTitle,
+                content: notesContent,
+                created_at: new Date().toISOString()
+              })
+              .select()
+              .single();
+             createError = error;
+             newNote = data;
+          }
           
           if (createError) {
             console.error('Error creating note:', createError);
@@ -1409,6 +1465,69 @@ export default function TopicPage() {
     }
   }, [notesView, quizContent, isQuizzing]);
 
+  // --- Regeneration Handlers ---
+  const regenerateMainOutline = async () => {
+    if (!topic?.title && !topic?.name) return;
+    try {
+      await generateOutline();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to regenerate main outline");
+    }
+  };
+
+  const regenerateSubOutline = async () => {
+    if (!activeSection) return;
+    try {
+      // Clear cache for this section
+      setSubOutlines(prev => {
+        const next = { ...prev };
+        delete next[activeSection];
+        return next;
+      });
+      await fetchOrGenerateSubOutline(activeSection, true);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to regenerate sub-outline");
+    }
+  };
+
+  const regenerateNotes = async () => {
+    if (!activeSubSection || !activeSection) return;
+    try {
+      // Clear cache for this subsection
+      setNotes(prev => {
+        const next = { ...prev };
+        delete next[activeSubSection];
+        return next;
+      });
+      await fetchOrGenerateNotes(activeSubSection, true);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to regenerate notes");
+    }
+  };
+
+  const regenerateQuiz = async () => {
+    setQuizContent("");
+    setIsQuizzing(true);
+    try {
+      await generateQuiz();
+    } catch (err: any) {
+      toast.error("Failed to regenerate quiz");
+      setIsQuizzing(false);
+    }
+  };
+
+  const regenerateDiveDeeper = async () => {
+    if (!followUpQuestion) return;
+    setDiveDeeper("");
+    setIsDivingDeeper(true);
+    try {
+      await generateDiveDeeper();
+    } catch (err: any) {
+      toast.error("Failed to regenerate dive deeper");
+      setIsDivingDeeper(false);
+    }
+  };
+
   // Render main outline view
   const renderMainOutline = () => (
     <motion.div
@@ -1418,15 +1537,26 @@ export default function TopicPage() {
       className="bg-bg-secondary rounded-xl shadow-md p-6 border border-border-primary transition-colors duration-200"
     >
       <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center">
-        <h2 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200 mb-4 sm:mb-0">
-          <BookOpen className="w-6 h-6 mr-2 text-indigo-600" />
-          Main Outline
-        </h2>
+        <div className="flex items-center gap-2 mb-4 sm:mb-0">
+          <h2 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
+            <BookOpen className="w-6 h-6 mr-2 text-indigo-600" />
+            Main Outline
+          </h2>
+          {!generatingContent && (
+            <button
+              onClick={regenerateMainOutline}
+              className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-full transition-colors"
+              title="Regenerate Outline"
+            >
+              <RotateCcw className="w-5 h-5" />
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {topic?.main_outline && (
             <button
               onClick={() => exportToWord(topic.main_outline, `${topic.title || topic.name || 'topic'}-main-outline`)}
-              className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+              className="flex items-center px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-sm font-medium transition-colors"
               title="Export to Word"
             >
               <FileText className="w-4 h-4 mr-1" />
@@ -1435,7 +1565,7 @@ export default function TopicPage() {
           )}
           <button
             onClick={() => router.push('/dashboard')}
-            className="px-4 py-3 bg-white border-2 border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all shadow-sm hover:shadow-md flex items-center justify-center sm:justify-start w-full sm:w-auto"
+            className="px-4 py-3 bg-white dark:bg-gray-800 border-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm hover:shadow-md flex items-center justify-center sm:justify-start w-full sm:w-auto"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             <span className="font-medium">Back to Dashboard</span>
@@ -1444,9 +1574,9 @@ export default function TopicPage() {
       </div>
       
       {topic?.main_outline && (
-        <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg flex items-start">
-          <Info className="w-6 h-6 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
-          <p className="text-indigo-800 text-sm font-medium">
+        <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-indigo-500 rounded-r-lg flex items-start">
+          <Info className="w-6 h-6 text-indigo-600 dark:text-indigo-400 mr-3 mt-0.5 flex-shrink-0" />
+          <p className="text-indigo-800 dark:text-indigo-200 text-sm font-medium">
             Click on any section below to see a detailed outline. Each section can be explored further to generate comprehensive study notes.
           </p>
         </div>
@@ -1460,11 +1590,11 @@ export default function TopicPage() {
         />
       ) : (
         <div className="text-center py-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 mb-4">
-            <FileText className="w-8 h-8 text-indigo-600" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-4">
+            <FileText className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No outline available</h3>
-          <p className="text-gray-500 mb-4">Generate an outline to get started with this topic</p>
+          <h3 className="text-lg font-medium text-text-primary mb-2">No outline available</h3>
+          <p className="text-text-secondary mb-4">Generate an outline to get started with this topic</p>
           <button
             onClick={generateOutline}
             disabled={generatingContent}
@@ -1500,15 +1630,19 @@ export default function TopicPage() {
         .outline-content h2 {
           font-size: 1.25rem;
           font-weight: 600;
-          color: #1f2937;
+          color: var(--text-primary);
           margin: 1.5rem 0 0.75rem;
           padding-bottom: 0.5rem;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--border-primary);
           transition: color 0.2s;
         }
         
         .outline-content h2:hover {
-          color: #4f46e5;
+          color: var(--primary-600);
+        }
+
+        .dark .outline-content h2:hover {
+          color: var(--primary-400);
         }
         
         .outline-content h2:first-child {
@@ -1522,8 +1656,8 @@ export default function TopicPage() {
         }
         
         .outline-content li {
-              margin-bottom: 0.75rem;
-          color: #4b5563;
+          margin-bottom: 0.75rem;
+          color: var(--text-secondary);
           position: relative;
           line-height: 1.7;
           cursor: pointer;
@@ -1533,13 +1667,17 @@ export default function TopicPage() {
         }
         
         .outline-content li:hover {
-              color: #4f46e5;
-          background-color: #f3f4f6;
+          color: var(--primary-600);
+          background-color: var(--bg-tertiary);
+        }
+
+        .dark .outline-content li:hover {
+          color: var(--primary-400);
         }
         
         .outline-content ul li::before {
           content: "•";
-          color: #6366f1;
+          color: var(--primary-500);
           font-weight: bold;
           position: absolute;
           left: -1.25rem;
@@ -1555,7 +1693,7 @@ export default function TopicPage() {
         
         .outline-content ol li::before {
           content: counter(item) ".";
-          color: #6366f1;
+          color: var(--primary-500);
           font-weight: 600;
           position: absolute;
           left: -1.5rem;
@@ -1569,33 +1707,37 @@ export default function TopicPage() {
         }
         
         .outline-content .subtopic-item:hover {
-          color: #4f46e5;
-          background-color: #f3f4f6;
+          color: var(--primary-600);
+          background-color: var(--bg-tertiary);
+        }
+
+        .dark .outline-content .subtopic-item:hover {
+          color: var(--primary-400);
         }
         
         .outline-content .section-card {
-          background-color: #f9fafb;
+          background-color: var(--bg-tertiary);
           border-radius: 0.5rem;
           padding: 1rem;
           margin: 1.5rem 0;
-          border: 1px solid #e5e7eb;
+          border: 1px solid var(--border-primary);
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
           transition: all 0.2s;
         }
         
         .outline-content .section-card:hover {
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-          border-color: #d1d5db;
+          border-color: var(--border-secondary);
         }
         
         .outline-content .section-title {
           font-size: 1.125rem;
-              font-weight: 600;
-          color: #1f2937;
+          font-weight: 600;
+          color: var(--text-primary);
           margin-bottom: 0.75rem;
           padding-bottom: 0.5rem;
-          border-bottom: 1px solid #e5e7eb;
-            }
+          border-bottom: 1px solid var(--border-primary);
+        }
           `}</style>
     </motion.div>
   )
@@ -1617,15 +1759,26 @@ export default function TopicPage() {
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to main outline
           </button>
-          <h3 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
-            {activeSection}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-2xl font-bold text-text-primary flex items-center transition-colors duration-200">
+              {activeSection}
+            </h3>
+            {!generatingContent && (
+              <button
+                onClick={regenerateSubOutline}
+                className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-full transition-colors"
+                title="Regenerate Sub-outline"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {activeSection && subOutlines[activeSection] && (
             <button
               onClick={() => exportToWord(subOutlines[activeSection].content, `${activeSection}-sub-outline`)}
-              className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+              className="flex items-center px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-sm font-medium transition-colors"
               title="Export to Word"
             >
               <FileText className="w-4 h-4 mr-1" />
@@ -1642,9 +1795,9 @@ export default function TopicPage() {
       </div>
       
       {activeSection && subOutlines[activeSection] && (
-        <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg flex items-start">
-          <Info className="w-6 h-6 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
-          <p className="text-indigo-800 text-sm font-medium">
+        <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-indigo-500 rounded-r-lg flex items-start">
+          <Info className="w-6 h-6 text-indigo-600 dark:text-indigo-400 mr-3 mt-0.5 flex-shrink-0" />
+          <p className="text-indigo-800 dark:text-indigo-200 text-sm font-medium">
             Click on any section below to see detailed notes. Each section provides in-depth information about the topic.
           </p>
         </div>
@@ -1666,15 +1819,19 @@ export default function TopicPage() {
         .suboutline-content h3 {
           font-size: 1.25rem;
           font-weight: 600;
-          color: #1f2937;
+          color: var(--text-primary);
           margin: 1.5rem 0 0.75rem;
           padding-bottom: 0.5rem;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--border-primary);
           transition: color 0.2s;
         }
         
         .suboutline-content h3:hover {
-          color: #4f46e5;
+          color: var(--primary-600);
+        }
+
+        .dark .suboutline-content h3:hover {
+          color: var(--primary-400);
         }
         
         .suboutline-content h3:first-child {
@@ -1689,7 +1846,7 @@ export default function TopicPage() {
         
         .suboutline-content li {
           margin-bottom: 0.75rem;
-          color: #4b5563;
+          color: var(--text-secondary);
           position: relative;
           line-height: 1.7;
           cursor: pointer;
@@ -1699,13 +1856,17 @@ export default function TopicPage() {
         }
         
         .suboutline-content li:hover {
-          color: #4f46e5;
-          background-color: #f3f4f6;
+          color: var(--primary-600);
+          background-color: var(--bg-tertiary);
+        }
+
+        .dark .suboutline-content li:hover {
+          color: var(--primary-400);
         }
         
         .suboutline-content ul li::before {
           content: "•";
-          color: #6366f1;
+          color: var(--primary-500);
           font-weight: bold;
           position: absolute;
           left: -1.25rem;
@@ -1721,34 +1882,34 @@ export default function TopicPage() {
         
         .suboutline-content ol li::before {
           content: counter(item) ".";
-          color: #6366f1;
+          color: var(--primary-500);
           font-weight: 600;
           position: absolute;
           left: -1.5rem;
         }
         
         .suboutline-content .section-card {
-          background-color: #f9fafb;
+          background-color: var(--bg-tertiary);
           border-radius: 0.5rem;
           padding: 1rem;
           margin: 1.5rem 0;
-          border: 1px solid #e5e7eb;
+          border: 1px solid var(--border-primary);
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
           transition: all 0.2s;
         }
         
         .suboutline-content .section-card:hover {
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-          border-color: #d1d5db;
+          border-color: var(--border-secondary);
         }
         
         .suboutline-content .section-title {
           font-size: 1.125rem;
           font-weight: 600;
-          color: #1f2937;
+          color: var(--text-primary);
           margin-bottom: 0.75rem;
           padding-bottom: 0.5rem;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--border-primary);
         }
       `}</style>
           </motion.div>
@@ -1761,7 +1922,7 @@ export default function TopicPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="bg-white rounded-lg shadow-lg p-6"
+        className="bg-bg-secondary rounded-lg shadow-lg p-6 border border-border-primary"
       >
         <div className="mb-4">
                         <button 
@@ -1771,7 +1932,7 @@ export default function TopicPage() {
             <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
             Back to sub-outline
           </button>
-          <h4 className="text-xl font-bold text-gray-900">
+          <h4 className="text-xl font-bold text-text-primary">
             {activeSubSection}
           </h4>
           <p className="text-indigo-600 text-sm font-medium mt-1">
@@ -1794,7 +1955,7 @@ export default function TopicPage() {
 
             {/* Dive Deeper Section */}
             <div className="mt-8 border-t pt-6">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Dive Deeper</h4>
+              <h4 className="text-lg font-semibold text-text-primary mb-4">Dive Deeper</h4>
               <div className="flex gap-2 mb-4">
                 <input
                   type="text"
@@ -1826,7 +1987,7 @@ export default function TopicPage() {
             {/* Quiz Section */}
             <div className="mt-8 border-t pt-6">
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold text-gray-800">Test Your Knowledge</h4>
+                <h4 className="text-lg font-semibold text-text-primary">Test Your Knowledge</h4>
                 <button
                   onClick={generateQuiz}
                   disabled={isQuizzing}
@@ -1849,7 +2010,7 @@ export default function TopicPage() {
         {notesView === "quiz" && (
           <div className="quiz-view">
             <div className="flex justify-between items-center mb-6">
-              <h4 className="text-xl font-bold text-gray-900">Quiz: {activeSubSection}</h4>
+              <h4 className="text-xl font-bold text-text-primary">Quiz: {activeSubSection}</h4>
                               <button
                 onClick={() => setNotesView("notes")}
                 className="text-indigo-600 hover:text-indigo-700 flex items-center"
@@ -1871,17 +2032,18 @@ export default function TopicPage() {
             <div className="mt-8 flex justify-between">
               <button
                 onClick={() => setNotesView("notes")}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to notes
               </button>
               
               <button
-                onClick={generateQuiz}
+                onClick={regenerateQuiz}
                 disabled={isQuizzing}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center"
               >
+                <RotateCcw className={`w-4 h-4 mr-2 ${isQuizzing ? 'animate-spin' : ''}`} />
                 Regenerate Quiz
               </button>
                                 </div>
@@ -1891,19 +2053,29 @@ export default function TopicPage() {
         {notesView === "diveDeeper" && (
           <div className="dive-deeper-view">
             <div className="flex justify-between items-center mb-6">
-              <h4 className="text-xl font-bold text-gray-900">Dive Deeper: {activeSubSection}</h4>
-              <button
-                onClick={() => setNotesView("notes")}
-                className="text-indigo-600 hover:text-indigo-700 flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to notes
-              </button>
-                            </div>
+              <h4 className="text-xl font-bold text-text-primary">Dive Deeper: {activeSubSection}</h4>
+              <div className="flex gap-2">
+                <button
+                  onClick={regenerateDiveDeeper}
+                  disabled={isDivingDeeper}
+                  className="flex items-center px-3 py-2 border border-indigo-200 dark:border-indigo-700 shadow-sm text-sm font-medium rounded-md text-indigo-700 dark:text-indigo-300 bg-white dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RotateCcw className={`w-4 h-4 mr-1 ${isDivingDeeper ? 'animate-spin' : ''}`} />
+                  Regenerate
+                </button>
+                <button
+                  onClick={() => setNotesView("notes")}
+                  className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Back to notes
+                </button>
+              </div>
+            </div>
             
-            <div className="question bg-indigo-50 p-4 rounded-lg mb-6">
-              <p className="font-medium text-indigo-800">{followUpQuestion}</p>
-                        </div>
+            <div className="question bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg mb-6">
+              <p className="font-medium text-indigo-800 dark:text-indigo-200">{followUpQuestion}</p>
+            </div>
             
             {isDivingDeeper ? (
               <div className="flex flex-col items-center justify-center py-12">
@@ -1918,7 +2090,7 @@ export default function TopicPage() {
             )}
             
             <div className="mt-8 pt-6 border-t">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Ask Another Question</h4>
+              <h4 className="text-lg font-semibold text-text-primary mb-4">Ask Another Question</h4>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -1950,7 +2122,7 @@ export default function TopicPage() {
             <div className="mt-8 flex justify-start">
               <button
                 onClick={() => setNotesView("notes")}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back to notes
@@ -1961,10 +2133,18 @@ export default function TopicPage() {
 
         {/* Action buttons for notes - moved to bottom */}
         {notesView === "notes" && (
-          <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-border-primary">
+            <button
+              onClick={regenerateNotes}
+              className="flex items-center px-3 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-md text-sm font-medium transition-colors"
+              title="Regenerate Notes"
+            >
+              <RotateCcw className="w-4 h-4 mr-1" />
+              Regenerate
+            </button>
             <button
               onClick={handleBackToSubOutline}
-              className="flex items-center px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md text-sm font-medium transition-colors"
+              className="flex items-center px-3 py-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium transition-colors"
               title="Back to sub-outline"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
@@ -1973,7 +2153,7 @@ export default function TopicPage() {
             
             <button
               onClick={exportToWord}
-              className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+              className="flex items-center px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-sm font-medium transition-colors"
               title="Export to Word"
             >
               <FileText className="w-4 h-4 mr-1" />
@@ -1982,7 +2162,7 @@ export default function TopicPage() {
             
             <button
               onClick={exportToPDF}
-              className="flex items-center px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-md text-sm font-medium transition-colors"
+              className="flex items-center px-3 py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-700 dark:text-red-300 rounded-md text-sm font-medium transition-colors"
               title="Export to PDF"
             >
               <Download className="w-4 h-4 mr-1" />
@@ -1991,7 +2171,7 @@ export default function TopicPage() {
             
             <button
               onClick={listenToNotes}
-              className={`flex items-center px-3 py-2 ${isSpeaking ? 'bg-purple-100 text-purple-800' : 'bg-purple-50 hover:bg-purple-100 text-purple-700'} rounded-md text-sm font-medium transition-colors`}
+              className={`flex items-center px-3 py-2 ${isSpeaking ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200' : 'bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300'} rounded-md text-sm font-medium transition-colors`}
               title={isSpeaking ? "Stop listening" : "Listen to notes"}
             >
               <Volume2 className="w-4 h-4 mr-1" />
@@ -2001,7 +2181,7 @@ export default function TopicPage() {
             <button
               onClick={generateQuiz}
               disabled={isQuizzing}
-              className="flex items-center px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-md text-sm font-medium transition-colors"
+              className="flex items-center px-3 py-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md text-sm font-medium transition-colors"
               title="Generate quiz"
             >
               <BookOpen className="w-4 h-4 mr-1" />
@@ -2011,7 +2191,7 @@ export default function TopicPage() {
             <button
               onClick={generateDiveDeeper}
               disabled={isDivingDeeper || !followUpQuestion.trim()}
-              className="flex items-center px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-md text-sm font-medium transition-colors"
+              className="flex items-center px-3 py-2 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-md text-sm font-medium transition-colors"
               title="Dive deeper into this topic"
             >
               <Brain className="w-4 h-4 mr-1" />
@@ -2025,11 +2205,11 @@ export default function TopicPage() {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             font-size: 1.05rem;
             line-height: 1.8;
-            color: #374151;
+            color: var(--text-secondary);
             padding: 2rem;
-            background-color: white;
+            background-color: var(--bg-secondary);
             border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border-primary);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             max-width: 100%;
             overflow-wrap: break-word;
@@ -2422,12 +2602,12 @@ export default function TopicPage() {
       <div className="min-h-screen p-4 max-w-6xl mx-auto">
         {/* Topic Header */}
         {!loading && topic && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="bg-bg-secondary rounded-lg shadow-md p-6 mb-6 border border-border-primary">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{topic.title || topic.name || 'Untitled Topic'}</h1>
-                <p className="text-gray-600 mt-2">{topic.description || 'No description available'}</p>
-                <div className="mt-4 flex items-center text-sm text-gray-500">
+                <h1 className="text-2xl font-bold text-text-primary">{topic.title || topic.name || 'Untitled Topic'}</h1>
+                <p className="text-text-secondary mt-2">{topic.description || 'No description available'}</p>
+                <div className="mt-4 flex items-center text-sm text-text-tertiary">
                   <span className="mr-4">Category: {topic.category || 'Uncategorized'}</span>
                   <span className="mr-4">Created: {formatDate(topic.created_at)}</span>
                   <span>Last studied: {formatDate(topic.last_accessed)}</span>
@@ -2449,9 +2629,9 @@ export default function TopicPage() {
             {viewState === "notes" && renderNotes()}
           </>
         ) : (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <h2 className="text-xl font-medium text-gray-900 mb-2">Topic Not Found</h2>
-            <p className="text-gray-500">The topic you're looking for doesn't exist or you don't have access to it.</p>
+          <div className="bg-bg-secondary rounded-lg shadow-md p-8 text-center border border-border-primary">
+            <h2 className="text-xl font-medium text-text-primary mb-2">Topic Not Found</h2>
+            <p className="text-text-secondary">The topic you're looking for doesn't exist or you don't have access to it.</p>
           </div>
         )}
       </div>

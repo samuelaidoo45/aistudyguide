@@ -1,10 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-  },
   // Skip type checking during build
   typescript: {
     // !! WARN !!
@@ -18,7 +13,6 @@ const nextConfig = {
   // Improve image handling
   images: {
     unoptimized: true, // Disable image optimization to prevent issues in production
-    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -28,4 +22,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig; 
+export default nextConfig;

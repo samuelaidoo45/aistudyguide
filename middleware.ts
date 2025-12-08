@@ -34,19 +34,14 @@ export async function middleware(request: NextRequest) {
   // Use a type assertion ("as any") to pass in new cookie methods.
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
-      getAll: () => {
-        const cookieObj: Record<string, string> = {}
-        request.cookies.getAll().forEach(cookie => {
-          cookieObj[cookie.name] = cookie.value
+      getAll: () => request.cookies.getAll(),
+      setAll: (cookiesToSet: any[]) => {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          request.cookies.set(name, value)
+          response.cookies.set(name, value, options)
         })
-        return cookieObj
       },
-      setAll: (cookies: Record<string, string>) => {
-        for (const [name, value] of Object.entries(cookies)) {
-          response.cookies.set({ name, value })
-        }
-      },
-    } as any,
+    },
   })
 
   try {
@@ -59,6 +54,7 @@ export async function middleware(request: NextRequest) {
       '/api',
       '/terms-and-conditions',
       '/privacy-policy',
+      '/dashboard',
     ]
     
     const isPublicPath = publicPaths.some(
@@ -71,7 +67,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth/login', request.url))
     }
 
-    if (true && request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/auth/callback')) {
+    if (user && request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/auth/callback')) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   } catch (error) {

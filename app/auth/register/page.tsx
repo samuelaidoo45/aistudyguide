@@ -214,6 +214,12 @@ export default function Register() {
                 Sign up with Google
               </motion.button>
             </div>
+
+            <div className="mt-6 text-center">
+              <Link href="/dashboard" className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+                Continue as Guest
+              </Link>
+            </div>
           </div>
         </div>
       </div>
